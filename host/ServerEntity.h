@@ -16,9 +16,9 @@ class ServerEntity
 {
 private:
     Position position;
-    bool inputs[4]{};
+    bool inputs[4] = {false, false, false, false};
 
-    float speed = 200;
+    float speed = 500;
 public:
     ServerEntity(float x, float y);
     void Update(float delta);

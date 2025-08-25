@@ -4,6 +4,7 @@
 #include "../common/Common.h"
 #include "../common/Packets.h"
 #include <vector>
+#include <thread>
 #include "ServerEntity.h"
 
 struct PeerEntity
@@ -17,13 +18,14 @@ class Server
 {
 private:
     bool running = true;
-    AppState* state = new AppState();
+    AppState* state = nullptr;
 
-    ENetHost* server;
-    std::vector<PeerEntity> peerEntities;
+    ENetHost* server = nullptr;
+    std::thread terminalThread;
+    std::vector<PeerEntity> peerEntities = {};
     int nextEntityId = 0;
 
-    SDL_AppResult InitRendererAndWindow();
+    SDL_AppResult InitSDL();
     SDL_AppResult InitEnet();
 public:
     void Init();
@@ -33,8 +35,9 @@ public:
     void BroadcastEntityState(ServerEntity* entity, int entityId);
     SDL_AppResult CreateServer(const char* host);
     void ClientConnected(ENetPeer* peer);
+    void TerminalThread();
 
-    bool IsRunning();
+    bool IsRunning() const;
 };
 
 

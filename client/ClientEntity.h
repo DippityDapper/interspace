@@ -25,13 +25,10 @@ class ClientEntity
 private:
     Sprite sprite;
     Position position;
-    bool inputs[4];
-
-    float speed = 200;
+    bool inputs[4] = {false, false, false, false};
 public:
     ClientEntity(SDL_Renderer* renderer, const char* path, float x, float y);
-    void Update(float delta);
-    void Render(SDL_Renderer* renderer);
+    void Render(SDL_Renderer* renderer) const;
     void SetPosition(float x, float y);
 };
 

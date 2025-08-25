@@ -11,29 +11,30 @@ class Game
 {
 private:
     bool running = true;
-    AppState* state;
+    AppState* state = nullptr;
 
-    ENetHost* client;
-    ENetPeer* host;
+    ENetHost* client = nullptr;
+    ENetPeer* host = nullptr;
 
     bool inputState[4] = {false, false, false, false}; // up, down, left, right
     bool lastInputState[4] = {false, false, false, false};
 
-    std::map<int, ClientEntity*> entities;
+    std::map<int, ClientEntity*> entities = {};
 
-    SDL_AppResult InitRendererAndWindow();
+private:
+    SDL_AppResult InitSDL();
     SDL_AppResult InitEnet();
+
 public:
     void Init();
-
     void Run();
     void Quit();
 
-    SDL_AppResult CreateClient(int port, const char* ip);
-    SDL_AppResult ConnectToServer();
+    SDL_AppResult CreateClient();
+    SDL_AppResult ConnectToServer(int port, const char* ip);
     void SendInputPacket(bool up, bool down, bool left, bool right);
 
-    bool IsRunning();
+    bool IsRunning() const;
 };
 
 

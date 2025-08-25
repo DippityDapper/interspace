@@ -10,38 +10,14 @@ ClientEntity::ClientEntity(SDL_Renderer* renderer, const char* path, float x, fl
     position.x = x;
 }
 
-void ClientEntity::Update(float delta)
-{
-    Position dir{0, 0};
-
-    if (inputs[UP])
-    {
-        dir.y -= 1;
-    }
-    if (inputs[DOWN])
-    {
-        dir.y += 1;
-    }
-    if (inputs[LEFT])
-    {
-        dir.x -= 1;
-    }
-    if (inputs[RIGHT])
-    {
-        dir.x += 1;
-    }
-
-    position += dir.Normalized() * speed * delta;
-}
-
-void ClientEntity::Render(SDL_Renderer *renderer)
+void ClientEntity::Render(SDL_Renderer *renderer) const
 {
     SDL_FRect dest;
 
-    dest.w = sprite.w;
-    dest.h = sprite.h;
-    dest.x = position.x + sprite.w/2.0f;
-    dest.y = position.y + sprite.h/2.0f;
+    dest.w = (float)sprite.w;
+    dest.h = (float)sprite.h;
+    dest.x = position.x + (float)sprite.w/2.0f;
+    dest.y = position.y + (float)sprite.h/2.0f;
 
     SDL_RenderTexture(renderer, sprite.texture, nullptr, &dest);
 }

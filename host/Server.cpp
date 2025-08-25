@@ -1,8 +1,12 @@
+#include <string>
+#include <iostream>
 #include "Server.h"
 
 void Server::Init()
 {
-    if (InitRendererAndWindow() == SDL_APP_FAILURE)
+    state = new AppState();
+
+    if (InitSDL() == SDL_APP_FAILURE)
     {
         running = false;
         return;
@@ -19,20 +23,15 @@ void Server::Init()
         running = false;
         return;
     }
+
+    terminalThread = std::thread(&Server::TerminalThread, this);
 }
 
-SDL_AppResult Server::InitRendererAndWindow()
+SDL_AppResult Server::InitSDL()
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
         SDL_Log("SDL init failed: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-
-    state->window = SDL_CreateWindow("host", 640, 360, 0);
-    if (!state->window)
-    {
-        SDL_Log("Window/Renderer creation failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
@@ -80,7 +79,7 @@ void Server::BroadcastEntityState(ServerEntity *entity, int entityId)
     enet_host_broadcast(server, 0, packet);
 }
 
-bool Server::IsRunning()
+bool Server::IsRunning() const
 {
     return running;
 }
@@ -157,12 +156,14 @@ void Server::Run()
                 netEvent.peer->data = nullptr;
                 break;
             }
+            default:
+                break;
         }
     }
 
     state->lastTick = state->currentTick;
     state->currentTick = SDL_GetTicks();
-    state->deltaTime = (state->currentTick - state->lastTick) / 1000.0f;
+    state->deltaTime = (float)(state->currentTick - state->lastTick) / 1000.0f;
 
     // Update all client entities
     for (auto& clientEntity : peerEntities)
@@ -181,6 +182,9 @@ void Server::Run()
 
 void Server::Quit()
 {
+    if (terminalThread.joinable())
+        terminalThread.join();
+
     for (auto& clientEntity : peerEntities)
     {
         delete clientEntity.entity;
@@ -208,6 +212,20 @@ void Server::ClientConnected(ENetPeer* peer)
 
     peerEntities.push_back(peerEntity);
 
-    // Send initial state to new client
     BroadcastEntityState(newEntity, peerEntity.entityId);
+}
+
+void Server::TerminalThread()
+{
+    std::string line;
+    while (running)
+    {
+        if (std::getline(std::cin, line))
+        {
+            if (line.empty() || line == "quit")
+            {
+                running = false;
+            }
+        }
+    }
 }

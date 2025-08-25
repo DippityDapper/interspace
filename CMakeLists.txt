@@ -51,20 +51,27 @@ endif ()
 add_executable(game_host
         host/main.cpp
         host/Server.cpp
+        host/Server.h
         host/ServerEntity.cpp
-)
-
-target_link_libraries(game_host PRIVATE
-        SDL3::SDL3
-        SDL3_image::SDL3_image
-        ENet::ENet
+        host/ServerEntity.h
 )
 
 add_executable(game_client
         client/main.cpp
         client/Game.cpp
+        client/Game.h
         client/ClientEntity.cpp
+        client/ClientEntity.h
         client/ResourceLoader.cpp
+        client/ResourceLoader.h
+)
+
+set_target_properties(game_host PROPERTIES WIN32_EXECUTABLE FALSE)
+
+target_link_libraries(game_host PRIVATE
+        SDL3::SDL3
+        SDL3_image::SDL3_image
+        ENet::ENet
 )
 
 target_link_libraries(game_client PRIVATE

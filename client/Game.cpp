@@ -4,31 +4,32 @@ void Game::Init()
 {
     state = new AppState();
 
-    if (InitRendererAndWindow() == SDL_APP_FAILURE)
+    if (InitSDL() == SDL_APP_FAILURE)
     {
         running = false;
         return;
     }
+
     if (InitEnet() == SDL_APP_FAILURE)
     {
         running = false;
         return;
     }
 
-    if (CreateClient(33333, "localhost") == SDL_APP_FAILURE)
+    if (CreateClient() == SDL_APP_FAILURE)
     {
         running = false;
         return;
     }
 
-    if (ConnectToServer() == SDL_APP_FAILURE)
+    if (ConnectToServer(33333, "localhost") == SDL_APP_FAILURE)
     {
         running = false;
         return;
     }
 }
 
-SDL_AppResult Game::InitRendererAndWindow()
+SDL_AppResult Game::InitSDL()
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
@@ -36,12 +37,11 @@ SDL_AppResult Game::InitRendererAndWindow()
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("client", 640, 360, 0, &state->window, &state->renderer))
+    if (!SDL_CreateWindowAndRenderer("client", 640, 360, SDL_WINDOW_RESIZABLE, &state->window, &state->renderer))
     {
         SDL_Log("Window/Renderer creation failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    SDL_SetWindowResizable(state->window, true);
 
     return SDL_APP_CONTINUE;
 }
@@ -56,16 +56,22 @@ SDL_AppResult Game::InitEnet()
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult Game::CreateClient(int port, const char *ip)
+SDL_AppResult Game::CreateClient()
 {
     client = enet_host_create(nullptr, 1, 2, 0, 0);
-    ENetAddress address;
 
     if (!client)
     {
         SDL_Log("An error occurred while trying to create an ENet client ip: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult Game::ConnectToServer(int port, const char* ip)
+{
+    ENetAddress address;
 
     enet_address_set_host(&address, ip);
     address.port = port;
@@ -77,16 +83,11 @@ SDL_AppResult Game::CreateClient(int port, const char *ip)
         return SDL_APP_FAILURE;
     }
 
-    return SDL_APP_CONTINUE;
-}
-
-SDL_AppResult Game::ConnectToServer()
-{
     SDL_Log("Attempting to connect to server...");
 
     ENetEvent event;
     bool connected = false;
-    uint32_t connectionTimeout = SDL_GetTicks() + 5000; // 5 second timeout
+    uint32_t connectionTimeout = SDL_GetTicks() + 5000;
 
     while (!connected && SDL_GetTicks() < connectionTimeout)
     {
@@ -129,7 +130,7 @@ void Game::SendInputPacket(bool up, bool down, bool left, bool right)
     enet_peer_send(host, 0, packet);
 }
 
-bool Game::IsRunning()
+bool Game::IsRunning() const
 {
     return running;
 }
@@ -151,7 +152,7 @@ void Game::Run()
                 running = false;
                 return;
             }
-            // Handle input
+
             if (sdlEvent.key.key == SDLK_W)
                 inputState[0] = true;
             if (sdlEvent.key.key == SDLK_S)
@@ -202,13 +203,12 @@ void Game::Run()
                 {
                     StatePacket* statePacket = (StatePacket*)netEvent.packet->data;
 
-                    // Find or create entity
                     if (entities.find(statePacket->entityId) == entities.end())
                     {
                         entities[statePacket->entityId] = new ClientEntity(state->renderer, "player/1.png", statePacket->x, statePacket->y);
+                        SDL_Log("Entity added: %d", statePacket->entityId);
                     }
 
-                    // Update entity position
                     entities[statePacket->entityId]->SetPosition(statePacket->x, statePacket->y);
                 }
 
@@ -222,12 +222,14 @@ void Game::Run()
                 running = false;
                 return;
             }
+            default:
+                break;
         }
     }
 
     state->lastTick = state->currentTick;
     state->currentTick = SDL_GetTicks();
-    state->deltaTime = (state->currentTick - state->lastTick) / 1000.0f;
+    state->deltaTime = (float)(state->currentTick - state->lastTick) / 1000.0f;
 
     // Render
     SDL_SetRenderDrawColor(state->renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
