@@ -13,8 +13,9 @@ private:
     bool running = true;
     AppState* state = nullptr;
 
+    int clientId = -1;
     ENetHost* client = nullptr;
-    ENetPeer* host = nullptr;
+    ENetPeer* server = nullptr;
 
     bool inputState[4] = {false, false, false, false}; // up, down, left, right
     bool lastInputState[4] = {false, false, false, false};
@@ -30,9 +31,14 @@ public:
     void Run();
     void Quit();
 
+    void Event(SDL_Event sdlEvent);
+    void EnetEvent(ENetEvent enetEvent);
+
     SDL_AppResult CreateClient();
     SDL_AppResult ConnectToServer(int port, const char* ip);
     void SendInputPacket(bool up, bool down, bool left, bool right);
+
+    void PacketReceived(ENetEvent enetEvent);
 
     bool IsRunning() const;
 };

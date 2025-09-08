@@ -76,8 +76,8 @@ SDL_AppResult Game::ConnectToServer(int port, const char* ip)
     enet_address_set_host(&address, ip);
     address.port = port;
 
-    host = enet_host_connect(client, &address, 2, 0);
-    if (!host)
+    server = enet_host_connect(client, &address, 2, 0);
+    if (!server)
     {
         SDL_Log("No available peers for initiating connection: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -96,7 +96,7 @@ SDL_AppResult Game::ConnectToServer(int port, const char* ip)
             switch (event.type)
             {
                 case ENET_EVENT_TYPE_CONNECT:
-                    SDL_Log("Connection to server succeeded");
+                    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Connection to server succeeded");
                     connected = true;
                     break;
                 case ENET_EVENT_TYPE_DISCONNECT:
@@ -114,6 +114,10 @@ SDL_AppResult Game::ConnectToServer(int port, const char* ip)
         return SDL_APP_FAILURE;
     }
 
+    ENetPacket* packet = enet_packet_create(nullptr, sizeof(PACKET_CONNECT), ENET_PACKET_FLAG_RELIABLE);
+    packet->data[0] = PACKET_CONNECT;
+    enet_peer_send(server, 0, packet);
+
     return SDL_APP_CONTINUE;
 }
 
@@ -121,13 +125,14 @@ void Game::SendInputPacket(bool up, bool down, bool left, bool right)
 {
     InputPacket inputPacket;
     inputPacket.type = PACKET_INPUT;
+    inputPacket.clientId = clientId;
     inputPacket.up = up;
     inputPacket.down = down;
     inputPacket.left = left;
     inputPacket.right = right;
 
     ENetPacket* packet = enet_packet_create(&inputPacket, sizeof(InputPacket), ENET_PACKET_FLAG_RELIABLE);
-    enet_peer_send(host, 0, packet);
+    enet_peer_send(server, 0, packet);
 }
 
 bool Game::IsRunning() const
@@ -135,44 +140,128 @@ bool Game::IsRunning() const
     return running;
 }
 
+void Game::Event(SDL_Event sdlEvent)
+{
+    if (sdlEvent.type == SDL_EVENT_QUIT)
+    {
+        running = false;
+        return;
+    }
+    if (sdlEvent.type == SDL_EVENT_KEY_DOWN)
+    {
+        if (sdlEvent.key.key == SDLK_ESCAPE)
+        {
+            running = false;
+
+            DisconnectPacket disconnectPacket;
+            disconnectPacket.type = PACKET_DISCONNECT;
+            disconnectPacket.clientId = clientId;
+            SDL_Log("Peer disconnected: %d", clientId);
+
+            ENetPacket* packet = enet_packet_create(&disconnectPacket, sizeof(DisconnectPacket), ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send(server, 0, packet);
+            enet_host_flush(client);
+
+            return;
+        }
+
+        if (sdlEvent.key.key == SDLK_W)
+            inputState[0] = true;
+        if (sdlEvent.key.key == SDLK_S)
+            inputState[1] = true;
+        if (sdlEvent.key.key == SDLK_A)
+            inputState[2] = true;
+        if (sdlEvent.key.key == SDLK_D)
+            inputState[3] = true;
+    }
+    if (sdlEvent.type == SDL_EVENT_KEY_UP)
+    {
+        if (sdlEvent.key.key == SDLK_W)
+            inputState[0] = false;
+        if (sdlEvent.key.key == SDLK_S)
+            inputState[1] = false;
+        if (sdlEvent.key.key == SDLK_A)
+            inputState[2] = false;
+        if (sdlEvent.key.key == SDLK_D)
+            inputState[3] = false;
+    }
+}
+
+void Game::PacketReceived(ENetEvent enetEvent)
+{
+    PacketType* p_packetType = (PacketType*)enetEvent.packet->data;
+    PacketType packetType = *p_packetType;
+
+    if (packetType == PACKET_STATE)
+    {
+        StatePacket* statePacket = (StatePacket*)enetEvent.packet->data;
+        entities[statePacket->clientId]->SetPosition(statePacket->x, statePacket->y);
+    }
+    if (packetType == PACKET_CLIENT_DATA)
+    {
+        ClientDataPacket* clientDataPacket = (ClientDataPacket*)enetEvent.packet->data;
+        SDL_Log("Client id: %d", clientDataPacket->clientId);
+
+        clientId = clientDataPacket->clientId;
+
+        ClientDataPacket createClientEntityPacket;
+        createClientEntityPacket.type = PACKET_CREATE_CLIENT_ENTITY;
+        createClientEntityPacket.clientId = clientId;
+
+        ENetPacket* packet = enet_packet_create(&createClientEntityPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send(server, 0, packet);
+    }
+    if (packetType == PACKET_DISCONNECT)
+    {
+        DisconnectPacket* disconnectPacket = (DisconnectPacket*)enetEvent.packet->data;
+        int peerId = disconnectPacket->clientId;
+        SDL_Log("Peer disconnected: %d", peerId);
+
+        ClientEntity* entity = entities[peerId];
+        entities.erase(peerId);
+        delete(entity);
+    }
+    if (packetType == PACKET_CREATE_CLIENT_ENTITY)
+    {
+        StatePacket* statePacket = (StatePacket*)enetEvent.packet->data;
+        SDL_Log("Client entity created for: %d", statePacket->clientId);
+
+        ClientEntity* entity = new ClientEntity(state->renderer, "player/1.png", statePacket->x, statePacket->y);
+        entities[statePacket->clientId] = entity;
+    }
+
+    enet_packet_destroy(enetEvent.packet);
+}
+
+void Game::EnetEvent(ENetEvent enetEvent)
+{
+    switch (enetEvent.type)
+    {
+        case ENET_EVENT_TYPE_RECEIVE:
+        {
+            PacketReceived(enetEvent);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
 void Game::Run()
 {
+    ENetEvent enetEvent;
+    while (enet_host_service(client, &enetEvent, 0) > 0)
+    {
+        EnetEvent(enetEvent);
+    }
+
+    if (clientId < 0)
+        return;
+
     SDL_Event sdlEvent;
     while (SDL_PollEvent(&sdlEvent))
     {
-        if (sdlEvent.type == SDL_EVENT_QUIT)
-        {
-            running = false;
-            return;
-        }
-        if (sdlEvent.type == SDL_EVENT_KEY_DOWN)
-        {
-            if (sdlEvent.key.key == SDLK_ESCAPE)
-            {
-                running = false;
-                return;
-            }
-
-            if (sdlEvent.key.key == SDLK_W)
-                inputState[0] = true;
-            if (sdlEvent.key.key == SDLK_S)
-                inputState[1] = true;
-            if (sdlEvent.key.key == SDLK_A)
-                inputState[2] = true;
-            if (sdlEvent.key.key == SDLK_D)
-                inputState[3] = true;
-        }
-        if (sdlEvent.type == SDL_EVENT_KEY_UP)
-        {
-            if (sdlEvent.key.key == SDLK_W)
-                inputState[0] = false;
-            if (sdlEvent.key.key == SDLK_S)
-                inputState[1] = false;
-            if (sdlEvent.key.key == SDLK_A)
-                inputState[2] = false;
-            if (sdlEvent.key.key == SDLK_D)
-                inputState[3] = false;
-        }
+        Event(sdlEvent);
     }
 
     bool inputChanged = false;
@@ -190,54 +279,17 @@ void Game::Run()
         SendInputPacket(inputState[0], inputState[1], inputState[2], inputState[3]);
     }
 
-    ENetEvent netEvent;
-    while (enet_host_service(client, &netEvent, 0) > 0)
-    {
-        switch (netEvent.type)
-        {
-            case ENET_EVENT_TYPE_RECEIVE:
-            {
-                PacketType* packetType = (PacketType*)netEvent.packet->data;
-
-                if (*packetType == PACKET_STATE)
-                {
-                    StatePacket* statePacket = (StatePacket*)netEvent.packet->data;
-
-                    if (entities.find(statePacket->entityId) == entities.end())
-                    {
-                        entities[statePacket->entityId] = new ClientEntity(state->renderer, "player/1.png", statePacket->x, statePacket->y);
-                        SDL_Log("Entity added: %d", statePacket->entityId);
-                    }
-
-                    entities[statePacket->entityId]->SetPosition(statePacket->x, statePacket->y);
-                }
-
-                enet_packet_destroy(netEvent.packet);
-                break;
-            }
-
-            case ENET_EVENT_TYPE_DISCONNECT:
-            {
-                SDL_Log("Disconnected from server");
-                running = false;
-                return;
-            }
-            default:
-                break;
-        }
-    }
-
     state->lastTick = state->currentTick;
     state->currentTick = SDL_GetTicks();
     state->deltaTime = (float)(state->currentTick - state->lastTick) / 1000.0f;
 
-    // Render
     SDL_SetRenderDrawColor(state->renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(state->renderer);
 
-    for (auto& pair : entities)
+    for (auto& kvp : entities)
     {
-        pair.second->Render(state->renderer);
+        ClientEntity* entity = kvp.second;
+        entity->Render(state->renderer);
     }
 
     SDL_RenderPresent(state->renderer);
@@ -249,12 +301,14 @@ void Game::Quit()
     SDL_DestroyRenderer(state->renderer);
     delete(state);
 
-    for (auto& pair : entities)
+    for (auto& kvp : entities)
     {
-        delete pair.second;
+        ClientEntity* entity = kvp.second;
+        delete entity;
     }
     ResourceLoader::UnloadAll();
 
+    enet_peer_reset(server);
     enet_host_destroy(client);
     enet_deinitialize();
 

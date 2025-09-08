@@ -66,11 +66,11 @@ SDL_AppResult Server::CreateServer(const char *host)
     return SDL_APP_CONTINUE;
 }
 
-void Server::BroadcastEntityState(ServerEntity *entity, int entityId)
+void Server::BroadcastEntityState(ServerEntity *entity, int clientId)
 {
     StatePacket statePacket;
     statePacket.type = PACKET_STATE;
-    statePacket.entityId = entityId;
+    statePacket.clientId = clientId;
     Position pos = entity->GetPosition();
     statePacket.x = pos.x;
     statePacket.y = pos.y;
@@ -84,98 +84,208 @@ bool Server::IsRunning() const
     return running;
 }
 
+void Server::Event(SDL_Event event)
+{
+    if (event.type == SDL_EVENT_QUIT)
+    {
+        running = false;
+    }
+    if (event.type == SDL_EVENT_KEY_DOWN)
+    {
+        if (event.key.key == SDLK_ESCAPE)
+        {
+            running = false;
+        }
+    }
+}
+
+void Server::DisconnectClient(int clientId)
+{
+    if (peers.contains(clientId))
+    {
+        peers.erase(clientId);
+    }
+    if (peerEntities.contains(clientId))
+    {
+        PeerEntity entity = peerEntities[clientId];
+        delete entity.entity;
+        peerEntities.erase(clientId);
+    }
+
+    ClientDataPacket clientDataPacket;
+    clientDataPacket.type = PACKET_DISCONNECT;
+    clientDataPacket.clientId = clientId;
+
+    ENetPacket* packet = enet_packet_create(&clientDataPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
+    enet_host_broadcast(server, 0, packet);
+}
+
+void Server::PacketReceived(ENetEvent enetEvent)
+{
+    PacketType* packetType = (PacketType*)enetEvent.packet->data;
+
+    if (*packetType == PACKET_INPUT)
+    {
+        InputPacket* inputPacket = (InputPacket*)enetEvent.packet->data;
+        int entityId = inputPacket->clientId;
+
+        PeerEntity entity = peerEntities[entityId];
+        entity.entity->SetInputs(inputPacket->up, inputPacket->down, inputPacket->left, inputPacket->right);
+    }
+    if (*packetType == PACKET_CONNECT)
+    {
+        ClientDataPacket clientDataPacket;
+        clientDataPacket.type = PACKET_CLIENT_DATA;
+
+        int clientId;
+        bool invalidId = true;
+        while (invalidId)
+        {
+            std::srand(std::time({}));
+            clientId = std::rand();
+            if (!peerEntities.contains(clientId))
+            {
+                invalidId = false;
+            }
+        }
+
+        peers[clientId] = enetEvent.peer;
+        clientDataPacket.clientId = clientId;
+
+        SDL_Log("New Client was given id: %d", clientDataPacket.clientId);
+
+        ENetPacket* packet = enet_packet_create(&clientDataPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send(enetEvent.peer, 0, packet);
+
+        for (auto kvp: peerEntities)
+        {
+            PeerEntity peerEntity = kvp.second;
+            int peerId = kvp.first;
+
+            StatePacket statePacket;
+            statePacket.type = PACKET_CREATE_CLIENT_ENTITY;
+            statePacket.clientId = peerId;
+            statePacket.x = peerEntity.entity->GetPosition().x;
+            statePacket.y = peerEntity.entity->GetPosition().y;
+
+            ENetPacket* peerPacket = enet_packet_create(&statePacket, sizeof(StatePacket), ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send(enetEvent.peer, 0, peerPacket);
+        }
+    }
+    if (*packetType == PACKET_DISCONNECT)
+    {
+        DisconnectPacket* disconnectPacket = (DisconnectPacket*)enetEvent.packet->data;
+        int clientId = disconnectPacket->clientId;
+        SDL_Log("Peer disconnected: %d", clientId);
+
+        PeerEntity entity = peerEntities[clientId];
+        delete entity.entity;
+        peerEntities.erase(clientId);
+        peers.erase(clientId);
+
+        ClientDataPacket clientDataPacket;
+        clientDataPacket.type = PACKET_DISCONNECT;
+        clientDataPacket.clientId = clientId;
+
+        ENetPacket* packet = enet_packet_create(&clientDataPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
+        enet_host_broadcast(server, 0, packet);
+    }
+    if (*packetType == PACKET_CREATE_CLIENT_ENTITY)
+    {
+        ClientDataPacket* clientDataPacket = (ClientDataPacket*)enetEvent.packet->data;
+        ENetPeer* peer = enetEvent.peer;
+        SDL_Log("Server entity created for: %d", clientDataPacket->clientId);
+
+        ServerEntity* newEntity = new ServerEntity(64, 64);
+        PeerEntity peerEntity;
+        peerEntity.entity = newEntity;
+        peerEntity.peer = peer;
+
+        peerEntities[clientDataPacket->clientId] = peerEntity;
+
+        StatePacket statePacket;
+        statePacket.type = PACKET_CREATE_CLIENT_ENTITY;
+        statePacket.clientId = clientDataPacket->clientId;
+        statePacket.x = peerEntity.entity->GetPosition().x;
+        statePacket.y = peerEntity.entity->GetPosition().y;
+
+        ENetPacket* packet = enet_packet_create(&statePacket, sizeof(StatePacket), ENET_PACKET_FLAG_RELIABLE);
+        enet_host_broadcast(server, 0, packet);
+    }
+
+    enet_packet_destroy(enetEvent.packet);
+}
+
+void Server::EnetEvent(ENetEvent enetEvent)
+{
+    switch (enetEvent.type)
+    {
+        case ENET_EVENT_TYPE_RECEIVE:
+        {
+            PacketReceived(enetEvent);
+            break;
+        }
+        case ENET_EVENT_TYPE_DISCONNECT:
+            for (auto kvp: std::map(peers))
+            {
+                ENetPeer* peer = kvp.second;
+                int clientId = kvp.first;
+                if (peer == enetEvent.peer)
+                {
+                    if (peers.contains(clientId))
+                    {
+                        peers.erase(clientId);
+                    }
+                    if (peerEntities.contains(clientId))
+                    {
+                        PeerEntity entity = peerEntities[clientId];
+                        delete entity.entity;
+                        peerEntities.erase(clientId);
+                    }
+                    ClientDataPacket clientDataPacket;
+                    clientDataPacket.type = PACKET_DISCONNECT;
+                    clientDataPacket.clientId = clientId;
+
+                    ENetPacket* packet = enet_packet_create(&clientDataPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
+                    enet_host_broadcast(server, 0, packet);
+                    break;
+                }
+            }
+
+        default:
+            break;
+    }
+}
+
 void Server::Run()
 {
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        if (event.type == SDL_EVENT_QUIT)
-        {
-            running = false;
-        }
-        if (event.type == SDL_EVENT_KEY_DOWN)
-        {
-            if (event.key.key == SDLK_ESCAPE)
-            {
-                running = false;
-            }
-        }
+        Event(event);
     }
 
-    // Handle network events
-    ENetEvent netEvent;
-    while (enet_host_service(server, &netEvent, 0) > 0)
+    ENetEvent enetEvent;
+    while (enet_host_service(server, &enetEvent, 0) > 0)
     {
-        switch (netEvent.type)
-        {
-            case ENET_EVENT_TYPE_CONNECT:
-            {
-                ClientConnected(netEvent.peer);
-                break;
-            }
-
-            case ENET_EVENT_TYPE_RECEIVE:
-            {
-                PacketType* packetType = (PacketType*)netEvent.packet->data;
-
-                if (*packetType == PACKET_INPUT)
-                {
-                    InputPacket* inputPacket = (InputPacket*)netEvent.packet->data;
-
-                    // Find the entity associated with this host
-                    for (auto& clientEntity : peerEntities)
-                    {
-                        if (clientEntity.peer == netEvent.peer)
-                        {
-                            // Apply input to entity
-                            clientEntity.entity->SetInputs(inputPacket->up, inputPacket->down, inputPacket->left, inputPacket->right);
-                            break;
-                        }
-                    }
-                }
-
-                enet_packet_destroy(netEvent.packet);
-                break;
-            }
-
-            case ENET_EVENT_TYPE_DISCONNECT:
-            {
-                SDL_Log("Client disconnected");
-
-                // Remove client entity
-                for (auto it = peerEntities.begin(); it != peerEntities.end(); ++it)
-                {
-                    if (it->peer == netEvent.peer)
-                    {
-                        delete it->entity;
-                        peerEntities.erase(it);
-                        break;
-                    }
-                }
-
-                netEvent.peer->data = nullptr;
-                break;
-            }
-            default:
-                break;
-        }
+        EnetEvent(enetEvent);
     }
 
     state->lastTick = state->currentTick;
     state->currentTick = SDL_GetTicks();
     state->deltaTime = (float)(state->currentTick - state->lastTick) / 1000.0f;
 
-    // Update all client entities
-    for (auto& clientEntity : peerEntities)
+    for (auto& kvp : peerEntities)
     {
-        Position oldPos = clientEntity.entity->GetPosition();
-        clientEntity.entity->Update(state->deltaTime);
-        Position newPos = clientEntity.entity->GetPosition();
+        PeerEntity entity = kvp.second;
+        Position oldPos = entity.entity->GetPosition();
+        entity.entity->Update(state->deltaTime);
+        Position newPos = entity.entity->GetPosition();
 
-        // Only broadcast if position changed
         if (oldPos.x != newPos.x || oldPos.y != newPos.y)
         {
-            BroadcastEntityState(clientEntity.entity, clientEntity.entityId);
+            int clientId = kvp.first;
+            BroadcastEntityState(entity.entity, clientId);
         }
     }
 }
@@ -185,9 +295,10 @@ void Server::Quit()
     if (terminalThread.joinable())
         terminalThread.join();
 
-    for (auto& clientEntity : peerEntities)
+    for (auto& kvp : peerEntities)
     {
-        delete clientEntity.entity;
+        PeerEntity entity = kvp.second;
+        delete entity.entity;
     }
 
     SDL_DestroyWindow(state->window);
@@ -199,22 +310,6 @@ void Server::Quit()
     SDL_Quit();
 }
 
-void Server::ClientConnected(ENetPeer* peer)
-{
-    SDL_Log("A client connected from %x:%u", peer->address.host, peer->address.port);
-
-    // Create entity for new client
-    ServerEntity* newEntity = new ServerEntity(64, 64);
-    PeerEntity peerEntity{};
-    peerEntity.entity = newEntity;
-    peerEntity.peer = peer;
-    peerEntity.entityId = nextEntityId++;
-
-    peerEntities.push_back(peerEntity);
-
-    BroadcastEntityState(newEntity, peerEntity.entityId);
-}
-
 void Server::TerminalThread()
 {
     std::string line;
@@ -222,7 +317,7 @@ void Server::TerminalThread()
     {
         if (std::getline(std::cin, line))
         {
-            if (line.empty() || line == "quit")
+            if (line.empty() || line == "q")
             {
                 running = false;
             }

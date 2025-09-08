@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.30)
 project(sdl3_first_project)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
@@ -26,6 +26,8 @@ endif ()
 find_package(SDL3_image QUIET)
 if (NOT SDL3_image_FOUND)
     include_dependency(SDL3_image https://github.com/libsdl-org/SDL_image.git release-3.2.4)
+    set(SDL3IMAGE_AVIF OFF CACHE BOOL "" FORCE)
+    set(SDL3IMAGE_VENDORED OFF CACHE BOOL "" FORCE)
 endif ()
 
 # ENet (manual CMake target creation because ENet repo has no modern CMake setup)
@@ -38,7 +40,7 @@ if (NOT ENet_FOUND)
             ${enet_SOURCE_DIR}/*.h
     )
 
-    add_library(enet_lib ${ENET_SRC})
+    add_library(enet_lib STATIC ${ENET_SRC})
     target_include_directories(enet_lib PUBLIC ${enet_SOURCE_DIR}/include)
 
     if (WIN32)

@@ -3,15 +3,14 @@
 
 #include "../common/Common.h"
 #include "../common/Packets.h"
-#include <vector>
 #include <thread>
+#include <map>
 #include "ServerEntity.h"
 
 struct PeerEntity
 {
     ServerEntity* entity;
     ENetPeer* peer;
-    int entityId;
 };
 
 class Server
@@ -22,7 +21,9 @@ private:
 
     ENetHost* server = nullptr;
     std::thread terminalThread;
-    std::vector<PeerEntity> peerEntities = {};
+
+    std::map<int, ENetPeer*> peers = {};
+    std::map<int, PeerEntity> peerEntities = {};
     int nextEntityId = 0;
 
     SDL_AppResult InitSDL();
@@ -32,10 +33,16 @@ public:
     void Run();
     void Quit();
 
-    void BroadcastEntityState(ServerEntity* entity, int entityId);
+    void Event(SDL_Event event);
+    void EnetEvent(ENetEvent enetEvent);
+
+    void BroadcastEntityState(ServerEntity* entity, int clientId);
     SDL_AppResult CreateServer(const char* host);
-    void ClientConnected(ENetPeer* peer);
     void TerminalThread();
+
+    void DisconnectClient(int clientId);
+
+    void PacketReceived(ENetEvent enetEvent);
 
     bool IsRunning() const;
 };
