@@ -16,8 +16,8 @@ void ClientEntity::Render(SDL_Renderer *renderer) const
 
     dest.w = (float)sprite.w;
     dest.h = (float)sprite.h;
-    dest.x = position.x + (float)sprite.w/2.0f;
-    dest.y = position.y + (float)sprite.h/2.0f;
+    dest.x = position.x - (float)sprite.w/2.0f;
+    dest.y = position.y - (float)sprite.h/2.0f;
 
     SDL_RenderTexture(renderer, sprite.texture, nullptr, &dest);
 }

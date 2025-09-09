@@ -8,7 +8,8 @@ enum PacketType
     PACKET_DISCONNECT,
     PACKET_CONNECT,
     PACKET_CLIENT_DATA,
-    PACKET_CREATE_CLIENT_ENTITY
+    PACKET_CREATE_CLIENT_ENTITY,
+    PACKET_POSITION
 };
 
 struct InputPacket
@@ -16,6 +17,14 @@ struct InputPacket
     PacketType type = PACKET_INPUT;
     int clientId;
     bool up, down, left, right;
+};
+
+struct PositionPacket
+{
+    PacketType type = PACKET_POSITION;
+    int clientId;
+    float x;
+    float y;
 };
 
 struct StatePacket

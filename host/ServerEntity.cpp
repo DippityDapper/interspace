@@ -30,6 +30,12 @@ void ServerEntity::Update(float delta)
     position += dir.Normalized() * speed * delta;
 }
 
+void ServerEntity::SetPosition(int x, int y)
+{
+    position.x = x;
+    position.y = y;
+}
+
 Position ServerEntity::GetPosition()
 {
     return position;

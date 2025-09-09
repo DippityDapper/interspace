@@ -96,7 +96,7 @@ SDL_AppResult Game::ConnectToServer(int port, const char* ip)
             switch (event.type)
             {
                 case ENET_EVENT_TYPE_CONNECT:
-                    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Connection to server succeeded");
+                    SDL_Log("Connection to server succeeded");
                     connected = true;
                     break;
                 case ENET_EVENT_TYPE_DISCONNECT:
@@ -146,6 +146,24 @@ void Game::Event(SDL_Event sdlEvent)
     {
         running = false;
         return;
+    }
+
+    if (sdlEvent.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+    {
+        if (sdlEvent.button.button == SDL_BUTTON_LEFT)
+        {
+            int mouseX = sdlEvent.button.x;
+            int mouseY = sdlEvent.button.y;
+
+            PositionPacket positionPacket;
+            positionPacket.type = PACKET_POSITION;
+            positionPacket.clientId = clientId;
+            positionPacket.x = mouseX;
+            positionPacket.y = mouseY;
+
+            ENetPacket* packet = enet_packet_create(&positionPacket, sizeof(PositionPacket), ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send(server, 0, packet);
+        }
     }
     if (sdlEvent.type == SDL_EVENT_KEY_DOWN)
     {
@@ -240,6 +258,12 @@ void Game::EnetEvent(ENetEvent enetEvent)
         case ENET_EVENT_TYPE_RECEIVE:
         {
             PacketReceived(enetEvent);
+            break;
+        }
+        case ENET_EVENT_TYPE_DISCONNECT:
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Disconnected from server.");
+            running = false;
             break;
         }
         default:

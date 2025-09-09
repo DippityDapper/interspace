@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <random>
 #include "Server.h"
 
 void Server::Init()
@@ -101,6 +102,19 @@ void Server::Event(SDL_Event event)
 
 void Server::DisconnectClient(int clientId)
 {
+    RemovePeer(clientId);
+
+    ClientDataPacket clientDataPacket;
+    clientDataPacket.type = PACKET_DISCONNECT;
+    clientDataPacket.clientId = clientId;
+
+    ENetPacket* packet = enet_packet_create(&clientDataPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
+    enet_host_broadcast(server, 0, packet);
+    SDL_Log("Peer disconnected: %d", clientId);
+}
+
+void Server::RemovePeer(int clientId)
+{
     if (peers.contains(clientId))
     {
         peers.erase(clientId);
@@ -111,13 +125,7 @@ void Server::DisconnectClient(int clientId)
         delete entity.entity;
         peerEntities.erase(clientId);
     }
-
-    ClientDataPacket clientDataPacket;
-    clientDataPacket.type = PACKET_DISCONNECT;
-    clientDataPacket.clientId = clientId;
-
-    ENetPacket* packet = enet_packet_create(&clientDataPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
-    enet_host_broadcast(server, 0, packet);
+    SDL_Log("Peer Entity removed: %d", clientId);
 }
 
 void Server::PacketReceived(ENetEvent enetEvent)
@@ -141,8 +149,12 @@ void Server::PacketReceived(ENetEvent enetEvent)
         bool invalidId = true;
         while (invalidId)
         {
-            std::srand(std::time({}));
-            clientId = std::rand();
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<> distrib(0, 100000);
+
+            clientId = distrib(gen);
+
             if (!peerEntities.contains(clientId))
             {
                 invalidId = false;
@@ -176,19 +188,8 @@ void Server::PacketReceived(ENetEvent enetEvent)
     {
         DisconnectPacket* disconnectPacket = (DisconnectPacket*)enetEvent.packet->data;
         int clientId = disconnectPacket->clientId;
-        SDL_Log("Peer disconnected: %d", clientId);
 
-        PeerEntity entity = peerEntities[clientId];
-        delete entity.entity;
-        peerEntities.erase(clientId);
-        peers.erase(clientId);
-
-        ClientDataPacket clientDataPacket;
-        clientDataPacket.type = PACKET_DISCONNECT;
-        clientDataPacket.clientId = clientId;
-
-        ENetPacket* packet = enet_packet_create(&clientDataPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
-        enet_host_broadcast(server, 0, packet);
+        DisconnectClient(clientId);
     }
     if (*packetType == PACKET_CREATE_CLIENT_ENTITY)
     {
@@ -196,7 +197,7 @@ void Server::PacketReceived(ENetEvent enetEvent)
         ENetPeer* peer = enetEvent.peer;
         SDL_Log("Server entity created for: %d", clientDataPacket->clientId);
 
-        ServerEntity* newEntity = new ServerEntity(64, 64);
+        ServerEntity* newEntity = new ServerEntity(0, 0);
         PeerEntity peerEntity;
         peerEntity.entity = newEntity;
         peerEntity.peer = peer;
@@ -211,6 +212,14 @@ void Server::PacketReceived(ENetEvent enetEvent)
 
         ENetPacket* packet = enet_packet_create(&statePacket, sizeof(StatePacket), ENET_PACKET_FLAG_RELIABLE);
         enet_host_broadcast(server, 0, packet);
+    }
+    if (*packetType == PACKET_POSITION)
+    {
+        PositionPacket* positionPacket = (PositionPacket*)enetEvent.packet->data;
+        PeerEntity entity = peerEntities[positionPacket->clientId];
+
+        entity.entity->SetPosition(positionPacket->x, positionPacket->y);
+        BroadcastEntityState(entity.entity, positionPacket->clientId);
     }
 
     enet_packet_destroy(enetEvent.packet);
@@ -232,22 +241,7 @@ void Server::EnetEvent(ENetEvent enetEvent)
                 int clientId = kvp.first;
                 if (peer == enetEvent.peer)
                 {
-                    if (peers.contains(clientId))
-                    {
-                        peers.erase(clientId);
-                    }
-                    if (peerEntities.contains(clientId))
-                    {
-                        PeerEntity entity = peerEntities[clientId];
-                        delete entity.entity;
-                        peerEntities.erase(clientId);
-                    }
-                    ClientDataPacket clientDataPacket;
-                    clientDataPacket.type = PACKET_DISCONNECT;
-                    clientDataPacket.clientId = clientId;
-
-                    ENetPacket* packet = enet_packet_create(&clientDataPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
-                    enet_host_broadcast(server, 0, packet);
+                    DisconnectClient(clientId);
                     break;
                 }
             }
@@ -295,10 +289,10 @@ void Server::Quit()
     if (terminalThread.joinable())
         terminalThread.join();
 
-    for (auto& kvp : peerEntities)
+    for (auto& kvp : std::map<int, PeerEntity>(peerEntities))
     {
-        PeerEntity entity = kvp.second;
-        delete entity.entity;
+        int clientId = kvp.first;
+        RemovePeer(clientId);
     }
 
     SDL_DestroyWindow(state->window);

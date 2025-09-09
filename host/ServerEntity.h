@@ -22,6 +22,7 @@ private:
 public:
     ServerEntity(float x, float y);
     void Update(float delta);
+    void SetPosition(int x, int y);
     Position GetPosition();
     void SetInputs(bool up, bool down, bool left, bool right);
 };

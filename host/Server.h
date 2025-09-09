@@ -40,6 +40,8 @@ public:
     SDL_AppResult CreateServer(const char* host);
     void TerminalThread();
 
+    void RemovePeer(int clientId);
+
     void DisconnectClient(int clientId);
 
     void PacketReceived(ENetEvent enetEvent);
