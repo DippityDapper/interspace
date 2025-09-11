@@ -31,12 +31,11 @@ void Game::Init()
     }
 
     SDL_Texture* tileTexture = ResourceLoader::LoadTexture(state->renderer, "tiles/station_floor_tile_1.png");
-    for (int x = 0; x < 25; x++)
-    for (int y = 0; y < 25; y++)
+    grid.InitializeGrid(25, 25, tileTexture->w, tileTexture->h);
+    for (auto& kvp : grid.tiles)
     {
-        Position gridPosition{(float)x, (float)y};
-        Tile tile{gridPosition, tileTexture};
-        grid.emplace(gridPosition, tile);
+        Tile* tile = &kvp.second;
+        tile->texture = tileTexture;
     }
 }
 
@@ -273,7 +272,7 @@ void Game::Run()
     SDL_SetRenderDrawColor(state->renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(state->renderer);
 
-    for (auto& kvp : grid)
+    for (auto& kvp : grid.tiles)
     {
         kvp.second.Render(state->renderer);
     }

@@ -30,7 +30,7 @@ void Server::Init()
     terminalThread = std::thread(&Server::TerminalThread, this);
 
     astar.SetHeuristic(AStar::MANHATTAN);
-    astar.SetGrid(25, 25);
+    grid.InitializeGrid(25, 25, 64, 64);
 }
 
 SDL_AppResult Server::InitSDL()
@@ -77,7 +77,7 @@ void Server::BroadcastEntityState(ServerEntity *entity, int clientId)
     StatePacket statePacket;
     statePacket.type = PACKET_STATE;
     statePacket.clientId = clientId;
-    Position pos = entity->GetPosition();
+    Vec2 pos = entity->GetPosition();
     statePacket.x = pos.x;
     statePacket.y = pos.y;
 
@@ -215,13 +215,13 @@ void Server::PacketReceived(ENetEvent enetEvent)
         PositionPacket* positionPacket = (PositionPacket*)enetEvent.packet->data;
         PeerEntity entity = peerEntities[positionPacket->clientId];
 
-        Position startPosition{entity.entity->GetPosition()};
-        Position goalPosition{positionPacket->x, positionPacket->y};
+        Vec2 startPosition{entity.entity->GetPosition()};
+        Vec2 goalPosition{positionPacket->x, positionPacket->y};
 
-        Position startGridPosition{startPosition.ConvertToCoordinateSystem(64, 64)};
-        Position goalGridPosition{goalPosition.ConvertToCoordinateSystem(64, 64)};
+        Vec2 startGridPosition{grid.GlobalToLocal(startPosition)};
+        Vec2 goalGridPosition{grid.GlobalToLocal(goalPosition)};
 
-        std::vector<Position> path = astar.FindPath(startGridPosition, goalGridPosition);
+        std::vector<Vec2> path = astar.FindPath(startGridPosition, goalGridPosition, grid);
         entity.entity->SetPath(path);
     }
 
@@ -275,9 +275,9 @@ void Server::Run()
     for (auto& kvp : peerEntities)
     {
         PeerEntity entity = kvp.second;
-        Position oldPos = entity.entity->GetPosition();
+        Vec2 oldPos = entity.entity->GetPosition();
         entity.entity->Update(state->deltaTime);
-        Position newPos = entity.entity->GetPosition();
+        Vec2 newPos = entity.entity->GetPosition();
 
         if (oldPos.x != newPos.x || oldPos.y != newPos.y)
         {

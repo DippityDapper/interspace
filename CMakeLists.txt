@@ -58,6 +58,8 @@ add_executable(game_host
         server/ServerEntity.h
         common/AStar.cpp
         common/AStar.h
+        common/Grid.cpp
+        common/Grid.h
 )
 
 add_executable(game_client
@@ -68,6 +70,10 @@ add_executable(game_client
         client/ClientEntity.h
         client/ResourceLoader.cpp
         client/ResourceLoader.h
+        client/NetworkManager.cpp
+        client/NetworkManager.h
+        common/Grid.cpp
+        common/Grid.h
 )
 
 set_target_properties(game_host PROPERTIES WIN32_EXECUTABLE FALSE)

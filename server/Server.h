@@ -7,6 +7,7 @@
 #include <map>
 #include "ServerEntity.h"
 #include "../common/AStar.h"
+#include "../common/Grid.h"
 
 struct PeerEntity
 {
@@ -23,9 +24,11 @@ private:
     ENetHost* server = nullptr;
     std::thread terminalThread;
 
-    std::map<int, ENetPeer*> peers = {};
-    std::map<int, PeerEntity> peerEntities = {};
+    std::map<int, ENetPeer*> peers{};
+    std::map<int, PeerEntity> peerEntities{};
+
     AStar::AStar astar{};
+    Grid grid{};
 
     SDL_AppResult InitSDL();
     SDL_AppResult InitEnet();

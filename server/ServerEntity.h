@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "SDL3/SDL.h"
-#include "../common/Position.h"
+#include "../common/Vec2.h"
 
 enum Directions
 {
@@ -16,19 +16,19 @@ enum Directions
 class ServerEntity
 {
 private:
-    Position position;
+    Vec2 position;
     bool inputs[4] = {false, false, false, false};
 
     float speed = 300;
-    std::vector<Position> path{};
-    Position target{};
+    std::vector<Vec2> path{};
+    Vec2 target{};
     bool isPathing = false;
 public:
     ServerEntity(float x, float y);
     void Update(float delta);
     void SetPosition(float x, float y);
-    Position GetPosition();
-    void SetPath(const std::vector<Position>& newPath);
+    Vec2 GetPosition();
+    void SetPath(const std::vector<Vec2>& newPath);
 };
 
 #endif

@@ -6,7 +6,7 @@
 #include <map>
 #include "ResourceLoader.h"
 #include "ClientEntity.h"
-#include "../common/Tile.h"
+#include "../common/Grid.h"
 
 class Game
 {
@@ -25,7 +25,7 @@ private:
     SDL_AppResult InitEnet();
 
 public:
-    std::map<Position, Tile> grid;
+    Grid grid{};
 
 public:
     void Init();

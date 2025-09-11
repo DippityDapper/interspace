@@ -3,7 +3,7 @@
 
 #include "SDL3/SDL.h"
 #include "ResourceLoader.h"
-#include "../common/Position.h"
+#include "../common/Vec2.h"
 
 struct Sprite
 {
@@ -24,7 +24,7 @@ class ClientEntity
 {
 private:
     Sprite sprite;
-    Position position;
+    Vec2 position;
     bool inputs[4] = {false, false, false, false};
 public:
     ClientEntity(SDL_Renderer* renderer, const char* path, float x, float y);

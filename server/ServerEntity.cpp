@@ -11,13 +11,13 @@ void ServerEntity::Update(float delta)
     if (!isPathing && !path.empty())
     {
         isPathing = true;
-        target = path.front() * 64 + Position{32, 32};
+        target = path.front();
 
         path.erase(path.begin());
     }
     if (isPathing)
     {
-        Position direction = (target - position).Normalized();
+        Vec2 direction = (target - position).Normalized();
         position += direction * speed * delta;
 
         if (position.DistanceTo(target) < 5)
@@ -34,15 +34,15 @@ void ServerEntity::SetPosition(float x, float y)
     position.y = y;
 }
 
-Position ServerEntity::GetPosition()
+Vec2 ServerEntity::GetPosition()
 {
     return position;
 }
 
-void ServerEntity::SetPath(const std::vector<Position>& newPath)
+void ServerEntity::SetPath(const std::vector<Vec2>& newPath)
 {
     path.clear();
-    for (Position p : newPath)
+    for (Vec2 p : newPath)
     {
         path.push_back(p);
     }

@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include "Tile.h"
+#include "Grid.h"
 
 namespace AStar
 {
@@ -16,8 +17,8 @@ namespace AStar
 
     struct Node
     {
-        Position position;
-        Position parentPosition;
+        Vec2 position;
+        Vec2 parentPosition;
 
         float gCost{};
         float hCost{};
@@ -37,16 +38,14 @@ namespace AStar
     class AStar
     {
     private:
-        std::map<Position, Tile> grid;
         Heuristic heuristic = MANHATTAN;
 
     private:
-        std::vector<Position> ReconstructPath(Node endNode, std::map<Position, Node> closedDict);
-        float GetHCost(Position current, Position goal);
+        std::vector<Vec2> ReconstructPath(Node endNode, std::map<Vec2, Node> closedDict, const Grid grid);
+        float GetHCost(Vec2 current, Vec2 goal);
 
     public:
-        std::vector<Position> FindPath(Position start, Position goal);
-        void SetGrid(int sizeX, int sizeY);
+        std::vector<Vec2> FindPath(Vec2 start, Vec2 goal, const Grid grid);
         void SetHeuristic(Heuristic h);
     };
 }
