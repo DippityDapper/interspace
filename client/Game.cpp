@@ -22,10 +22,21 @@ void Game::Init()
         return;
     }
 
-    if (ConnectToServer(33333, "localhost") == SDL_APP_FAILURE)
+    //const char* ip = "192.168.1.172";
+    const char* ip = "localhost";
+    if (ConnectToServer(33333, ip) == SDL_APP_FAILURE)
     {
         running = false;
         return;
+    }
+
+    SDL_Texture* tileTexture = ResourceLoader::LoadTexture(state->renderer, "tiles/station_floor_tile_1.png");
+    for (int x = 0; x < 25; x++)
+    for (int y = 0; y < 25; y++)
+    {
+        Position gridPosition{(float)x, (float)y};
+        Tile tile{gridPosition, tileTexture};
+        grid.emplace(gridPosition, tile);
     }
 }
 
@@ -74,6 +85,7 @@ SDL_AppResult Game::ConnectToServer(int port, const char* ip)
     ENetAddress address;
 
     enet_address_set_host(&address, ip);
+    SDL_Log("Address: %u", address.host);
     address.port = port;
 
     server = enet_host_connect(client, &address, 2, 0);
@@ -121,20 +133,6 @@ SDL_AppResult Game::ConnectToServer(int port, const char* ip)
     return SDL_APP_CONTINUE;
 }
 
-void Game::SendInputPacket(bool up, bool down, bool left, bool right)
-{
-    InputPacket inputPacket;
-    inputPacket.type = PACKET_INPUT;
-    inputPacket.clientId = clientId;
-    inputPacket.up = up;
-    inputPacket.down = down;
-    inputPacket.left = left;
-    inputPacket.right = right;
-
-    ENetPacket* packet = enet_packet_create(&inputPacket, sizeof(InputPacket), ENET_PACKET_FLAG_RELIABLE);
-    enet_peer_send(server, 0, packet);
-}
-
 bool Game::IsRunning() const
 {
     return running;
@@ -152,8 +150,8 @@ void Game::Event(SDL_Event sdlEvent)
     {
         if (sdlEvent.button.button == SDL_BUTTON_LEFT)
         {
-            int mouseX = sdlEvent.button.x;
-            int mouseY = sdlEvent.button.y;
+            float mouseX = sdlEvent.button.x;
+            float mouseY = sdlEvent.button.y;
 
             PositionPacket positionPacket;
             positionPacket.type = PACKET_POSITION;
@@ -182,26 +180,6 @@ void Game::Event(SDL_Event sdlEvent)
 
             return;
         }
-
-        if (sdlEvent.key.key == SDLK_W)
-            inputState[0] = true;
-        if (sdlEvent.key.key == SDLK_S)
-            inputState[1] = true;
-        if (sdlEvent.key.key == SDLK_A)
-            inputState[2] = true;
-        if (sdlEvent.key.key == SDLK_D)
-            inputState[3] = true;
-    }
-    if (sdlEvent.type == SDL_EVENT_KEY_UP)
-    {
-        if (sdlEvent.key.key == SDLK_W)
-            inputState[0] = false;
-        if (sdlEvent.key.key == SDLK_S)
-            inputState[1] = false;
-        if (sdlEvent.key.key == SDLK_A)
-            inputState[2] = false;
-        if (sdlEvent.key.key == SDLK_D)
-            inputState[3] = false;
     }
 }
 
@@ -244,7 +222,7 @@ void Game::PacketReceived(ENetEvent enetEvent)
         StatePacket* statePacket = (StatePacket*)enetEvent.packet->data;
         SDL_Log("Client entity created for: %d", statePacket->clientId);
 
-        ClientEntity* entity = new ClientEntity(state->renderer, "player/1.png", statePacket->x, statePacket->y);
+        ClientEntity* entity = new ClientEntity(state->renderer, "player/crew_1.png", statePacket->x, statePacket->y);
         entities[statePacket->clientId] = entity;
     }
 
@@ -288,27 +266,17 @@ void Game::Run()
         Event(sdlEvent);
     }
 
-    bool inputChanged = false;
-    for (int i = 0; i < 4; i++)
-    {
-        if (inputState[i] != lastInputState[i])
-        {
-            inputChanged = true;
-            lastInputState[i] = inputState[i];
-        }
-    }
-
-    if (inputChanged)
-    {
-        SendInputPacket(inputState[0], inputState[1], inputState[2], inputState[3]);
-    }
-
     state->lastTick = state->currentTick;
     state->currentTick = SDL_GetTicks();
     state->deltaTime = (float)(state->currentTick - state->lastTick) / 1000.0f;
 
     SDL_SetRenderDrawColor(state->renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(state->renderer);
+
+    for (auto& kvp : grid)
+    {
+        kvp.second.Render(state->renderer);
+    }
 
     for (auto& kvp : entities)
     {

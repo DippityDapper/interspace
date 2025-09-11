@@ -20,6 +20,26 @@ struct Position
         return *this;
     }
 
+    Position operator+(const Position& rhs) const
+    {
+        return { x + rhs.x, y + rhs.y };
+    }
+
+    Position operator-(const Position& rhs) const
+    {
+        return { x - rhs.x, y - rhs.y };
+    }
+
+    bool operator==(const Position& rhs) const
+    {
+        return x == rhs.x && y == rhs.y;
+    }
+
+    bool operator<(const Position& rhs) const
+    {
+        return (x < rhs.x) || (x == rhs.x && y < rhs.y);
+    }
+
     Position Normalized() const
     {
         float magnitude = std::sqrt(x * x + y * y);
@@ -29,6 +49,19 @@ struct Position
 
         return { x / magnitude, y / magnitude };
     }
+
+    float DistanceTo(Position to) const
+    {
+        return std::sqrt((x - to.x) * (x - to.x) + (y - to.y) * (y - to.y));
+    }
+
+    Position ConvertToCoordinateSystem(float sizeX, float sizeY)
+    {
+        float dx = std::floor(x / sizeX);
+        float dy = std::floor(y / sizeY);
+        return {dx, dy};
+    }
 };
+
 
 #endif

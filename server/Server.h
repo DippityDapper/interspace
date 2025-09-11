@@ -6,6 +6,7 @@
 #include <thread>
 #include <map>
 #include "ServerEntity.h"
+#include "../common/AStar.h"
 
 struct PeerEntity
 {
@@ -24,7 +25,7 @@ private:
 
     std::map<int, ENetPeer*> peers = {};
     std::map<int, PeerEntity> peerEntities = {};
-    int nextEntityId = 0;
+    AStar::AStar astar{};
 
     SDL_AppResult InitSDL();
     SDL_AppResult InitEnet();

@@ -6,6 +6,7 @@
 #include <map>
 #include "ResourceLoader.h"
 #include "ClientEntity.h"
+#include "../common/Tile.h"
 
 class Game
 {
@@ -17,14 +18,14 @@ private:
     ENetHost* client = nullptr;
     ENetPeer* server = nullptr;
 
-    bool inputState[4] = {false, false, false, false}; // up, down, left, right
-    bool lastInputState[4] = {false, false, false, false};
-
     std::map<int, ClientEntity*> entities = {};
 
 private:
     SDL_AppResult InitSDL();
     SDL_AppResult InitEnet();
+
+public:
+    std::map<Position, Tile> grid;
 
 public:
     void Init();
@@ -36,7 +37,6 @@ public:
 
     SDL_AppResult CreateClient();
     SDL_AppResult ConnectToServer(int port, const char* ip);
-    void SendInputPacket(bool up, bool down, bool left, bool right);
 
     void PacketReceived(ENetEvent enetEvent);
 

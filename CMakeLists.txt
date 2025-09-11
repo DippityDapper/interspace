@@ -51,11 +51,13 @@ if (NOT ENet_FOUND)
 endif ()
 
 add_executable(game_host
-        host/main.cpp
-        host/Server.cpp
-        host/Server.h
-        host/ServerEntity.cpp
-        host/ServerEntity.h
+        server/main.cpp
+        server/Server.cpp
+        server/Server.h
+        server/ServerEntity.cpp
+        server/ServerEntity.h
+        common/AStar.cpp
+        common/AStar.h
 )
 
 add_executable(game_client

@@ -3,20 +3,12 @@
 
 enum PacketType
 {
-    PACKET_INPUT,
     PACKET_STATE,
     PACKET_DISCONNECT,
     PACKET_CONNECT,
     PACKET_CLIENT_DATA,
     PACKET_CREATE_CLIENT_ENTITY,
     PACKET_POSITION
-};
-
-struct InputPacket
-{
-    PacketType type = PACKET_INPUT;
-    int clientId;
-    bool up, down, left, right;
 };
 
 struct PositionPacket

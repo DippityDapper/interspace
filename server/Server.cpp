@@ -19,13 +19,18 @@ void Server::Init()
         return;
     }
 
-    if (CreateServer("localhost") == SDL_APP_FAILURE)
+    //const char* ip = "192.168.1.172";
+    const char* ip = "localhost";
+    if (CreateServer(ip) == SDL_APP_FAILURE)
     {
         running = false;
         return;
     }
 
     terminalThread = std::thread(&Server::TerminalThread, this);
+
+    astar.SetHeuristic(AStar::MANHATTAN);
+    astar.SetGrid(25, 25);
 }
 
 SDL_AppResult Server::InitSDL()
@@ -132,14 +137,6 @@ void Server::PacketReceived(ENetEvent enetEvent)
 {
     PacketType* packetType = (PacketType*)enetEvent.packet->data;
 
-    if (*packetType == PACKET_INPUT)
-    {
-        InputPacket* inputPacket = (InputPacket*)enetEvent.packet->data;
-        int entityId = inputPacket->clientId;
-
-        PeerEntity entity = peerEntities[entityId];
-        entity.entity->SetInputs(inputPacket->up, inputPacket->down, inputPacket->left, inputPacket->right);
-    }
     if (*packetType == PACKET_CONNECT)
     {
         ClientDataPacket clientDataPacket;
@@ -197,8 +194,8 @@ void Server::PacketReceived(ENetEvent enetEvent)
         ENetPeer* peer = enetEvent.peer;
         SDL_Log("Server entity created for: %d", clientDataPacket->clientId);
 
-        ServerEntity* newEntity = new ServerEntity(0, 0);
-        PeerEntity peerEntity;
+        ServerEntity* newEntity = new ServerEntity(320, 180);
+        PeerEntity peerEntity{};
         peerEntity.entity = newEntity;
         peerEntity.peer = peer;
 
@@ -218,8 +215,14 @@ void Server::PacketReceived(ENetEvent enetEvent)
         PositionPacket* positionPacket = (PositionPacket*)enetEvent.packet->data;
         PeerEntity entity = peerEntities[positionPacket->clientId];
 
-        entity.entity->SetPosition(positionPacket->x, positionPacket->y);
-        BroadcastEntityState(entity.entity, positionPacket->clientId);
+        Position startPosition{entity.entity->GetPosition()};
+        Position goalPosition{positionPacket->x, positionPacket->y};
+
+        Position startGridPosition{startPosition.ConvertToCoordinateSystem(64, 64)};
+        Position goalGridPosition{goalPosition.ConvertToCoordinateSystem(64, 64)};
+
+        std::vector<Position> path = astar.FindPath(startGridPosition, goalGridPosition);
+        entity.entity->SetPath(path);
     }
 
     enet_packet_destroy(enetEvent.packet);
