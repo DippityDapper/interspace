@@ -30,7 +30,7 @@ if (NOT SDL3_image_FOUND)
     set(SDL3IMAGE_VENDORED OFF CACHE BOOL "" FORCE)
 endif ()
 
-# ENet (manual CMake target creation because ENet repo has no modern CMake setup)
+# ENet
 find_package(ENet QUIET)
 if (NOT ENet_FOUND)
     include_dependency(enet https://github.com/lsalzman/enet.git v1.3.18)
@@ -51,29 +51,37 @@ if (NOT ENet_FOUND)
 endif ()
 
 add_executable(game_host
-        server/main.cpp
-        server/Server.cpp
-        server/Server.h
-        server/ServerEntity.cpp
-        server/ServerEntity.h
+        server/src/main.cpp
+        server/src/Server.cpp
+        server/src/Server.h
+        server/src/ServerEntity.cpp
+        server/src/ServerEntity.h
         common/AStar.cpp
         common/AStar.h
         common/Grid.cpp
         common/Grid.h
+        common/CFGParser.cpp
+        common/CFGParser.h
 )
 
 add_executable(game_client
-        client/main.cpp
-        client/Game.cpp
-        client/Game.h
-        client/ClientEntity.cpp
-        client/ClientEntity.h
-        client/ResourceLoader.cpp
-        client/ResourceLoader.h
-        client/NetworkManager.cpp
-        client/NetworkManager.h
+        client/src/main.cpp
+        client/src/Game.cpp
+        client/src/Game.h
+        client/src/ClientEntity.cpp
+        client/src/ClientEntity.h
+        client/src/ResourceLoader.cpp
+        client/src/ResourceLoader.h
+        client/src/NetworkManager.cpp
+        client/src/NetworkManager.h
         common/Grid.cpp
         common/Grid.h
+        client/src/Area.cpp
+        client/src/Area.h
+        client/src/World.cpp
+        client/src/World.h
+        common/CFGParser.cpp
+        common/CFGParser.h
 )
 
 set_target_properties(game_host PROPERTIES WIN32_EXECUTABLE FALSE)

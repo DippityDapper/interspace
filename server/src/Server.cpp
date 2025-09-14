@@ -244,6 +244,7 @@ void Server::EnetEvent(ENetEvent enetEvent)
                 int clientId = kvp.first;
                 if (peer == enetEvent.peer)
                 {
+                    SDL_Log("Unexpected disconnect for client : %u", clientId);
                     DisconnectClient(clientId);
                     break;
                 }

@@ -17,8 +17,8 @@ namespace AStar
 
     struct Node
     {
-        Vec2 position;
-        Vec2 parentPosition;
+        Vec2 position{0,0};
+        Vec2 parentPosition{0,0};
 
         float gCost{};
         float hCost{};

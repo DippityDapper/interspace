@@ -8,6 +8,18 @@ struct Vec2
     float x = 0;
     float y = 0;
 
+    Vec2(float _x, float _y)
+    {
+        x = _x;
+        y = _y;
+    }
+
+    Vec2(int _x, int _y)
+    {
+        x = _x;
+        y = _y;
+    }
+
     Vec2 operator*(float rhs) const
     {
         return { x * rhs, y * rhs };

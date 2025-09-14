@@ -3,7 +3,7 @@
 
 #include "SDL3/SDL.h"
 #include "ResourceLoader.h"
-#include "../common/Vec2.h"
+#include "../../common/Vec2.h"
 
 struct Sprite
 {
@@ -12,20 +12,11 @@ struct Sprite
     int h = 0;
 };
 
-enum Directions
-{
-    UP = 0,
-    DOWN = 1,
-    LEFT = 2,
-    RIGHT = 3
-};
-
 class ClientEntity
 {
 private:
-    Sprite sprite;
-    Vec2 position;
-    bool inputs[4] = {false, false, false, false};
+    Sprite sprite{};
+    Vec2 position{0,0};
 public:
     ClientEntity(SDL_Renderer* renderer, const char* path, float x, float y);
     void Render(SDL_Renderer* renderer) const;

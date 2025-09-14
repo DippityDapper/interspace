@@ -6,7 +6,7 @@
 
 struct Tile
 {
-    Vec2 gridPosition{};
+    Vec2 gridPosition{0,0};
     SDL_Texture* texture = nullptr;
 
     void Render(SDL_Renderer *renderer) const

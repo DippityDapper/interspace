@@ -7,11 +7,6 @@
 
 class Grid
 {
-private:
-
-private:
-
-
 public:
     std::map<Vec2, Tile> tiles{};
     Vec2 gridSize{0, 0};

@@ -74,8 +74,6 @@ std::vector<Vec2> AStar::AStar::FindPath(Vec2 start, Vec2 goal, const Grid grid)
                     };
         }
 
-
-
         for (Vec2 direction : directions)
         {
             float x = direction.x;
@@ -127,6 +125,7 @@ std::vector<Vec2> AStar::AStar::ReconstructPath(Node endNode, std::map<Vec2, Nod
         current = closedDict[current.parentPosition];
     }
 
+    path.erase(path.end());
     std::reverse(path.begin(), path.end());
     return path;
 }

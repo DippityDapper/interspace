@@ -13,6 +13,8 @@ void Grid::InitializeGrid(int gridX, int gridY, int tileX, int tileY)
     for (int y = 0; y < gridY; ++y)
     for (int x = 0; x < gridX; ++x)
     {
+        if (x > 4 && x < 15 && y > 4 && y < 15)
+            continue;
         Vec2 position{(float)x, (float)y};
         Tile tile{position, nullptr};
 

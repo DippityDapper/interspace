@@ -3,15 +3,16 @@
 int main(int argc, char* argv[])
 {
     Game* game = new Game();
-
     game->Init();
 
     while (game->IsRunning())
     {
-        game->Run();
+        game->HandleEvents();
+        game->Update();
+        game->Render();
     }
 
-    game->Quit();
+    game->Clean();
 
     delete game;
     return 0;

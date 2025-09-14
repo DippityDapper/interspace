@@ -1,13 +1,13 @@
 #ifndef SDL3_FIRST_PROJECT_SERVER_H
 #define SDL3_FIRST_PROJECT_SERVER_H
 
-#include "../common/Common.h"
-#include "../common/Packets.h"
+#include "../../common/Common.h"
+#include "../../common/Packets.h"
 #include <thread>
 #include <map>
 #include "ServerEntity.h"
-#include "../common/AStar.h"
-#include "../common/Grid.h"
+#include "../../common/AStar.h"
+#include "../../common/Grid.h"
 
 struct PeerEntity
 {
