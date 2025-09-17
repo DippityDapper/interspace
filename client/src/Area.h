@@ -17,7 +17,7 @@ public:
     SDL_AppResult Init();
 
 public:
-    void RenderTiles(SDL_Renderer *renderer);
+    void RenderTiles(SDL_Renderer *renderer, Camera& camera);
 };
 
 

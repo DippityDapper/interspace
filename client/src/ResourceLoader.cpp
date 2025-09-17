@@ -17,6 +17,7 @@ SDL_Texture* ResourceLoader::LoadTexture(SDL_Renderer *renderer, const char *pat
     }
 
     SDL_Texture *texture = IMG_LoadTexture(renderer, fullPath);
+    SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
     if (!texture)
     {
         SDL_Log("IMG_LoadTexture failed: %s", SDL_GetError());

@@ -9,6 +9,7 @@
 #include "../../common/src/Grid.h"
 #include "NetworkManager.h"
 #include "World.h"
+#include "Camera.h"
 
 class Game
 {
@@ -20,6 +21,7 @@ private:
 
 public:
     static Appstate* state;
+    Camera camera{};
 
 private:
     SDL_AppResult InitSDL();

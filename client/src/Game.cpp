@@ -92,8 +92,12 @@ void Game::HandleEvents()
                 PositionPacket positionPacket;
                 positionPacket.type = PACKET_POSITION;
                 positionPacket.clientId = networkManager.clientId;
-                positionPacket.x = mouseX;
-                positionPacket.y = mouseY;
+
+                int winW = 0, winH = 0;
+                SDL_GetWindowSize(state->window, &winW, &winH);
+
+                positionPacket.x = camera.position.x + mouseX / camera.zoom;
+                positionPacket.y = camera.position.y + mouseY / camera.zoom;
 
                 ENetPacket* packet = enet_packet_create(&positionPacket, sizeof(PositionPacket), ENET_PACKET_FLAG_RELIABLE);
                 enet_peer_send(networkManager.server, 0, packet);
@@ -108,6 +112,7 @@ void Game::HandleEvents()
                 return;
             }
         }
+        camera.HandleEvents(sdlEvent);
     }
 }
 
@@ -119,6 +124,8 @@ void Game::Update()
     state->lastTick = state->currentTick;
     state->currentTick = SDL_GetTicks();
     state->deltaTime = (float)(state->currentTick - state->lastTick) / 1000.0f;
+
+    camera.Update(state->deltaTime);
 }
 
 void Game::Render()
@@ -126,7 +133,7 @@ void Game::Render()
     SDL_SetRenderDrawColor(state->renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(state->renderer);
 
-    world.Render(state->renderer);
+    world.Render(state->renderer, camera);
 
     SDL_RenderPresent(state->renderer);
 }

@@ -18,10 +18,10 @@ SDL_AppResult Area::Init()
     return SDL_APP_SUCCESS;
 }
 
-void Area::RenderTiles(SDL_Renderer *renderer)
+void Area::RenderTiles(SDL_Renderer *renderer, Camera& camera)
 {
     for (auto& kvp : grid.tiles)
     {
-        kvp.second.Render(renderer);
+        kvp.second.Render(renderer, camera);
     }
 }

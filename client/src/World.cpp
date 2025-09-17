@@ -40,18 +40,18 @@ Area* World::GetCurrentArea()
     return &areas[currentAreaPosition];
 }
 
-void World::Render(SDL_Renderer *renderer)
+void World::Render(SDL_Renderer *renderer, Camera& camera)
 {
     Area* currentArea = GetCurrentArea();
-    currentArea->RenderTiles(renderer);
-    RenderEntities(renderer);
+    currentArea->RenderTiles(renderer, camera);
+    RenderEntities(renderer, camera);
 }
 
-void World::RenderEntities(SDL_Renderer *renderer)
+void World::RenderEntities(SDL_Renderer *renderer, Camera& camera)
 {
     for (auto& kvp : entities)
     {
-        kvp.second->Render(renderer);
+        kvp.second->Render(renderer, camera);
     }
 }
 

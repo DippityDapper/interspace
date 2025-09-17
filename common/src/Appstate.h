@@ -8,6 +8,8 @@ struct Appstate
 {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
+
+
     uint64_t lastTick = 0;
     uint64_t currentTick = 0;
     float deltaTime = 0;

@@ -4,6 +4,7 @@
 #include "SDL3/SDL.h"
 #include "ResourceLoader.h"
 #include "../../common/src/Vec2.h"
+#include "Camera.h"
 
 struct Sprite
 {
@@ -19,7 +20,7 @@ private:
     Vec2 position{0,0};
 public:
     ClientEntity(SDL_Renderer* renderer, const char* path, float x, float y);
-    void Render(SDL_Renderer* renderer) const;
+    void Render(SDL_Renderer* renderer, Camera& camera) const;
     void SetPosition(float x, float y);
 };
 

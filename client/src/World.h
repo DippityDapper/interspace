@@ -5,6 +5,7 @@
 #include <map>
 #include "SDL3/SDL.h"
 #include "Area.h"
+#include "Camera.h"
 
 class World
 {
@@ -17,8 +18,8 @@ public:
 public:
     SDL_AppResult Init(Vec2 _worldSize);
     Area* GetCurrentArea();
-    void Render(SDL_Renderer* renderer);
-    void RenderEntities(SDL_Renderer *renderer);
+    void Render(SDL_Renderer* renderer, Camera& camera);
+    void RenderEntities(SDL_Renderer *renderer, Camera& camera);
     void CleanEntities();
 
 private:
