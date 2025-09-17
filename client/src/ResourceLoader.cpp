@@ -5,7 +5,7 @@ std::unordered_map<std::string, SDL_Texture*> ResourceLoader::textures;
 SDL_Texture* ResourceLoader::LoadTexture(SDL_Renderer *renderer, const char *path)
 {
     char *fullPath = nullptr;
-    SDL_asprintf(&fullPath, "%s../assets/%s", SDL_GetBasePath(), path);
+    SDL_asprintf(&fullPath, "%sassets/%s", SDL_GetBasePath(), path);
 
     std::string key(fullPath);
 

@@ -14,7 +14,6 @@ public:
     Vec2 worldSize{0, 0};
 
     std::map<int, std::unique_ptr<ClientEntity>> entities{};
-
 public:
     SDL_AppResult Init(Vec2 _worldSize);
     Area* GetCurrentArea();
@@ -23,8 +22,8 @@ public:
     void CleanEntities();
 
 private:
-    void HandleDisconnectPacket(ENetEvent& event);
-    void HandleStatePacket(ENetEvent& event);
+    void OnClientDisconnect(int clientId);
+    void HandlePositionPacket(ENetEvent& event);
     void HandleCreateClientEntityPacket(ENetEvent& event);
 };
 

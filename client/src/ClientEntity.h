@@ -3,7 +3,7 @@
 
 #include "SDL3/SDL.h"
 #include "ResourceLoader.h"
-#include "../../common/Vec2.h"
+#include "../../common/src/Vec2.h"
 
 struct Sprite
 {

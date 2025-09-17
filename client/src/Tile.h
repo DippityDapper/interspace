@@ -1,7 +1,7 @@
 #ifndef SDL3_FIRST_PROJECT_TILE_H
 #define SDL3_FIRST_PROJECT_TILE_H
 
-#include "Vec2.h"
+#include "../../common/src/Vec2.h"
 #include "SDL3/SDL.h"
 
 struct Tile

@@ -3,7 +3,6 @@
 
 enum PacketType
 {
-    PACKET_STATE,
     PACKET_DISCONNECT,
     PACKET_CONNECT,
     PACKET_CLIENT_DATA,
@@ -14,28 +13,21 @@ enum PacketType
 struct PositionPacket
 {
     PacketType type = PACKET_POSITION;
-    int clientId;
-    float x;
-    float y;
-};
-
-struct StatePacket
-{
-    PacketType type = PACKET_STATE;
-    int clientId;
-    float x, y;
+    int clientId = -1;
+    float x{};
+    float y{};
 };
 
 struct ClientDataPacket
 {
     PacketType type = PACKET_CONNECT;
-    int clientId;
+    int clientId = -1;
 };
 
 struct DisconnectPacket
 {
     PacketType type = PACKET_DISCONNECT;
-    int clientId;
+    int clientId = -1;
 };
 
 #endif

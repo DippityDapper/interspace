@@ -3,7 +3,7 @@
 
 #include <map>
 #include <vector>
-#include "Tile.h"
+#include "../../client/src/Tile.h"
 #include "Grid.h"
 
 namespace AStar

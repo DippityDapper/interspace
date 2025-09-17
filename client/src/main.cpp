@@ -2,18 +2,17 @@
 
 int main(int argc, char* argv[])
 {
-    Game* game = new Game();
-    game->Init();
+    Game game{};
+    game.Init();
 
-    while (game->IsRunning())
+    while (game.IsRunning())
     {
-        game->HandleEvents();
-        game->Update();
-        game->Render();
+        game.HandleEvents();
+        game.Update();
+        game.Render();
     }
 
-    game->Clean();
+    game.Clean();
 
-    delete game;
     return 0;
 }

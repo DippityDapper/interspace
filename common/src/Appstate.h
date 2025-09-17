@@ -1,10 +1,10 @@
-#ifndef SDL3_FIRST_PROJECT_COMMON_H
-#define SDL3_FIRST_PROJECT_COMMON_H
+#ifndef SDL3_FIRST_PROJECT_APPSTATE_H
+#define SDL3_FIRST_PROJECT_APPSTATE_H
 
 #include "SDL3/SDL.h"
 #include "enet/enet.h"
 
-struct AppState
+struct Appstate
 {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;

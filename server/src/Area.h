@@ -4,7 +4,6 @@
 
 #include <map>
 #include <memory>
-#include "ClientEntity.h"
 #include "../../common/src/Grid.h"
 #include "enet/enet.h"
 
@@ -15,9 +14,7 @@ public:
 
 public:
     SDL_AppResult Init();
-
-public:
-    void RenderTiles(SDL_Renderer *renderer);
+    void Update(float delta);
 };
 
 

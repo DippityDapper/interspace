@@ -1,12 +1,12 @@
 #ifndef SDL3_FIRST_PROJECT_GAME_H
 #define SDL3_FIRST_PROJECT_GAME_H
 
-#include "../../common/Common.h"
-#include "../../common/Packets.h"
+#include "../../common/src/Appstate.h"
+#include "../../common/src/Packets.h"
 #include <map>
 #include "ResourceLoader.h"
 #include "ClientEntity.h"
-#include "../../common/Grid.h"
+#include "../../common/src/Grid.h"
 #include "NetworkManager.h"
 #include "World.h"
 
@@ -19,7 +19,7 @@ private:
     World world{};
 
 public:
-    static AppState* state;
+    static Appstate* state;
 
 private:
     SDL_AppResult InitSDL();

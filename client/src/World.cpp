@@ -1,6 +1,8 @@
 #include "World.h"
-#include "../../common/Packets.h"
+#include "../../common/src/Packets.h"
 #include "Game.h"
+#include "../../server/src/World.h"
+
 
 SDL_AppResult World::Init(Vec2 _worldSize)
 {
@@ -23,14 +25,15 @@ SDL_AppResult World::Init(Vec2 _worldSize)
         }
     }
 
-    NetworkManager::packetHandlers[PACKET_DISCONNECT] = [this](ENetEvent& event) { HandleDisconnectPacket(event); };
-    NetworkManager::packetHandlers[PACKET_STATE] = [this](ENetEvent& event) { HandleStatePacket(event); };
-    NetworkManager::packetHandlers[PACKET_CREATE_CLIENT_ENTITY] = [this](ENetEvent& event) { HandleCreateClientEntityPacket(event); };
+    NetworkManager::AddHandler(PACKET_POSITION, [this](ENetEvent& event) { HandlePositionPacket(event); });
+    NetworkManager::AddHandler(PACKET_CREATE_CLIENT_ENTITY, [this](ENetEvent& event) { HandleCreateClientEntityPacket(event); });
+
+    NetworkManager::disconnectionEvent.emplace_back([this](int clientId, NetworkManager* nm) { OnClientDisconnect(clientId); });
 
     return SDL_APP_SUCCESS;
 }
 
-Area *World::GetCurrentArea()
+Area* World::GetCurrentArea()
 {
     if (!areas.contains(currentAreaPosition))
         return nullptr;
@@ -57,27 +60,23 @@ void World::CleanEntities()
     entities.clear();
 }
 
-void World::HandleStatePacket(ENetEvent& event)
+void World::HandlePositionPacket(ENetEvent& event)
 {
-    StatePacket* statePacket = (StatePacket*)event.packet->data;
-    int clientId = statePacket->clientId;
+    PositionPacket* pPositionPacket = (PositionPacket*)event.packet->data;
+    int clientId = pPositionPacket->clientId;
 
-    entities[clientId]->SetPosition(statePacket->x, statePacket->y);
+    entities[clientId]->SetPosition(pPositionPacket->x, pPositionPacket->y);
 }
 
-void World::HandleDisconnectPacket(ENetEvent& event)
+void World::OnClientDisconnect(int clientId)
 {
-    DisconnectPacket* disconnectPacket = (DisconnectPacket*)event.packet->data;
-    int clientId = disconnectPacket->clientId;
-    SDL_Log("Peer disconnected: %d", clientId);
-
     entities.erase(clientId);
 }
 
 void World::HandleCreateClientEntityPacket(ENetEvent& event)
 {
-    StatePacket* statePacket = (StatePacket*)event.packet->data;
-    SDL_Log("Client entity created for: %d", statePacket->clientId);
+    PositionPacket* pPositionPacket = (PositionPacket*)event.packet->data;
+    SDL_Log("Client entity created for: %d", pPositionPacket->clientId);
 
-    entities[statePacket->clientId] = std::make_unique<ClientEntity>(Game::state->renderer, "player/crew_1.png", statePacket->x, statePacket->y);
+    entities[pPositionPacket->clientId] = std::make_unique<ClientEntity>(Game::state->renderer, "player/crew_1.png", pPositionPacket->x, pPositionPacket->y);
 }

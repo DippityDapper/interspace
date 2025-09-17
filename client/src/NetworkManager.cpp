@@ -1,6 +1,7 @@
 #include "NetworkManager.h"
 
-std::map<PacketType, PacketHandler> NetworkManager::packetHandlers{};
+std::map<PacketType, std::vector<std::function<void(ENetEvent&)>>> NetworkManager::packetHandlers;
+std::vector<std::function<void(int, NetworkManager*)>> NetworkManager::disconnectionEvent;
 
 SDL_AppResult NetworkManager::Init()
 {
@@ -17,7 +18,13 @@ SDL_AppResult NetworkManager::Init()
 
 void NetworkManager::InitPacketHandlers()
 {
-    NetworkManager::packetHandlers[PACKET_CLIENT_DATA] = [this](ENetEvent& event) { HandleClientDataPacket(event); };
+    NetworkManager::AddHandler(PACKET_CLIENT_DATA, [this](ENetEvent& event) { HandleClientDataPacket(event); });
+    NetworkManager::AddHandler(PACKET_DISCONNECT, [this](ENetEvent& event) { HandleDisconnectPacket(event); });
+}
+
+void NetworkManager::AddHandler(PacketType pType, const std::function<void(ENetEvent &)>& func)
+{
+    packetHandlers[pType].emplace_back(func);
 }
 
 SDL_AppResult NetworkManager::CreateClient()
@@ -126,10 +133,13 @@ bool NetworkManager::HandlePackets(ENetEvent enetEvent)
     auto* p_packetType = reinterpret_cast<PacketType*>(enetEvent.packet->data);
     PacketType packetType = *p_packetType;
 
-    auto it = packetHandlers.find(packetType);
-    if (it != packetHandlers.end())
+    if (packetHandlers.contains(packetType))
     {
-        it->second(enetEvent);
+        std::vector<std::function<void(ENetEvent&)>> callers = packetHandlers[packetType];
+        for (auto& caller : callers)
+        {
+            caller(enetEvent);
+        }
     }
     else
     {
@@ -146,11 +156,15 @@ void NetworkManager::HandleClientDataPacket(ENetEvent& event)
     SDL_Log("Client id: %d", clientDataPacket->clientId);
 
     clientId = clientDataPacket->clientId;
+}
 
-    ClientDataPacket createClientEntityPacket;
-    createClientEntityPacket.type = PACKET_CREATE_CLIENT_ENTITY;
-    createClientEntityPacket.clientId = clientId;
+void NetworkManager::HandleDisconnectPacket(ENetEvent& event)
+{
+    DisconnectPacket* disconnectPacket = (DisconnectPacket*)event.packet->data;
+    SDL_Log("Peer disconnected: %d", clientId);
 
-    ENetPacket* packet = enet_packet_create(&createClientEntityPacket, sizeof(ClientDataPacket), ENET_PACKET_FLAG_RELIABLE);
-    enet_peer_send(server, 0, packet);
+    for (auto& caller : disconnectionEvent)
+    {
+        caller(disconnectPacket->clientId, this);
+    }
 }

@@ -2,7 +2,7 @@
 #define SDL3_FIRST_PROJECT_GRID_H
 
 #include <map>
-#include "Tile.h"
+#include "../../client/src/Tile.h"
 
 
 class Grid

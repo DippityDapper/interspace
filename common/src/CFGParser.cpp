@@ -5,7 +5,7 @@ std::map<std::string, std::map<std::string, std::string>> CFGParser::configs;
 void CFGParser::LoadConfig(const char* fileName)
 {
     char *fullPath = nullptr;
-    SDL_asprintf(&fullPath, "%s../client/configs/%s", SDL_GetBasePath(), fileName);
+    SDL_asprintf(&fullPath, "%sconfigs/%s", SDL_GetBasePath(), fileName);
 
     std::ifstream serverPropertiesFile(fullPath);
     SDL_free(fullPath);

@@ -1,5 +1,5 @@
 #include "Area.h"
-#include "../../common/Packets.h"
+#include "../../common/src/Packets.h"
 #include "NetworkManager.h"
 #include "Game.h"
 

@@ -1,19 +1,11 @@
 #include "Game.h"
-#include "../../common/CFGParser.h"
+#include "../../common/src/CFGParser.h"
 
-/*
- * TODO : Refactor everything
- * 1. Move all networking to the network manager
- *      1. Make the packet sending and catching more flexible X
- *      2. Move port and address to a readable config
- * 2. Move some game logic to another class, perhaps something like world or map X
-*/
-
-AppState* Game::state = nullptr;
+Appstate* Game::state = nullptr;
 
 void Game::Init()
 {
-    state = new AppState();
+    state = new Appstate();
 
     if (InitSDL() == SDL_APP_FAILURE)
     {
@@ -67,6 +59,7 @@ SDL_AppResult Game::InitNetworking()
     {
         return SDL_APP_FAILURE;
     }
+
     return SDL_APP_CONTINUE;
 }
 
@@ -147,7 +140,6 @@ void Game::Clean()
     world.CleanEntities();
     ResourceLoader::UnloadAll();
 
-    enet_peer_reset(networkManager.server);
     enet_host_destroy(networkManager.client);
     enet_deinitialize();
 

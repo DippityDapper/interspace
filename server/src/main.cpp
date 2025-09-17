@@ -2,17 +2,17 @@
 
 int main(int argc, char* argv[])
 {
-    Server* server = new Server();
+    Server server{};
 
-    server->Init();
+    server.Init();
 
-    while (server->IsRunning())
+    while (server.IsRunning())
     {
-        server->Run();
+        server.HandleEvents();
+        server.Update();
     }
 
-    server->Quit();
+    server.Clean();
 
-    delete server;
     return 0;
 }

@@ -50,38 +50,21 @@ if (NOT ENet_FOUND)
     add_library(ENet::ENet ALIAS enet_lib)
 endif ()
 
+set(COMMON_SOURCE_FILES "")
+file(GLOB COMMON_SOURCE_FILES "common/src/*")
+
+set(SERVER_SOURCE_FILES "")
+file(GLOB SERVER_SOURCE_FILES "server/src/*")
 add_executable(game_host
-        server/src/main.cpp
-        server/src/Server.cpp
-        server/src/Server.h
-        server/src/ServerEntity.cpp
-        server/src/ServerEntity.h
-        common/AStar.cpp
-        common/AStar.h
-        common/Grid.cpp
-        common/Grid.h
-        common/CFGParser.cpp
-        common/CFGParser.h
+        ${SERVER_SOURCE_FILES}
+        ${COMMON_SOURCE_FILES}
 )
 
+set(CLIENT_SOURCE_FILES "")
+file(GLOB CLIENT_SOURCE_FILES "client/src/*")
 add_executable(game_client
-        client/src/main.cpp
-        client/src/Game.cpp
-        client/src/Game.h
-        client/src/ClientEntity.cpp
-        client/src/ClientEntity.h
-        client/src/ResourceLoader.cpp
-        client/src/ResourceLoader.h
-        client/src/NetworkManager.cpp
-        client/src/NetworkManager.h
-        common/Grid.cpp
-        common/Grid.h
-        client/src/Area.cpp
-        client/src/Area.h
-        client/src/World.cpp
-        client/src/World.h
-        common/CFGParser.cpp
-        common/CFGParser.h
+        ${CLIENT_SOURCE_FILES}
+        ${COMMON_SOURCE_FILES}
 )
 
 set_target_properties(game_host PROPERTIES WIN32_EXECUTABLE FALSE)
@@ -99,6 +82,16 @@ target_link_libraries(game_client PRIVATE
 )
 
 if (WIN32)
+    add_custom_command(
+            TARGET game_client POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/assets"
+            "$<TARGET_FILE_DIR:game_client>/assets"
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/configs"
+            "$<TARGET_FILE_DIR:game_client>/configs"
+    )
+
     add_custom_command(
             TARGET game_client POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "$<TARGET_FILE_DIR:game_client>"

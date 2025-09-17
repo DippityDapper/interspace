@@ -3,21 +3,12 @@
 
 #include <vector>
 #include "SDL3/SDL.h"
-#include "../../common/Vec2.h"
-
-enum Directions
-{
-    UP = 0,
-    DOWN = 1,
-    LEFT = 2,
-    RIGHT = 3
-};
+#include "../../common/src/Vec2.h"
 
 class ServerEntity
 {
 private:
     Vec2 position{0,0};
-    bool inputs[4] = {false, false, false, false};
 
     float speed = 300;
     std::vector<Vec2> path{};
