@@ -31,7 +31,8 @@ void NetworkManager::AddHandler(PacketType pType, const std::function<void(ENetE
 SDL_AppResult NetworkManager::CreateServer(int port, const char *ip)
 {
     ENetAddress address;
-    enet_address_set_host(&address, ip);
+    enet_address_set_host(&address, "0.0.0.0");
+    SDL_Log("Address : %u", address.host);
     address.port = port;
 
     server = enet_host_create(&address, 32, 2, 0, 0);
