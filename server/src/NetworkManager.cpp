@@ -28,11 +28,21 @@ void NetworkManager::AddHandler(PacketType pType, const std::function<void(ENetE
     packetHandlers[pType].emplace_back(func);
 }
 
-SDL_AppResult NetworkManager::CreateServer(int port, const char *ip)
+SDL_AppResult NetworkManager::CreateServer(int port, bool localHostOnly)
 {
     ENetAddress address;
-    enet_address_set_host(&address, "0.0.0.0");
-    SDL_Log("Address : %u", address.host);
+
+    if (localHostOnly)
+    {
+        enet_address_set_host(&address, "localhost");
+        SDL_Log("The server is running locally");
+    }
+    else
+    {
+        enet_address_set_host(&address, "0.0.0.0");
+        SDL_Log("The server is running publicly");
+    }
+
     address.port = port;
 
     server = enet_host_create(&address, 32, 2, 0, 0);

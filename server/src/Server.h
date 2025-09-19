@@ -9,6 +9,8 @@
 #include "../../common/src/Grid.h"
 #include "NetworkManager.h"
 #include "World.h"
+#include "GameData.h"
+
 
 class Server
 {
@@ -18,6 +20,7 @@ private:
     std::thread terminalThread;
 
     NetworkManager networkManager{};
+    GameData data{};
 
     World world{};
 

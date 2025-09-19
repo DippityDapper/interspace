@@ -16,8 +16,10 @@ private:
 
 public:
     static void LoadConfig(const char* fileName);
-    static const char* GetString(const char* configName, const char* config);
-    static int GetInt(const char* configName, const char* config);
+
+    static const char* GetString(const char* configName, const char* key);
+    static int GetInt(const char* configName, const char* key);
+    static int GetBool(const char* configName, const char* key);
 };
 
 

@@ -13,6 +13,8 @@ void Server::Init()
         return;
     }
 
+    data.Init();
+
     if (InitNetworking() == SDL_APP_FAILURE)
     {
         running = false;
@@ -22,6 +24,7 @@ void Server::Init()
     terminalThread = std::thread(&Server::TerminalThread, this);
 
     world.Init({25, 25});
+    SDL_Log("Username : %s", GameData::GetName(1).c_str());
 }
 
 SDL_AppResult Server::InitSDL()
@@ -49,10 +52,10 @@ SDL_AppResult Server::InitNetworking()
     }
 
     CFGParser::LoadConfig("server-properties.cfg");
-    const char* ip = CFGParser::GetString("server-properties.cfg", "server-ip");
     int port = CFGParser::GetInt("server-properties.cfg", "server-port");
+    bool isLocalOnly = CFGParser::GetBool("server-properties.cfg", "local-host-only");
 
-    if (networkManager.CreateServer(port, ip) == SDL_APP_FAILURE)
+    if (networkManager.CreateServer(port, isLocalOnly) == SDL_APP_FAILURE)
     {
         return SDL_APP_FAILURE;
     }

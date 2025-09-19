@@ -27,7 +27,7 @@ public:
     void InitPacketHandlers();
     static void AddHandler(PacketType pType, const std::function<void(ENetEvent&)>& func);
 
-    SDL_AppResult CreateServer(int port, const char* ip);
+    SDL_AppResult CreateServer(int port, bool localHostOnly);
     void DisconnectClient(int clientId);
 
     void HandleNetworkEvents();

@@ -4,19 +4,16 @@ std::unordered_map<std::string, SDL_Texture*> ResourceLoader::textures;
 
 SDL_Texture* ResourceLoader::LoadTexture(SDL_Renderer *renderer, const char *path)
 {
-    char *fullPath = nullptr;
-    SDL_asprintf(&fullPath, "%sassets/%s", SDL_GetBasePath(), path);
+    std::string fullPath("assets/");
+    fullPath += path;
 
-    std::string key(fullPath);
-
-    auto iterator = textures.find(key);
+    auto iterator = textures.find(fullPath);
     if (iterator != textures.end())
     {
-        SDL_free(fullPath);
         return iterator->second;
     }
 
-    SDL_Texture *texture = IMG_LoadTexture(renderer, fullPath);
+    SDL_Texture *texture = IMG_LoadTexture(renderer, fullPath.c_str());
     SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
     if (!texture)
     {
@@ -24,10 +21,9 @@ SDL_Texture* ResourceLoader::LoadTexture(SDL_Renderer *renderer, const char *pat
     }
     if (texture)
     {
-        textures[key] = texture;
+        textures[fullPath] = texture;
     }
 
-    SDL_free(fullPath);
     return texture;
 }
 

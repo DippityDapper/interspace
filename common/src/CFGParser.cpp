@@ -60,5 +60,37 @@ int CFGParser::GetInt(const char* configName, const char* key)
     if (it == kvp.end())
         return 0;
 
-    return std::stoi(it->second);
+    try
+    {
+        int num = std::stoi(it->second);
+        return num;
+    }
+    catch (const std::invalid_argument&)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Config Parser could not parse int for key %s in %s", it->second.c_str(), configName);
+        return 0;
+    }
+}
+
+int CFGParser::GetBool(const char* configName, const char* key)
+{
+    auto fileIt = configs.find(configName);
+    if (fileIt == configs.end())
+        return 0;
+
+    auto& kvp = fileIt->second;
+    auto it = kvp.find(key);
+    if (it == kvp.end())
+        return 0;
+
+    std::istringstream ss(it->second);
+
+    bool value = false;
+    if (!(ss >> std::boolalpha >> value))
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Config Parser could not parse bool for key %s in %s", it->second.c_str(), configName);
+        return false;
+    }
+
+    return value;
 }
