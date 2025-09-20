@@ -13,16 +13,7 @@ set(SDL3IMAGE_VENDORED OFF CACHE BOOL "" FORCE)
 add_subdirectory(libs/SDL3_image)
 
 # --- ENet ---
-file(GLOB ENET_SRC
-        libs/enet/*.c
-        libs/enet/*.h
-)
-add_library(enet_lib STATIC ${ENET_SRC})
-target_include_directories(enet_lib PUBLIC libs/enet/include)
-if (WIN32)
-    target_link_libraries(enet_lib PUBLIC ws2_32 winmm)
-endif ()
-add_library(ENet::ENet ALIAS enet_lib)
+add_subdirectory(libs/enet)
 
 # --- SQLiteCpp ---
 add_subdirectory(libs/SQLiteCpp)
