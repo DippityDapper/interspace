@@ -1,16 +1,13 @@
-#include "Game.h"
+#include "client/game/Game.h"
 
 int main(int argc, char* argv[])
 {
-    Game game{};
+    Game::Game game{};
     game.Init();
 
-    while (game.IsRunning())
-    {
-        game.HandleEvents();
-        game.Update();
-        game.Render();
-    }
+    game.HandleEvents();
+    game.Update();
+    game.Render();
 
     game.Clean();
 

@@ -1,16 +1,12 @@
-#include "Server.h"
+#include "server/server/Server.h"
 
 int main(int argc, char* argv[])
 {
-    Server server{};
+    Game::Server server{};
 
     server.Init();
 
-    while (server.IsRunning())
-    {
-        server.HandleEvents();
-        server.Update();
-    }
+    server.Update();
 
     server.Clean();
 
