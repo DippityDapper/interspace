@@ -85,7 +85,13 @@ namespace Game
             deltaTime = (float)(currentTick - lastTick) / 1000.0f;
 
             world.Update(deltaTime);
-            world.NetworkUpdate(&networkManager);
+
+            networkTimer += deltaTime;
+            if (networkTimer > 0.1f)
+            {
+                world.NetworkUpdate(&networkManager);
+                networkTimer -= 0.1f;
+            }
         }
     }
 

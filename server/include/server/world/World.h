@@ -1,7 +1,5 @@
 #pragma once
 
-#include <queue>
-
 #include "SDL3/SDL.h"
 
 #include "server/astar/AStar.h"
@@ -21,7 +19,7 @@ namespace Game
         Engine::AStar astar{};
         std::map<int, std::unique_ptr<ServerEntity>> entities{};
 
-        std::queue<int> entityPositionUpdated{};
+        std::map<int, bool> entityPositionUpdated{};
 
     public:
         void Init(Engine::Vec2<int> _worldSize);

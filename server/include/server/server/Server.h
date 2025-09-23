@@ -31,6 +31,7 @@ namespace Game
         uint64_t lastTick = 0;
         uint64_t currentTick = 0;
         float deltaTime = 0;
+        float networkTimer = 0;
 
     private:
         SDL_AppResult InitSDL();

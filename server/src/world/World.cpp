@@ -38,7 +38,7 @@ namespace Game
             if (oldPos.x != newPos.x || oldPos.y != newPos.y)
             {
                 int clientId = kvp.first;
-                entityPositionUpdated.push(clientId);
+                entityPositionUpdated[clientId] = true;
             }
         }
 
@@ -48,20 +48,23 @@ namespace Game
     void World::NetworkUpdate(Engine::NetworkManager* nm)
     {
         int positionQueueSize = entityPositionUpdated.size();
-        for (int i = 0; i < positionQueueSize; ++i)
+        for (auto& kvp : std::map<int, bool>(entityPositionUpdated))
         {
-            int clientId = entityPositionUpdated.front();
-            entityPositionUpdated.pop();
+            int clientId = kvp.first;
+            bool needsUpdate = kvp.second;
+            if (needsUpdate)
+            {
+                Engine::PositionPacket positionPacket;
+                positionPacket.type = Engine::PACKET_POSITION;
+                positionPacket.clientId = clientId;
+                Engine::Vec2<float> pos = entities[clientId]->GetPosition();
+                positionPacket.x = pos.x;
+                positionPacket.y = pos.y;
 
-            Engine::PositionPacket positionPacket;
-            positionPacket.type = Engine::PACKET_POSITION;
-            positionPacket.clientId = clientId;
-            Engine::Vec2<float> pos = entities[clientId]->GetPosition();
-            positionPacket.x = pos.x;
-            positionPacket.y = pos.y;
-
-            ENetPacket* packet = enet_packet_create(&positionPacket, sizeof(Engine::PositionPacket), ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
-            enet_host_broadcast(nm->server, 0, packet);
+                ENetPacket* packet = enet_packet_create(&positionPacket, sizeof(Engine::PositionPacket), 0);
+                enet_host_broadcast(nm->server, 0, packet);
+                entityPositionUpdated[clientId] = false;
+            }
         }
     }
 
@@ -124,6 +127,7 @@ namespace Game
         {
             GameData::AddOrUpdateCharacter(clientId, entities[clientId]->GetPosition().x, entities[clientId]->GetPosition().y);
             entities.erase(clientId);
+            entityPositionUpdated.erase(clientId);
         }
     }
 
