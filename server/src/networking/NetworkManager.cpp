@@ -63,7 +63,7 @@ namespace Engine
         if (peers.contains(clientId))
         {
             peers.erase(clientId);
-            SDL_Log("Peer Entity removed: %d", clientId);
+            SDL_Log("Peer removed: %d", clientId);
 
             ClientDataPacket clientDataPacket;
             clientDataPacket.type = PACKET_DISCONNECT;
@@ -131,24 +131,31 @@ namespace Engine
 
     void NetworkManager::HandleConnectionPacket(ENetEvent &enetEvent)
     {
+        ConnectPacket* connectPacket = (ConnectPacket*)enetEvent.packet->data;
+        std::string userName = connectPacket->username;
+        int clientId = Game::GameData::GetUserNumber(userName);
+
+        if (clientId < 0)
+        {
+            bool invalidId = true;
+            while (invalidId)
+            {
+                std::random_device rd;
+                std::mt19937 gen(rd());
+                std::uniform_int_distribution<> distrib(0, 100000);
+
+                clientId = distrib(gen);
+
+                if (!peers.contains(clientId))
+                {
+                    invalidId = false;
+                }
+            }
+            Game::GameData::AddUser(clientId, userName);
+        }
+
         ClientDataPacket clientDataPacket;
         clientDataPacket.type = PACKET_CLIENT_DATA;
-
-        int clientId;
-        bool invalidId = true;
-        while (invalidId)
-        {
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            std::uniform_int_distribution<> distrib(0, 100000);
-
-            clientId = distrib(gen);
-
-            if (!peers.contains(clientId))
-            {
-                invalidId = false;
-            }
-        }
 
         peers[clientId] = enetEvent.peer;
         for (auto& onConnectionCalls : connectionEvent)

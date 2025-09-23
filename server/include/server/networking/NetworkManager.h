@@ -11,6 +11,8 @@
 
 #include "common/packets/Packets.h"
 
+#include "server/data/GameData.h"
+
 namespace Engine
 {
     class NetworkManager

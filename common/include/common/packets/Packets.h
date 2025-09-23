@@ -19,10 +19,26 @@ namespace Engine
         float y{};
     };
 
+    struct CreateEntityPacket
+    {
+        PacketType type = PACKET_CREATE_CLIENT_ENTITY;
+        int clientId = -1;
+        char userName[32];
+        float x{};
+        float y{};
+    };
+
     struct ClientDataPacket
     {
         PacketType type = PACKET_CONNECT;
         int clientId = -1;
+    };
+
+    struct ConnectPacket
+    {
+        PacketType type = PACKET_CONNECT;
+        int clientId = -1;
+        char username[32] = "";
     };
 
     struct DisconnectPacket

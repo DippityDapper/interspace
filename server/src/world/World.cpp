@@ -85,28 +85,36 @@ namespace Game
         {
             int peerId = kvp.first;
 
-            Engine::PositionPacket positionPacket;
-            positionPacket.type = Engine::PACKET_CREATE_CLIENT_ENTITY;
-            positionPacket.clientId = peerId;
-            positionPacket.x = kvp.second->GetPosition().x;
-            positionPacket.y = kvp.second->GetPosition().y;
+            Engine::CreateEntityPacket entityPacket;
+            entityPacket.type = Engine::PACKET_CREATE_CLIENT_ENTITY;
+            entityPacket.clientId = peerId;
+            strcpy(entityPacket.userName, Game::GameData::GetUser(peerId).c_str());
+            entityPacket.x = kvp.second->GetPosition().x;
+            entityPacket.y = kvp.second->GetPosition().y;
 
-            ENetPacket *peerPacket = enet_packet_create(&positionPacket, sizeof(Engine::PositionPacket), ENET_PACKET_FLAG_RELIABLE);
+            ENetPacket *peerPacket = enet_packet_create(&entityPacket, sizeof(Engine::CreateEntityPacket), ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(peer, 0, peerPacket);
         }
 
         float x = 320;
         float y = 180;
-        entities[clientId] = std::make_unique<ServerEntity>(x, y);
+        Engine::Vec2<float> pos{x, y};
+        if (!Game::GameData::GetCharacterPosition(clientId, pos))
+        {
+            GameData::AddOrUpdateCharacter(clientId, x, y);
+        }
+
+        entities[clientId] = std::make_unique<ServerEntity>(pos.x, pos.y);
         SDL_Log("Server entity created for: %d", clientId);
 
-        Engine::PositionPacket positionPacket;
-        positionPacket.type = Engine::PACKET_CREATE_CLIENT_ENTITY;
-        positionPacket.clientId = clientId;
-        positionPacket.x = x;
-        positionPacket.y = y;
+        Engine::CreateEntityPacket entityPacket;
+        entityPacket.type = Engine::PACKET_CREATE_CLIENT_ENTITY;
+        entityPacket.clientId = clientId;
+        strcpy(entityPacket.userName, Game::GameData::GetUser(clientId).c_str());
+        entityPacket.x = pos.x;
+        entityPacket.y = pos.y;
 
-        ENetPacket* packet = enet_packet_create(&positionPacket, sizeof(Engine::PositionPacket), ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket *packet = enet_packet_create(&entityPacket, sizeof(Engine::CreateEntityPacket), ENET_PACKET_FLAG_RELIABLE);
         enet_host_broadcast(nm->server, 0, packet);
     }
 
@@ -114,6 +122,7 @@ namespace Game
     {
         if (entities.contains(clientId))
         {
+            GameData::AddOrUpdateCharacter(clientId, entities[clientId]->GetPosition().x, entities[clientId]->GetPosition().y);
             entities.erase(clientId);
         }
     }

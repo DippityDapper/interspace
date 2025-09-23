@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SDL3/SDL.h"
+#include "imgui.h"
 
 #include "common/vector/Vec2.h"
 
@@ -23,7 +24,10 @@ namespace Game
         Engine::Vec2<float> position{0,0};
 
     public:
-        ClientEntity(SDL_Renderer* renderer, std::string& path, float x, float y);
+        std::string username;
+
+    public:
+        ClientEntity(SDL_Renderer* renderer, std::string& path, std::string& _username, float x, float y);
 
         void Render(SDL_Renderer* renderer, Engine::Camera& camera) const;
         void SetPosition(float x, float y);

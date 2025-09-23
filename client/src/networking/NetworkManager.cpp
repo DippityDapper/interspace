@@ -106,10 +106,6 @@ namespace Engine
             return SDL_APP_FAILURE;
         }
 
-        ENetPacket* packet = enet_packet_create(nullptr, sizeof(PACKET_CONNECT), ENET_PACKET_FLAG_RELIABLE);
-        packet->data[0] = PACKET_CONNECT;
-        enet_peer_send(server, 0, packet);
-
         return SDL_APP_CONTINUE;
     }
 

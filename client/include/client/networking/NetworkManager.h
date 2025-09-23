@@ -15,6 +15,10 @@ namespace Engine
     {
     public:
         int clientId = -1;
+        char username[32] = "";
+
+        bool triedConnect = false;
+
         ENetHost* client = nullptr;
         ENetPeer* server = nullptr;
 

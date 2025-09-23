@@ -79,10 +79,12 @@ namespace Game
 
     void World::HandleCreateClientEntityPacket(ENetEvent& event)
     {
-        Engine::PositionPacket* pPositionPacket = (Engine::PositionPacket*)event.packet->data;
-        SDL_Log("Client entity created for: %d", pPositionPacket->clientId);
+        Engine::CreateEntityPacket* entityPacket = (Engine::CreateEntityPacket*)event.packet->data;
+        std::string username = entityPacket->userName;
+        SDL_Log("Client entity created for: %s : %d", username.c_str(), entityPacket->clientId);
+
 
         std::string texturePath = "player/crew_1.png";
-        entities[pPositionPacket->clientId] = std::make_unique<ClientEntity>(renderer, texturePath, pPositionPacket->x, pPositionPacket->y);
+        entities[entityPacket->clientId] = std::make_unique<ClientEntity>(renderer, texturePath, username, entityPacket->x, entityPacket->y);
     }
 }

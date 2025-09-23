@@ -33,6 +33,16 @@ namespace Game
             return SDL_APP_FAILURE;
         }
 
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        (void)io;
+
+        ImGui::StyleColorsDark();
+
+        ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+        ImGui_ImplSDLRenderer3_Init(renderer);
+
         return SDL_APP_CONTINUE;
     }
 
@@ -65,16 +75,21 @@ namespace Game
         if (!networkManager.HandleNetworkEvents())
             running = false;
 
+
+
         SDL_Event sdlEvent;
         while (SDL_PollEvent(&sdlEvent))
         {
+            ImGui_ImplSDL3_ProcessEvent(&sdlEvent);
+
             if (sdlEvent.type == SDL_EVENT_QUIT)
             {
                 running = false;
+                if (networkManager.clientId >= 0)
+                    networkManager.Disconnect();
                 return;
             }
-
-            if (sdlEvent.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+            if (networkManager.clientId >= 0 && sdlEvent.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
             {
                 if (sdlEvent.button.button == SDL_BUTTON_LEFT)
                 {
@@ -100,7 +115,8 @@ namespace Game
                 if (sdlEvent.key.key == SDLK_ESCAPE)
                 {
                     running = false;
-                    networkManager.Disconnect();
+                    if (networkManager.clientId >= 0)
+                        networkManager.Disconnect();
                     return;
                 }
             }
@@ -115,7 +131,51 @@ namespace Game
             HandleEvents();
 
             if (networkManager.clientId < 0)
+            {
+                SDL_SetRenderDrawColor(renderer, 50, 50, 50, SDL_ALPHA_OPAQUE);
+                SDL_RenderClear(renderer);
+                ImGui_ImplSDLRenderer3_NewFrame();
+                ImGui_ImplSDL3_NewFrame();
+                ImGui::NewFrame();
+
+                int w = 0;
+                int h = 0;
+
+                SDL_GetWindowSize(window, &w, &h);
+
+                ImGui::SetNextWindowPos(ImVec2(w/2.0f, h/2.0f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+                ImGui::Begin("Connect to Server", nullptr,
+                             ImGuiWindowFlags_NoResize |
+                             ImGuiWindowFlags_AlwaysAutoResize |
+                             ImGuiWindowFlags_NoMove |
+                             ImGuiWindowFlags_NoScrollbar |
+                             ImGuiWindowFlags_NoSavedSettings |
+                             ImGuiWindowFlags_NoCollapse);
+
+                ImGui::InputText("Username", networkManager.username, IM_ARRAYSIZE(networkManager.username));
+
+                if (ImGui::Button("Connect") && !networkManager.triedConnect)
+                {
+                    networkManager.triedConnect = true;
+
+                    // Build a packet with username
+                    Engine::ConnectPacket connectPacket{};
+                    connectPacket.type = Engine::PACKET_CONNECT;
+                    connectPacket.clientId = -1;
+                    strncpy(connectPacket.username, networkManager.username, sizeof(connectPacket.username)-1);
+
+                    ENetPacket* packet = enet_packet_create(&connectPacket, sizeof(connectPacket), ENET_PACKET_FLAG_RELIABLE);
+                    enet_peer_send(networkManager.server, 0, packet);
+                }
+
+                ImGui::End();
+
+                ImGui::Render();
+                ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
+                SDL_RenderPresent(renderer);
+
                 continue;
+            }
 
             lastTick = currentTick;
             currentTick = SDL_GetTicks();
@@ -131,9 +191,14 @@ namespace Game
     {
         SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
+        ImGui_ImplSDLRenderer3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
 
         world.Render(renderer, camera);
 
+        ImGui::Render();
+        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
         SDL_RenderPresent(renderer);
     }
 
@@ -141,6 +206,10 @@ namespace Game
     {
         world.CleanEntities();
         Engine::ResourceLoader::UnloadAll();
+
+        ImGui_ImplSDLRenderer3_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
+        ImGui::DestroyContext();
 
         SDL_DestroyWindow(window);
         SDL_DestroyRenderer(renderer);

@@ -9,6 +9,7 @@ add_subdirectory(libs/SDL3)
 add_subdirectory(libs/SDL3_image)
 add_subdirectory(libs/enet)
 add_subdirectory(libs/SQLiteCpp)
+add_subdirectory(libs/imgui)
 
 # --- Project modules ---
 add_subdirectory(common)

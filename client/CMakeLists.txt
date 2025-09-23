@@ -13,6 +13,7 @@ target_include_directories(game_client PRIVATE
 
 target_link_libraries(game_client PRIVATE
         common
+        imgui
 )
 
 if (WIN32)
