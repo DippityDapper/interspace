@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(libs/SDL3)
 add_subdirectory(libs/SDL3_image)
 add_subdirectory(libs/enet)
+target_include_directories(enet PUBLIC libs/enet/include)
+
 add_subdirectory(libs/SQLiteCpp)
 
 set(IMGUI_SRC
