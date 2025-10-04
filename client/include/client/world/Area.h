@@ -16,11 +16,10 @@ namespace Game
     {
     public:
         Engine::Grid grid{};
+        Engine::Vec2<int> position{0,0};
 
     public:
-        void Init(SDL_Renderer* renderer);
-
-    public:
-        void RenderTiles(SDL_Renderer *renderer, Engine::Camera& camera);
+        Area(int x, int y);
+        void RenderTiles();
     };
 }

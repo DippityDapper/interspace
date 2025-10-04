@@ -4,26 +4,24 @@
 
 #include "common/vector/Vec2.h"
 
-#include "client/camera/Camera.h"
+#include "client/camera/camera.h"
+#include "client/engine/Renderer.h"
 
 namespace Engine
 {
-    struct Tile
+    class Tile
     {
+    public:
         Vec2<int> gridPosition{0,0};
-        SDL_Texture* texture = nullptr;
+        Sprite* sprite = nullptr;
 
-        void Render(SDL_Renderer *renderer, Camera& camera) const
-        {
-            SDL_FRect dest;
+    public:
+        Tile(Vec2<int> _gridPosition, std::string& texturePath);
+        Tile(Vec2<int> _gridPosition, std::string& texturePath, float w, float h, int x, int y);
+        ~Tile();
+        Tile(const Tile&) = delete;
+        Tile& operator=(const Tile&) = delete;
 
-            dest.w = (float)texture->w * camera.zoom;
-            dest.h = (float)texture->h * camera.zoom;
-            dest.x = (gridPosition.x * texture->w - camera.position.x) * camera.zoom;
-            dest.y = (gridPosition.y * texture->h - camera.position.y) * camera.zoom;
-
-            SDL_RenderTexture(renderer, texture, nullptr, &dest);
-        }
+        void Render(int offsetX, int offsetY) const;
     };
-
 }

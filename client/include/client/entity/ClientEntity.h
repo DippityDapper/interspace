@@ -7,29 +7,25 @@
 
 #include "client/resources/ResourceLoader.h"
 #include "client/camera/Camera.h"
+#include "client/entity/Sprite.h"
+#include "client/engine/Renderer.h"
 
 namespace Game
 {
-    struct Sprite
-    {
-        SDL_Texture *texture = nullptr;
-        int w = 0;
-        int h = 0;
-    };
-
     class ClientEntity
     {
     private:
-        Sprite sprite{};
+        Engine::Sprite* sprite = nullptr;
         Engine::Vec2<float> position{0,0};
 
     public:
         std::string username;
 
     public:
-        ClientEntity(SDL_Renderer* renderer, std::string& path, std::string& _username, float x, float y);
+        ClientEntity(std::string& texturePath, std::string& _username, float x, float y);
+        ~ClientEntity();
 
-        void Render(SDL_Renderer* renderer, Engine::Camera& camera) const;
+        void Render() const;
         void SetPosition(float x, float y);
     };
 }

@@ -2,6 +2,30 @@
 
 namespace Engine
 {
+    Camera* Camera::main = nullptr;
+
+    Camera::Camera()
+    {
+        if (main == nullptr)
+            main = this;
+    }
+
+    Camera::Camera(float x, float y, float _zoom)
+    {
+        if (main == nullptr)
+            main = this;
+
+        position.x = x;
+        position.y = y;
+        zoom = _zoom;
+    }
+
+    Camera::~Camera()
+    {
+        if (main == this)
+            main = nullptr;
+    }
+
     void Camera::Update(float delta)
     {
 
@@ -35,10 +59,15 @@ namespace Engine
             else if (event.wheel.y < 0)
                 zoom *= 0.9f;
 
-            if (zoom < 0.1f)
+            if (zoom < minZoom)
                 zoom = 0.1f;
-            if (zoom > 10.0f)
+            if (zoom > maxZoom)
                 zoom = 10.0f;
         }
+    }
+
+    void Camera::SetCurrent()
+    {
+        main = this;
     }
 }

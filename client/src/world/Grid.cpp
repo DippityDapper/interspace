@@ -1,40 +1,57 @@
+#include <random>
 #include "client/world/Grid.h"
 
 namespace Engine
 {
-    void Grid::InitializeGrid(int gridX, int gridY, int tileX, int tileY)
+
+    Grid::~Grid()
+    {
+        for (auto &kvp : tiles)
+        {
+            delete kvp.second;
+        }
+    }
+
+    void Grid::Init(int gridX, int gridY)
     {
         gridSize.x = gridX;
         gridSize.y = gridY;
 
-        tileSize.x = tileX;
-        tileSize.y = tileY;
-
         tiles.clear();
 
+        std::string texturePath = "tilesets/grass_tileset.png";
         for (int y = 0; y < gridY; ++y)
+        {
             for (int x = 0; x < gridX; ++x)
             {
-                if (x > 4 && x < 15 && y > 4 && y < 15)
-                    continue;
                 Vec2<int> position{x, y};
-                Tile tile{position, nullptr};
 
+                std::random_device rd;
+                std::mt19937 gen(rd());
+
+                std::uniform_int_distribution<> distribX(0, 7);
+                std::uniform_int_distribution<> distribY(0, 3);
+
+                int atlasX = distribX(gen);
+                int atlasY = distribY(gen);
+
+                Tile* tile = new Tile(position, texturePath, 32, 32, atlasX, atlasY); // 4 , 8
                 tiles.emplace(position, tile);
             }
+        }
     }
 
     Vec2<int> Grid::GlobalToLocal(Vec2<float> position) const
     {
-        int dx = std::floor(position.x / tileSize.x);
-        int dy = std::floor(position.y / tileSize.y);
+        int dx = std::floor(position.x / TILE_SIZE.x);
+        int dy = std::floor(position.y / TILE_SIZE.y);
         return {dx, dy};
     }
 
     Vec2<float> Grid::LocalToGlobal(Vec2<int> position) const
     {
-        float dx = position.x * tileSize.x;
-        float dy = position.y * tileSize.y;
+        float dx = position.x * TILE_SIZE.x;
+        float dy = position.y * TILE_SIZE.y;
         return {dx, dy};
     }
 }

@@ -12,26 +12,27 @@
 #include "client/entity/ClientEntity.h"
 #include "client/networking/NetworkManager.h"
 #include "client/world/World.h"
+#include "client/engine/Scene.h"
+#include "client/engine/Renderer.h"
+#include "client/engine/Window.h"
 
-namespace Game
+namespace Engine
 {
-    class Game
+    class Engine
     {
     private:
         bool running = true;
-        Engine::NetworkManager networkManager{};
+        NetworkManager networkManager{};
 
-        World world{};
+        Scene* scene = nullptr;
 
     public:
-        SDL_Window* window = nullptr;
-        SDL_Renderer* renderer = nullptr;
+        Window window;
+        Renderer renderer;
 
         uint64_t lastTick = 0;
         uint64_t currentTick = 0;
         float deltaTime = 0;
-
-        Engine::Camera camera{};
 
     private:
         SDL_AppResult InitSDL();
@@ -43,5 +44,7 @@ namespace Game
         void Render();
         void Clean();
         void HandleEvents();
+
+        void SetScene(Scene* _scene);
     };
 }

@@ -1,40 +1,43 @@
 #include "client/resources/ResourceLoader.h"
+#include "client/engine/Renderer.h"
 
 namespace Engine
 {
     std::unordered_map<std::string, SDL_Texture*> ResourceLoader::textures;
 
-    SDL_Texture* ResourceLoader::LoadTexture(SDL_Renderer *renderer, std::string& path)
+    SDL_Texture* ResourceLoader::LoadTexture(std::string& texturePath)
     {
-        std::string fullPath = "assets/" + path;
+        if (texturePath.empty())
+            return nullptr;
 
-        auto iterator = textures.find(fullPath);
-        if (iterator != textures.end())
+        std::string fullPath = "assets/" + texturePath;
+
+        if (textures.contains(fullPath))
         {
-            return iterator->second;
+            return textures[fullPath];
         }
 
-        SDL_Texture *texture = IMG_LoadTexture(renderer, fullPath.c_str());
-        SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+        SDL_Texture *texture = IMG_LoadTexture(Renderer::GetRenderer(), fullPath.c_str());
+
         if (!texture)
         {
-            SDL_Log("IMG_LoadTexture failed: %s", SDL_GetError());
+            SDL_Log("Texture failed to load: %s : %s", texturePath.c_str(), SDL_GetError());
+            return nullptr;
         }
-        if (texture)
-        {
-            textures[fullPath] = texture;
-        }
+
+        SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+        textures[fullPath] = texture;
 
         return texture;
     }
 
-    void ResourceLoader::UnloadTexture(std::string& path)
+    void ResourceLoader::UnloadTexture(std::string& texturePath)
     {
-        auto iterator = textures.find(path);
-        if (iterator != textures.end())
+        std::string fullPath = "assets/" + texturePath;
+        if (textures.contains(fullPath))
         {
-            SDL_DestroyTexture(iterator->second);
-            textures.erase(iterator);
+            SDL_DestroyTexture(textures[fullPath]);
+            textures.erase(fullPath);
         }
     }
 

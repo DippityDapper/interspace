@@ -2,28 +2,34 @@
 
 namespace Game
 {
-    ClientEntity::ClientEntity(SDL_Renderer* renderer, std::string& path, std::string& _username, float x, float y)
+    ClientEntity::ClientEntity(std::string& texturePath, std::string& _username, float x, float y)
     {
         username = _username;
-
-        sprite.texture = Engine::ResourceLoader::LoadTexture(renderer, path);
-        sprite.w = sprite.texture->w;
-        sprite.h = sprite.texture->h;
+        sprite = new Engine::Sprite(texturePath);
 
         position.y = y;
         position.x = x;
     }
 
-    void ClientEntity::Render(SDL_Renderer *renderer, Engine::Camera& camera) const
+    ClientEntity::~ClientEntity()
     {
+        delete sprite;
+    }
+
+    void ClientEntity::Render() const
+    {
+        Engine::Camera* mainCamera = Engine::Camera::main;
+        if (mainCamera == nullptr)
+            return;
+
+        Engine::Renderer::BufferAdd(position, sprite);
+
         SDL_FRect dest;
 
-        dest.w = (float)sprite.w * camera.zoom;
-        dest.h = (float)sprite.h * camera.zoom;
-        dest.x = (position.x - (float)sprite.w/2.0f - camera.position.x) * camera.zoom;
-        dest.y = (position.y - (float)sprite.h/2.0f - camera.position.y) * camera.zoom;
-
-        SDL_RenderTexture(renderer, sprite.texture, nullptr, &dest);
+        dest.w = (float)sprite->w * mainCamera->zoom;
+        dest.h = (float)sprite->h * mainCamera->zoom;
+        dest.x = (position.x - mainCamera->position.x) * mainCamera->zoom;
+        dest.y = (position.y - mainCamera->position.y) * mainCamera->zoom;
 
         ImGui::SetNextWindowBgAlpha(0.0f);
         ImGui::SetNextWindowPos(ImVec2(dest.x + dest.w/2.0f, dest.y + dest.h + 2), ImGuiCond_Always, ImVec2(0.5f, 0.0f));
@@ -42,7 +48,7 @@ namespace Game
 
     void ClientEntity::SetPosition(float x, float y)
     {
-        position.x = x;
-        position.y = y;
+        position.x = x - (float)sprite->w/2.0f;
+        position.y = y - (float)sprite->h/2.0f;
     }
 }

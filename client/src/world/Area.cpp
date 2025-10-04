@@ -2,26 +2,19 @@
 
 namespace Game
 {
-    void Area::Init(SDL_Renderer* renderer)
+    Area::Area(int x, int y)
     {
-        std::string texturePath = "tiles/station_floor_tile_1.png";
-        SDL_Texture* tileTexture = Engine::ResourceLoader::LoadTexture(renderer, texturePath);
-
-        grid.InitializeGrid(25, 25, tileTexture->w, tileTexture->h);
-        for (auto& kvp : grid.tiles)
-        {
-            if (kvp.first.x > 4 && kvp.first.x < 15 && kvp.first.y > 4 && kvp.first.y < 15)
-                continue;
-            Engine::Tile* tile = &kvp.second;
-            tile->texture = tileTexture;
-        }
+        position.x = x;
+        position.y = y;
+        grid.Init(25, 25);
     }
 
-    void Area::RenderTiles(SDL_Renderer *renderer, Engine::Camera& camera)
+    void Area::RenderTiles()
     {
         for (auto& kvp : grid.tiles)
         {
-            kvp.second.Render(renderer, camera);
+            Engine::Vec2<int> gridPosition = position * grid.gridSize;
+            kvp.second->Render(gridPosition.x, gridPosition.y);
         }
     }
 }

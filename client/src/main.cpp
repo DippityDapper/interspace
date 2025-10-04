@@ -1,15 +1,12 @@
-#include "client/game/Game.h"
+#include "client/engine/Engine.h"
 
 int main(int argc, char* argv[])
 {
-    Game::Game game{};
-    game.Init();
+    Engine::Engine engine{};
 
-    game.HandleEvents();
-    game.Update();
-    game.Render();
-
-    game.Clean();
+    engine.Init();
+    engine.Update();
+    engine.Clean();
 
     return 0;
 }

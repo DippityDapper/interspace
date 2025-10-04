@@ -7,8 +7,8 @@ namespace Engine
         gridSize.x = gridX;
         gridSize.y = gridY;
 
-        tileSize.x = tileX;
-        tileSize.y = tileY;
+        TILE_SIZE.x = tileX;
+        TILE_SIZE.y = tileY;
 
         tiles.clear();
 
@@ -28,15 +28,15 @@ namespace Engine
 
     Vec2<int> Grid::GlobalToLocal(Vec2<float> position) const
     {
-        int dx = std::floor(position.x / tileSize.x);
-        int dy = std::floor(position.y / tileSize.y);
+        int dx = std::floor(position.x / TILE_SIZE.x);
+        int dy = std::floor(position.y / TILE_SIZE.y);
         return {dx, dy};
     }
 
     Vec2<float> Grid::LocalToGlobal(Vec2<int> position) const
     {
-        float dx = position.x * tileSize.x;
-        float dy = position.y * tileSize.y;
+        float dx = position.x * TILE_SIZE.x;
+        float dy = position.y * TILE_SIZE.y;
         return {dx, dy};
     }
 }

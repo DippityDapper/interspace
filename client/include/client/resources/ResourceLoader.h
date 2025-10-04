@@ -14,8 +14,8 @@ namespace Engine
         static std::unordered_map<std::string, SDL_Texture*> textures;
 
     public:
-        static SDL_Texture* LoadTexture(SDL_Renderer *renderer, std::string& path);
-        static void UnloadTexture(std::string& path);
+        static SDL_Texture* LoadTexture(std::string& texturePath);
+        static void UnloadTexture(std::string& texturePath);
         static void UnloadAll();
     };
 }

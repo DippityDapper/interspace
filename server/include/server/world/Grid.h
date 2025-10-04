@@ -11,7 +11,7 @@ namespace Engine
     public:
         std::map<Vec2<int>, Tile> tiles{};
         Vec2<int> gridSize{0, 0};
-        Vec2<int> tileSize{0, 0};
+        Vec2<int> TILE_SIZE{0, 0};
 
     public:
         void InitializeGrid(int gridX, int gridY, int tileX, int tileY);

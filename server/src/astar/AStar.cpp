@@ -114,7 +114,7 @@ namespace Engine
     {
         std::vector<Vec2<int>> path{};
         Node current = endNode;
-        Vec2<int> offset{grid.tileSize.x / 2, grid.tileSize.y / 2};
+        Vec2<int> offset{grid.TILE_SIZE.x / 2, grid.TILE_SIZE.y / 2};
 
         while (true)
         {
