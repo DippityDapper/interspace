@@ -1,9 +1,11 @@
-#include "client/world/World.h"
+#include "client/World.hpp"
 
 namespace Game
 {
     void World::Init()
     {
+        Engine::ResourceLoader::SetScaleMode(SDL_SCALEMODE_PIXELART);
+
         camera = new Engine::Camera(0, 0, 1);
         camera->minZoom = 0.01;
 

@@ -2,7 +2,7 @@
 
 #include <map>
 
-#include "client/world/Tile.h"
+#include "client/Tile.hpp"
 
 namespace Engine
 {

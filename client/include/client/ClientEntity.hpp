@@ -3,12 +3,11 @@
 #include "SDL3/SDL.h"
 #include "imgui.h"
 
-#include "common/vector/Vec2.h"
-
-#include "client/resources/ResourceLoader.h"
-#include "client/camera/Camera.h"
-#include "client/entity/Sprite.h"
-#include "client/engine/Renderer.h"
+#include "dapper2d/Vec2.hpp"
+#include "dapper2d/ResourceLoader.hpp"
+#include "dapper2d/Camera.hpp"
+#include "dapper2d/Sprite.hpp"
+#include "dapper2d/Renderer.hpp"
 
 namespace Game
 {

@@ -1,5 +1,5 @@
+#include "client/Grid.hpp"
 #include <random>
-#include "client/world/Grid.h"
 
 namespace Engine
 {

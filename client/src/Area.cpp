@@ -1,4 +1,4 @@
-#include "client/world/Area.h"
+#include "client/Area.hpp"
 
 namespace Game
 {

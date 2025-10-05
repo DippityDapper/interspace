@@ -1,4 +1,4 @@
-#include "client/entity/ClientEntity.h"
+#include "client/ClientEntity.hpp"
 
 namespace Game
 {

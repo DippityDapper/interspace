@@ -5,10 +5,8 @@
 
 #include "enet/enet.h"
 
-#include "client/world/Grid.h"
-
-#include "client/entity/ClientEntity.h"
-#include "client/networking/NetworkManager.h"
+#include "client/Grid.hpp"
+#include "client/ClientEntity.hpp"
 
 namespace Game
 {

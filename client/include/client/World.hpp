@@ -4,12 +4,11 @@
 
 #include "SDL3/SDL.h"
 
-#include "common/packets/Packets.h"
+#include "dapper2d/Camera.hpp"
+#include "dapper2d/Scene.hpp"
+#include "dapper2d/Renderer.hpp"
 
-#include "client/world/Area.h"
-#include "client/camera/Camera.h"
-#include "client/engine/Scene.h"
-#include "client/engine/Renderer.h"
+#include "client/Area.hpp"
 
 namespace Game
 {

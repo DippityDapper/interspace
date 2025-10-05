@@ -2,10 +2,9 @@
 
 #include "SDL3/SDL.h"
 
-#include "common/vector/Vec2.h"
-
-#include "client/camera/camera.h"
-#include "client/engine/Renderer.h"
+#include "dapper2d/Vec2.hpp"
+#include "dapper2d/camera.hpp"
+#include "dapper2d/Renderer.hpp"
 
 namespace Engine
 {
