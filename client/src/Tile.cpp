@@ -1,19 +1,24 @@
 #include "client/Tile.hpp"
 
-namespace Engine
+#include "SDL3/SDL.h"
+
+#include "dapper2d/Renderer.hpp"
+#include "dapper2d/Sprite.hpp"
+
+namespace Game
 {
-    Tile::Tile(Vec2<int> _gridPosition, std::string& texturePath)
+    Tile::Tile(Engine::Vec2<int> _gridPosition, std::string& texturePath)
     {
         gridPosition.x = _gridPosition.x;
         gridPosition.y = _gridPosition.y;
-        sprite = new Sprite(texturePath);
+        sprite = new Engine::Sprite(texturePath);
     }
 
-    Tile::Tile(Vec2<int> _gridPosition, std::string &texturePath, float w, float h, int x, int y)
+    Tile::Tile(Engine::Vec2<int> _gridPosition, std::string &texturePath, float w, float h, int x, int y)
     {
         gridPosition.x = _gridPosition.x;
         gridPosition.y = _gridPosition.y;
-        sprite = new Sprite(texturePath, w, h, x, y);
+        sprite = new Engine::Sprite(texturePath, w, h, x, y);
     }
 
     Tile::~Tile()
@@ -29,7 +34,7 @@ namespace Engine
         if (sprite->w <= 0 || sprite->h <= 0)
             return;
 
-        Vec2<float> position{(float)(gridPosition.x + offsetX) * sprite->w, (float)(gridPosition.y + offsetY) * sprite->h};
-        Renderer::BufferAdd(position, sprite);
+        Engine::Vec2<float> position{(float)(gridPosition.x + offsetX) * sprite->w, (float)(gridPosition.y + offsetY) * sprite->h};
+        Engine::Renderer::BufferAdd(position, sprite);
     }
 }

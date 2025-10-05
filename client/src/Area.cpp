@@ -1,5 +1,7 @@
 #include "client/Area.hpp"
 
+#include "client/Grid.hpp"
+
 namespace Game
 {
     Area::Area(int x, int y)

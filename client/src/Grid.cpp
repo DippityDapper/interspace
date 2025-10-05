@@ -1,7 +1,7 @@
 #include "client/Grid.hpp"
 #include <random>
 
-namespace Engine
+namespace Game
 {
 
     Grid::~Grid()
@@ -24,7 +24,7 @@ namespace Engine
         {
             for (int x = 0; x < gridX; ++x)
             {
-                Vec2<int> position{x, y};
+                Engine::Vec2<int> position{x, y};
 
                 std::random_device rd;
                 std::mt19937 gen(rd());
@@ -41,14 +41,14 @@ namespace Engine
         }
     }
 
-    Vec2<int> Grid::GlobalToLocal(Vec2<float> position) const
+    Engine::Vec2<int> Grid::GlobalToLocal(Engine::Vec2<float> position) const
     {
         int dx = std::floor(position.x / TILE_SIZE.x);
         int dy = std::floor(position.y / TILE_SIZE.y);
         return {dx, dy};
     }
 
-    Vec2<float> Grid::LocalToGlobal(Vec2<int> position) const
+    Engine::Vec2<float> Grid::LocalToGlobal(Engine::Vec2<int> position) const
     {
         float dx = position.x * TILE_SIZE.x;
         float dy = position.y * TILE_SIZE.y;

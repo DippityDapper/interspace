@@ -1,5 +1,12 @@
 #include "client/World.hpp"
 
+#include "SDL3/SDL.h"
+
+#include "dapper2d/Camera.hpp"
+#include "dapper2d/ResourceLoader.hpp"
+
+#include "client/Area.hpp"
+
 namespace Game
 {
     void World::Init()

@@ -1,17 +1,22 @@
 #pragma once
 
 #include <map>
+#include <memory>
 
-#include "SDL3/SDL.h"
-
-#include "dapper2d/Camera.hpp"
 #include "dapper2d/Scene.hpp"
-#include "dapper2d/Renderer.hpp"
+#include "dapper2d/Vec2.hpp"
 
-#include "client/Area.hpp"
+#include "client/ClientEntity.hpp"
+
+namespace Engine
+{
+    class Camera;
+}
 
 namespace Game
 {
+    class Area;
+
     class World : public Engine::Scene
     {
     public:

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "SDL3/SDL.h"
-#include "imgui.h"
+#include <string>
 
 #include "dapper2d/Vec2.hpp"
-#include "dapper2d/ResourceLoader.hpp"
-#include "dapper2d/Camera.hpp"
-#include "dapper2d/Sprite.hpp"
-#include "dapper2d/Renderer.hpp"
+
+namespace Engine
+{
+    class Sprite;
+}
 
 namespace Game
 {

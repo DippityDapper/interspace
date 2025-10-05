@@ -1,5 +1,13 @@
 #include "client/ClientEntity.hpp"
 
+#include "SDL3/SDL.h"
+#include "imgui.h"
+
+#include "dapper2d/ResourceLoader.hpp"
+#include "dapper2d/Camera.hpp"
+#include "dapper2d/Sprite.hpp"
+#include "dapper2d/Renderer.hpp"
+
 namespace Game
 {
     ClientEntity::ClientEntity(std::string& texturePath, std::string& _username, float x, float y)

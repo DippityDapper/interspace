@@ -1,22 +1,25 @@
 #pragma once
 
-#include "SDL3/SDL.h"
+#include <string>
 
 #include "dapper2d/Vec2.hpp"
-#include "dapper2d/camera.hpp"
-#include "dapper2d/Renderer.hpp"
 
 namespace Engine
+{
+    class Sprite;
+}
+
+namespace Game
 {
     class Tile
     {
     public:
-        Vec2<int> gridPosition{0,0};
-        Sprite* sprite = nullptr;
+        Engine::Vec2<int> gridPosition{0,0};
+        Engine::Sprite* sprite = nullptr;
 
     public:
-        Tile(Vec2<int> _gridPosition, std::string& texturePath);
-        Tile(Vec2<int> _gridPosition, std::string& texturePath, float w, float h, int x, int y);
+        Tile(Engine::Vec2<int> _gridPosition, std::string& texturePath);
+        Tile(Engine::Vec2<int> _gridPosition, std::string& texturePath, float w, float h, int x, int y);
         ~Tile();
         Tile(const Tile&) = delete;
         Tile& operator=(const Tile&) = delete;

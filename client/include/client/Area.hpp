@@ -3,17 +3,15 @@
 #include <map>
 #include <memory>
 
-#include "enet/enet.h"
-
+#include "dapper2d/Vec2.hpp"
 #include "client/Grid.hpp"
-#include "client/ClientEntity.hpp"
 
 namespace Game
 {
     class Area
     {
     public:
-        Engine::Grid grid{};
+        Grid grid{};
         Engine::Vec2<int> position{0,0};
 
     public:
