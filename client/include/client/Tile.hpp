@@ -17,6 +17,8 @@ namespace Game
         Engine::Vec2<int> gridPosition{0,0};
         Engine::Sprite* sprite = nullptr;
 
+        static const int TILE_SIZE;
+
     public:
         Tile(Engine::Vec2<int> _gridPosition, std::string& texturePath);
         Tile(Engine::Vec2<int> _gridPosition, std::string& texturePath, float w, float h, int x, int y);

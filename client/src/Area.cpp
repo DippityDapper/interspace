@@ -8,15 +8,15 @@ namespace Game
     {
         position.x = x;
         position.y = y;
-        grid.Init(25, 25);
+        grid.Init();
     }
 
     void Area::RenderTiles()
     {
         for (auto& kvp : grid.tiles)
         {
-            Engine::Vec2<int> gridPosition = position * grid.gridSize;
-            kvp.second->Render(gridPosition.x, gridPosition.y);
+            Engine::Vec2<int> offset = position * Grid::GRID_SIZE;
+            kvp.second->Render(offset.x, offset.y);
         }
     }
 }

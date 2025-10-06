@@ -7,6 +7,8 @@
 
 namespace Game
 {
+    const int Tile::TILE_SIZE = 32;
+
     Tile::Tile(Engine::Vec2<int> _gridPosition, std::string& texturePath)
     {
         gridPosition.x = _gridPosition.x;
@@ -18,7 +20,7 @@ namespace Game
     {
         gridPosition.x = _gridPosition.x;
         gridPosition.y = _gridPosition.y;
-        sprite = new Engine::Sprite(texturePath, w, h, x, y);
+        sprite = new Engine::Sprite(texturePath, Tile::TILE_SIZE, Tile::TILE_SIZE, x, y);
     }
 
     Tile::~Tile()
@@ -31,10 +33,10 @@ namespace Game
         if (!sprite)
             return;
 
-        if (sprite->w <= 0 || sprite->h <= 0)
+        if (sprite->tileW <= 0 || sprite->tileH <= 0)
             return;
 
-        Engine::Vec2<float> position{(float)(gridPosition.x + offsetX) * sprite->w, (float)(gridPosition.y + offsetY) * sprite->h};
+        Engine::Vec2<float> position{(float)(gridPosition.x + offsetX) * sprite->tileW, (float)(gridPosition.y + offsetY) * sprite->tileH};
         Engine::Renderer::BufferAdd(position, sprite);
     }
 }

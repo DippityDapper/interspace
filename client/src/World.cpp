@@ -1,27 +1,41 @@
 #include "client/World.hpp"
 
+#include "imgui.h"
 #include "SDL3/SDL.h"
 
-#include "dapper2d/Camera.hpp"
 #include "dapper2d/ResourceLoader.hpp"
+#include "dapper2d/Window.hpp"
 
+#include "client/Camera.hpp"
 #include "client/Area.hpp"
 
 namespace Game
 {
+    const int World::WORLD_SIZE_X = 1;
+    const int World::WORLD_SIZE_Y = 1;
+
     void World::Init()
     {
         Engine::ResourceLoader::SetScaleMode(SDL_SCALEMODE_PIXELART);
+        SDL_SetWindowFullscreen(Engine::Window::GetWindow(), true);
 
-        camera = new Engine::Camera(0, 0, 1);
-        camera->minZoom = 0.01;
+        camera = new Camera
+        (
+                (WORLD_SIZE_X * Grid::GRID_SIZE * Tile::TILE_SIZE) / 2.0f,
+                (WORLD_SIZE_Y * Grid::GRID_SIZE * Tile::TILE_SIZE) / 2.0f,
+            1.0f
+        );
 
-        worldSize.x = 2;
-        worldSize.y = 1;
+        camera->minZoom = 0.05;
+        camera->limitBounds = true;
+        camera->limitLeft = 0.0f;
+        camera->limitRight = WORLD_SIZE_X * Grid::GRID_SIZE * Tile::TILE_SIZE;
+        camera->limitTop = 0.0f;
+        camera->limitBottom = WORLD_SIZE_Y * Grid::GRID_SIZE * Tile::TILE_SIZE;
 
-        for (int y = 0; y < worldSize.y; ++y)
+        for (int y = 0; y < WORLD_SIZE_Y; ++y)
         {
-            for (int x = 0; x < worldSize.x; ++x)
+            for (int x = 0; x < WORLD_SIZE_X; ++x)
             {
                 Engine::Vec2<int> gridPosition{x, y};
                 areas[gridPosition] = new Area(x, y);
@@ -36,26 +50,71 @@ namespace Game
 
     void World::Update(float delta)
     {
+        Engine::Vec2<float> camPos = Engine::Camera::main->position;
 
+        Engine::Vec2<int> camAreaPos{
+            (int)std::floor(camPos.x / (Grid::GRID_SIZE * Tile::TILE_SIZE)),
+            (int)std::floor(camPos.y / (Grid::GRID_SIZE * Tile::TILE_SIZE))
+        };
+
+        cameraAreaPosition = camAreaPos;
     }
 
     void World::Render()
     {
-//        Area* currentArea = GetCurrentArea();
-//        currentArea->RenderTiles();
-        for (auto &kvp : areas)
+        RenderAreas();
+
+        ImGui::SetNextWindowPos({0,0});
+        ImGui::Begin("Debug");
+
+        ImGui::Text("Camera Position : (%.0f, %.0f)", camera->position.x, camera->position.y);
+        ImGui::Text("Camera Area Position : (%d, %d)", cameraAreaPosition.x, cameraAreaPosition.y);
+
+        int areaPixelSize = Grid::GRID_SIZE * Tile::TILE_SIZE;
+
+        int areasVisibleX = (int)std::ceil((float)Engine::Window::viewport.x / (areaPixelSize * Engine::Camera::main->zoom)) + 1;
+        int areasVisibleY = (int)std::ceil((float)Engine::Window::viewport.y / (areaPixelSize * Engine::Camera::main->zoom)) + 1;
+
+        ImGui::Text("Rendered Area : (%d, %d)", areasVisibleX, areasVisibleY);
+
+        float mX = 0;
+        float mY = 0;
+        SDL_GetMouseState(&mX, &mY);
+
+        Engine::Vec2<float> mouseLocalPosition{mX, mY};
+        Engine::Vec2<float> offset = (Engine::Vec2<float>)Engine::Window::viewport / 2.0f;
+        Engine::Vec2<float> mouseGlobalPosition = camera->position + ((mouseLocalPosition - offset) / camera->zoom);
+
+        ImGui::Text("Mouse Position : (%.0f, %.0f)", mouseGlobalPosition.x, mouseGlobalPosition.y);
+
+        ImGui::Text("Viewport Size : (%d, %d)", Engine::Window::viewport.x, Engine::Window::viewport.y);
+        ImGui::End();
+    }
+
+    void World::RenderAreas()
+    {
+        int areaPixelSize = Grid::GRID_SIZE * Tile::TILE_SIZE;
+
+        int areasVisibleX = (int)std::ceil((float)Engine::Window::viewport.x / (areaPixelSize * Engine::Camera::main->zoom)) + 1;
+        int areasVisibleY = (int)std::ceil((float)Engine::Window::viewport.y / (areaPixelSize * Engine::Camera::main->zoom)) + 1;
+
+        for (int y = -areasVisibleY/2; y <= areasVisibleY/2; ++y)
         {
-            kvp.second->RenderTiles();
+            for (int x = -areasVisibleX/2; x <= areasVisibleX/2; ++x)
+            {
+                Engine::Vec2<int> offset{x, y};
+                Engine::Vec2<int> currPos = offset + cameraAreaPosition;
+                if (areas.contains(currPos))
+                {
+                    Area *currentArea = areas[currPos];
+                    currentArea->RenderTiles();
+                }
+            }
         }
-        //RenderEntities();
     }
 
     void World::RenderEntities()
     {
-        for (auto& kvp : entities)
-        {
-            kvp.second->Render();
-        }
     }
 
     void World::Clean()
@@ -67,13 +126,6 @@ namespace Game
         }
         areas.clear();
         delete camera;
-    }
-
-    Area* World::GetCurrentArea()
-    {
-        if (!areas.contains(currentAreaPosition))
-            return nullptr;
-        return areas[currentAreaPosition];
     }
 }
 

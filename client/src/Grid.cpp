@@ -3,6 +3,7 @@
 
 namespace Game
 {
+    const int Grid::GRID_SIZE = 64;
 
     Grid::~Grid()
     {
@@ -12,17 +13,14 @@ namespace Game
         }
     }
 
-    void Grid::Init(int gridX, int gridY)
+    void Grid::Init()
     {
-        gridSize.x = gridX;
-        gridSize.y = gridY;
-
         tiles.clear();
 
         std::string texturePath = "tilesets/grass_tileset.png";
-        for (int y = 0; y < gridY; ++y)
+        for (int y = 0; y < GRID_SIZE; ++y)
         {
-            for (int x = 0; x < gridX; ++x)
+            for (int x = 0; x < GRID_SIZE; ++x)
             {
                 Engine::Vec2<int> position{x, y};
 
@@ -35,23 +33,23 @@ namespace Game
                 int atlasX = distribX(gen);
                 int atlasY = distribY(gen);
 
-                Tile* tile = new Tile(position, texturePath, 32, 32, atlasX, atlasY); // 4 , 8
+                Tile* tile = new Tile(position, texturePath, 32, 32, atlasX, atlasY);
                 tiles.emplace(position, tile);
             }
         }
     }
 
-    Engine::Vec2<int> Grid::GlobalToLocal(Engine::Vec2<float> position) const
-    {
-        int dx = std::floor(position.x / TILE_SIZE.x);
-        int dy = std::floor(position.y / TILE_SIZE.y);
-        return {dx, dy};
-    }
-
-    Engine::Vec2<float> Grid::LocalToGlobal(Engine::Vec2<int> position) const
-    {
-        float dx = position.x * TILE_SIZE.x;
-        float dy = position.y * TILE_SIZE.y;
-        return {dx, dy};
-    }
+//    Engine::Vec2<int> Grid::GlobalToLocal(Engine::Vec2<float> position) const
+//    {
+//        int dx = std::floor(position.x / TILE_SIZE.x);
+//        int dy = std::floor(position.y / TILE_SIZE.y);
+//        return {dx, dy};
+//    }
+//
+//    Engine::Vec2<float> Grid::LocalToGlobal(Engine::Vec2<int> position) const
+//    {
+//        float dx = position.x * TILE_SIZE.x;
+//        float dy = position.y * TILE_SIZE.y;
+//        return {dx, dy};
+//    }
 }
