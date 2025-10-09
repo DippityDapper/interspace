@@ -7,20 +7,21 @@
 
 namespace Game
 {
-    const int Tile::TILE_SIZE = 32;
+    int Tile::TILE_SIZE = 0;
 
-    Tile::Tile(Engine::Vec2<int> _gridPosition, std::string& texturePath)
+    Tile::Tile(const Tile &tile)
     {
-        gridPosition.x = _gridPosition.x;
-        gridPosition.y = _gridPosition.y;
+        sprite = tile.sprite;
+    }
+
+    Tile::Tile(const std::string& texturePath)
+    {
         sprite = new Engine::Sprite(texturePath);
     }
 
-    Tile::Tile(Engine::Vec2<int> _gridPosition, std::string &texturePath, float w, float h, int x, int y)
+    Tile::Tile(const std::string &texturePath, float w, float h, int x, int y)
     {
-        gridPosition.x = _gridPosition.x;
-        gridPosition.y = _gridPosition.y;
-        sprite = new Engine::Sprite(texturePath, Tile::TILE_SIZE, Tile::TILE_SIZE, x, y);
+        sprite = new Engine::Sprite(texturePath, w, h, x, y);
     }
 
     Tile::~Tile()
@@ -28,15 +29,14 @@ namespace Game
         delete sprite;
     }
 
-    void Tile::Render(int offsetX, int offsetY) const
+    void Tile::Render(int tilePositionX, int tilePositionY) const
     {
         if (!sprite)
             return;
 
         if (sprite->tileW <= 0 || sprite->tileH <= 0)
             return;
-
-        Engine::Vec2<float> position{(float)(gridPosition.x + offsetX) * sprite->tileW, (float)(gridPosition.y + offsetY) * sprite->tileH};
+        Engine::Vec2<float> position{(float)tilePositionX * Tile::TILE_SIZE, (float)tilePositionY * Tile::TILE_SIZE};
         Engine::Renderer::BufferAdd(position, sprite);
     }
 }

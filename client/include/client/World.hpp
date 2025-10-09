@@ -17,12 +17,13 @@ namespace Game
     {
     public:
         Camera* camera = nullptr;
+        Engine::Vec2<int> cameraTilePosition{0, 0};
 
-        Engine::Vec2<int> cameraAreaPosition{0, 0};
         std::map<Engine::Vec2<int>, Area*> areas{};
 
-        static const int WORLD_SIZE_X;
-        static const int WORLD_SIZE_Y;
+        static uint32_t worldSeed;
+        static int WORLD_SIZE_X;
+        static int WORLD_SIZE_Y;
 
         std::map<int, std::unique_ptr<ClientEntity>> entities{};
 

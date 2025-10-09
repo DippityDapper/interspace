@@ -14,18 +14,17 @@ namespace Game
     class Tile
     {
     public:
-        Engine::Vec2<int> gridPosition{0,0};
+        static int TILE_SIZE;
+
         Engine::Sprite* sprite = nullptr;
 
-        static const int TILE_SIZE;
-
     public:
-        Tile(Engine::Vec2<int> _gridPosition, std::string& texturePath);
-        Tile(Engine::Vec2<int> _gridPosition, std::string& texturePath, float w, float h, int x, int y);
+        explicit Tile(const std::string& texturePath);
+        Tile(const std::string& texturePath, float w, float h, int x, int y);
         ~Tile();
-        Tile(const Tile&) = delete;
+        Tile(const Tile& tile);
         Tile& operator=(const Tile&) = delete;
 
-        void Render(int offsetX, int offsetY) const;
+        void Render(int tilePositionX, int tilePositionY) const;
     };
 }
