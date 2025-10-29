@@ -17,7 +17,6 @@ namespace Game
     {
     public:
         Camera* camera = nullptr;
-        Engine::Vec2<int> cameraTilePosition{0, 0};
 
         std::map<Engine::Vec2<int>, Area*> areas{};
 

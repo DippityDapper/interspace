@@ -28,6 +28,7 @@ namespace Game
         void Update(float delta);
         void Render();
 
+        void GenerateTiles();
         void UpdateTile(Engine::Vec2<int> tilePosition, Tiles::Type tileType);
     };
 }

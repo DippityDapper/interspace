@@ -6,6 +6,7 @@
 #include "dapper2d/ResourceLoader.hpp"
 #include "dapper2d/Window.hpp"
 #include "dapper2d/CFGParser.hpp"
+#include "dapper2d/Engine.hpp"
 
 #include "client/Camera.hpp"
 #include "client/Area.hpp"
@@ -45,21 +46,17 @@ namespace Game
         camera->limitRight = WORLD_SIZE_X * Area::AREA_SIZE * Tile::TILE_SIZE;
         camera->limitTop = 0.0f;
         camera->limitBottom = WORLD_SIZE_Y * Area::AREA_SIZE * Tile::TILE_SIZE;
-
-        for (int y = 0; y < WORLD_SIZE_Y; ++y)
-        {
-            for (int x = 0; x < WORLD_SIZE_X; ++x)
-            {
-                Engine::Vec2<int> gridPosition{x, y};
-                areas[gridPosition] = new Area(x, y);
-            }
-        }
     }
 
     void World::HandleEvents(SDL_Event &event)
     {
         if (event.key.down)
         {
+            if (event.key.key == SDLK_ESCAPE)
+            {
+                Engine::Engine::Quit();
+                return;
+            }
             if (event.key.key == SDLK_E)
             {
                 float mX = 0;
@@ -87,9 +84,6 @@ namespace Game
     void World::Update(float delta)
     {
         Engine::Vec2<float> cameraPosition = Engine::Camera::main->position;
-
-        cameraTilePosition = (cameraPosition / Tile::TILE_SIZE).Floor();
-
         float zoom = camera->zoom;
 
         Engine::Vec2<float> viewportOffset = ((Engine::Vec2<float>)Engine::Window::viewport  / 2.0f) / zoom;
@@ -106,6 +100,30 @@ namespace Game
                 {
                     areas[visibleAreaPosition]->Update(delta);
                 }
+                else if (!areas.contains(visibleAreaPosition) && x >= 0 && x < WORLD_SIZE_X && y >= 0 && y < WORLD_SIZE_Y)
+                {
+                    Area* area = new Area(x, y);
+                    areas[visibleAreaPosition] = area;
+
+                    area->GenerateTiles();
+//                    area->Update(delta);
+                }
+            }
+        }
+
+        for (auto it = areas.begin(); it != areas.end();)
+        {
+            const Engine::Vec2<int>& pos = it->first;
+
+            if (pos.x < minBounds.x - 1 || pos.x > maxBounds.x + 1 ||
+                pos.y < minBounds.y - 1 || pos.y > maxBounds.y + 1)
+            {
+                delete it->second;
+                it = areas.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
     }
@@ -117,6 +135,7 @@ namespace Game
         ImGui::SetNextWindowPos({0,0});
         ImGui::Begin("Debug");
 
+        Engine::Vec2<int> cameraTilePosition = (Engine::Camera::main->position / Tile::TILE_SIZE).Floor();
         Engine::Vec2<int> cameraAreaPosition = cameraTilePosition / Area::AREA_SIZE;
         ImGui::Text("Camera Area Position : (%d, %d)", cameraAreaPosition.x, cameraAreaPosition.y);
 

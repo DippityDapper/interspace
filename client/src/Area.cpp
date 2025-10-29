@@ -23,7 +23,6 @@ namespace Game
         position.y = _y;
 
         areaSeed = World::worldSeed ^ (position.x * 73856093) ^ (position.y * 19349663);
-        std::mt19937 gen(areaSeed);
 
         cachedTexture = Engine::ResourceLoader::CreateTexture(
                 SDL_PIXELFORMAT_RGBA8888,
@@ -31,6 +30,13 @@ namespace Game
                 AREA_SIZE * Tile::TILE_SIZE,
                 AREA_SIZE * Tile::TILE_SIZE
         );
+    }
+
+    void Area::GenerateTiles()
+    {
+        std::mt19937 gen(areaSeed);
+
+        SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), cachedTexture.get());
 
         for (int y = 0; y < AREA_SIZE; ++y)
         {
@@ -56,9 +62,17 @@ namespace Game
                     tileType = (Tiles::Type)grassTileDistribution(gen);
                 }
 
-                UpdateTile(localPosition, tileType);
+                Tile* tile = Tiles::GetTile(tileType);
+                tiles[localPosition] = tile;
+
+
+
+                Engine::Vec2<float> globalTilePosition = (Engine::Vec2<float>)localPosition * Tile::TILE_SIZE;
+                Engine::Renderer::BufferAddNoOffset(globalTilePosition, tile->sprite);
             }
         }
+
+        SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), nullptr);
     }
 
     void Area::Update(float delta)

@@ -11,9 +11,6 @@ class Camera : public Engine::Camera
         float targetZoom = 1.0;
 
 public:
-    float minZoom = 0.1f;
-    float maxZoom = 10.0f;
-
     float panSpeed = 10;
     float zoomSpeed = 10;
 
