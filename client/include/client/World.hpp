@@ -24,6 +24,9 @@ namespace Game
         static int WORLD_SIZE_X;
         static int WORLD_SIZE_Y;
 
+        float deltaDebug = 0;
+        float maxDelta = 0;
+
         std::map<int, std::unique_ptr<ClientEntity>> entities{};
 
     public:

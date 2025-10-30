@@ -20,16 +20,19 @@ namespace Game
 
     void Camera::Update(float delta)
     {
+        float tPos = std::min(delta * panSpeed, 1.0f);
+        float tZoom = std::min(delta * zoomSpeed, 1.0f);
+
         if (targetPosition != position)
         {
-            position = position + (targetPosition - position) * (delta * panSpeed);
-            if (position.DistanceTo(targetPosition) < 0.1)
+            position = position + (targetPosition - position) * tPos;
+            if (position.DistanceTo(targetPosition) < 0.1f)
                 position = targetPosition;
         }
         if (targetZoom != zoom)
         {
-            zoom = zoom + (targetZoom - zoom) * (delta * zoomSpeed);
-            if (std::abs(targetZoom - zoom) < 0.01)
+            zoom = zoom + (targetZoom - zoom) * tZoom;
+            if (std::abs(targetZoom - zoom) < 0.01f)
                 zoom = targetZoom;
         }
     }

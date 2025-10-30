@@ -40,7 +40,7 @@ namespace Game
             1.0f
         );
 
-        camera->minZoom = 0.1;
+        camera->minZoom = 0.05;
         camera->limitBounds = true;
         camera->limitLeft = 0.0f;
         camera->limitRight = WORLD_SIZE_X * Area::AREA_SIZE * Tile::TILE_SIZE;
@@ -91,10 +91,17 @@ namespace Game
         Engine::Vec2<int> minBounds = ((cameraPosition - viewportOffset) / (Tile::TILE_SIZE * Area::AREA_SIZE)).Floor();
         Engine::Vec2<int> maxBounds = ((cameraPosition + viewportOffset) / (Tile::TILE_SIZE * Area::AREA_SIZE)).Floor();
 
+        int areasAdded = 0;
+
         for (int y = minBounds.y-1; y <= maxBounds.y+1; ++y)
         {
+            if (areasAdded > 1)
+                break;
             for (int x = minBounds.x-1; x <= maxBounds.x+1; ++x)
             {
+                if (areasAdded > 1)
+                    break;
+
                 Engine::Vec2<int> visibleAreaPosition{x, y};
                 if (areas.contains(visibleAreaPosition))
                 {
@@ -106,9 +113,14 @@ namespace Game
                     areas[visibleAreaPosition] = area;
 
                     area->GenerateTiles();
-//                    area->Update(delta);
+                    area->Update(delta);
+
+                    areasAdded++;
                 }
             }
+            deltaDebug = delta;
+            if (deltaDebug > maxDelta)
+                maxDelta = deltaDebug;
         }
 
         for (auto it = areas.begin(); it != areas.end();)
@@ -134,6 +146,8 @@ namespace Game
 
         ImGui::SetNextWindowPos({0,0});
         ImGui::Begin("Debug");
+
+        ImGui::Text("Rendered Area Count : %d", areas.size());
 
         Engine::Vec2<int> cameraTilePosition = (Engine::Camera::main->position / Tile::TILE_SIZE).Floor();
         Engine::Vec2<int> cameraAreaPosition = cameraTilePosition / Area::AREA_SIZE;
