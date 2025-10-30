@@ -1,4 +1,6 @@
-#include "Client/Camera.hpp"
+#include "client/Camera.hpp"
+#include "client/Area.hpp"
+#include "client/Tile.hpp"
 
 #include "SDL3/SDL.h"
 
@@ -39,6 +41,27 @@ namespace Game
 
     void Game::Camera::HandleEvents(SDL_Event &event)
     {
+        if (event.type == SDL_EVENT_KEY_DOWN)
+        {
+            heldKeys[event.key.key] = true;
+            float mSpeed = moveSpeed * Tile::TILE_SIZE;
+
+            if (heldKeys.contains(SDLK_LSHIFT) && heldKeys[SDLK_LSHIFT])
+                mSpeed = Area::AREA_SIZE * Tile::TILE_SIZE;
+
+            if (heldKeys.contains(SDLK_W) && heldKeys[SDLK_W])
+                targetPosition.y -= mSpeed;
+            if (heldKeys.contains(SDLK_S) && heldKeys[SDLK_S])
+                targetPosition.y += mSpeed;
+            if (heldKeys.contains(SDLK_A) && heldKeys[SDLK_A])
+                targetPosition.x -= mSpeed;
+            if (heldKeys.contains(SDLK_D) && heldKeys[SDLK_D])
+                targetPosition.x += mSpeed;
+        }
+        if (event.type == SDL_EVENT_KEY_UP)
+        {
+            heldKeys[event.key.key] = false;
+        }
         if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
         {
             if (event.button.button == SDL_BUTTON_MIDDLE)

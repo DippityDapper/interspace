@@ -23,6 +23,7 @@ namespace Game
         static uint32_t worldSeed;
         static int WORLD_SIZE_X;
         static int WORLD_SIZE_Y;
+        float minZoomForRendering = 0.5;
 
         float deltaDebug = 0;
         float maxDelta = 0;

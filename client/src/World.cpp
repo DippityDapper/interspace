@@ -21,7 +21,7 @@ namespace Game
     void World::Init()
     {
         Engine::ResourceLoader::SetScaleMode(SDL_SCALEMODE_PIXELART);
-        SDL_SetWindowFullscreen(Engine::Window::GetWindow(), true);
+//        SDL_SetWindowFullscreen(Engine::Window::GetWindow(), true);
 
         Engine::CFGParser::LoadConfig("world");
 
@@ -84,9 +84,9 @@ namespace Game
     void World::Update(float delta)
     {
         Engine::Vec2<float> cameraPosition = Engine::Camera::main->position;
-        float zoom = camera->zoom;
+        float minZoom = std::max(camera->zoom, minZoomForRendering);
 
-        Engine::Vec2<float> viewportOffset = ((Engine::Vec2<float>)Engine::Window::viewport  / 2.0f) / zoom;
+        Engine::Vec2<float> viewportOffset = ((Engine::Vec2<float>)Engine::Window::viewport  / 2.0f) / minZoom;
 
         Engine::Vec2<int> minBounds = ((cameraPosition - viewportOffset) / (Tile::TILE_SIZE * Area::AREA_SIZE)).Floor();
         Engine::Vec2<int> maxBounds = ((cameraPosition + viewportOffset) / (Tile::TILE_SIZE * Area::AREA_SIZE)).Floor();
