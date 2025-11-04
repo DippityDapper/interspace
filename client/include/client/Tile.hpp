@@ -4,6 +4,8 @@
 
 #include "dapper2d/Vec2.hpp"
 
+#include "client/Tiles.hpp"
+
 namespace Engine
 {
     class Sprite;
@@ -17,6 +19,7 @@ namespace Game
         static int TILE_SIZE;
 
         Engine::Sprite* sprite = nullptr;
+        Tiles::Type type = Tiles::GRASS_1;
 
     public:
         explicit Tile(const std::string& texturePath);

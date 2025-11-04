@@ -25,10 +25,10 @@ namespace Game
         static int WORLD_SIZE_Y;
         float minZoomForRendering = 0.5;
 
-        float deltaDebug = 0;
-        float maxDelta = 0;
-
         std::map<int, std::unique_ptr<ClientEntity>> entities{};
+
+    private:
+        void SaveWorld();
 
     public:
         void Init() override;

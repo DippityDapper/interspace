@@ -1,5 +1,6 @@
 #include "client/World.hpp"
 
+#include <fstream>
 #include "imgui.h"
 #include "SDL3/SDL.h"
 
@@ -7,6 +8,7 @@
 #include "dapper2d/Window.hpp"
 #include "dapper2d/CFGParser.hpp"
 #include "dapper2d/Engine.hpp"
+#include "dapper2d/Input.hpp"
 
 #include "client/Camera.hpp"
 #include "client/Area.hpp"
@@ -23,15 +25,24 @@ namespace Game
         Engine::ResourceLoader::SetScaleMode(SDL_SCALEMODE_PIXELART);
 //        SDL_SetWindowFullscreen(Engine::Window::GetWindow(), true);
 
-        Engine::CFGParser::LoadConfig("world");
+        Engine::CFGParser::LoadConfig("configs/world.cfg", "world");
 
         Tiles::InitRegistry();
 
-        worldSeed = Engine::CFGParser::GetUInt32("world", "world_seed");
-        WORLD_SIZE_X = Engine::CFGParser::GetInt("world", "world_size_x");
-        WORLD_SIZE_Y = Engine::CFGParser::GetInt("world", "world_size_y");
-        Area::AREA_SIZE = Engine::CFGParser::GetInt("world", "area_size");
-        Tile::TILE_SIZE = Engine::CFGParser::GetInt("world", "tile_size");
+        try
+        {
+            worldSeed = Engine::CFGParser::GetUInt32("world", "world_seed");
+            WORLD_SIZE_X = Engine::CFGParser::GetInt("world", "world_size_x");
+            WORLD_SIZE_Y = Engine::CFGParser::GetInt("world", "world_size_y");
+            Area::AREA_SIZE = Engine::CFGParser::GetInt("world", "area_size");
+            Tile::TILE_SIZE = Engine::CFGParser::GetInt("world", "tile_size");
+        }
+        catch (const std::exception& e)
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", e.what());
+            Engine::Engine::Quit();
+            return;
+        }
 
         camera = new Camera
         (
@@ -57,26 +68,26 @@ namespace Game
                 Engine::Engine::Quit();
                 return;
             }
-            if (event.key.key == SDLK_E)
+        }
+        if (Input::IsKeyDown(SDLK_E))
+        {
+            float mX = 0;
+            float mY = 0;
+            SDL_GetMouseState(&mX, &mY);
+
+            Engine::Vec2<float> mouseLocalPosition{mX, mY};
+            Engine::Vec2<float> viewportOffset = (Engine::Vec2<float>)Engine::Window::viewport / 2.0f;
+
+            Engine::Vec2<float> mouseGlobalPosition = camera->position + ((mouseLocalPosition - viewportOffset) / camera->zoom);
+            Engine::Vec2<int> mouseTilePosition = (mouseGlobalPosition / Tile::TILE_SIZE).Floor();
+
+            Engine::Vec2<int> mouseAreaPosition = mouseTilePosition / Area::AREA_SIZE;
+            Engine::Vec2<int> mouseLocalTilePosition = mouseTilePosition % Area::AREA_SIZE;
+
+            if (areas.contains(mouseAreaPosition))
             {
-                float mX = 0;
-                float mY = 0;
-                SDL_GetMouseState(&mX, &mY);
-
-                Engine::Vec2<float> mouseLocalPosition{mX, mY};
-                Engine::Vec2<float> viewportOffset = (Engine::Vec2<float>)Engine::Window::viewport / 2.0f;
-
-                Engine::Vec2<float> mouseGlobalPosition = camera->position + ((mouseLocalPosition - viewportOffset) / camera->zoom);
-                Engine::Vec2<int> mouseTilePosition = (mouseGlobalPosition / Tile::TILE_SIZE).Floor();
-
-                Engine::Vec2<int> mouseAreaPosition = mouseTilePosition / Area::AREA_SIZE;
-                Engine::Vec2<int> mouseLocalTilePosition = mouseTilePosition % Area::AREA_SIZE;
-
-                if (areas.contains(mouseAreaPosition))
-                {
-                    Area* area = areas[mouseAreaPosition];
-                    area->UpdateTile(mouseLocalTilePosition, Tiles::STONE_PATH);
-                }
+                Area* area = areas[mouseAreaPosition];
+                area->UpdateTile(mouseLocalTilePosition, Tiles::STONE_PATH);
             }
         }
     }
@@ -95,19 +106,14 @@ namespace Game
 
         for (int y = minBounds.y-1; y <= maxBounds.y+1; ++y)
         {
-            if (areasAdded > 1)
-                break;
             for (int x = minBounds.x-1; x <= maxBounds.x+1; ++x)
             {
-                if (areasAdded > 1)
-                    break;
-
                 Engine::Vec2<int> visibleAreaPosition{x, y};
                 if (areas.contains(visibleAreaPosition))
                 {
                     areas[visibleAreaPosition]->Update(delta);
                 }
-                else if (!areas.contains(visibleAreaPosition) && x >= 0 && x < WORLD_SIZE_X && y >= 0 && y < WORLD_SIZE_Y)
+                else if (areasAdded <= 1 && !areas.contains(visibleAreaPosition) && x >= 0 && x < WORLD_SIZE_X && y >= 0 && y < WORLD_SIZE_Y)
                 {
                     Area* area = new Area(x, y);
                     areas[visibleAreaPosition] = area;
@@ -118,9 +124,6 @@ namespace Game
                     areasAdded++;
                 }
             }
-            deltaDebug = delta;
-            if (deltaDebug > maxDelta)
-                maxDelta = deltaDebug;
         }
 
         for (auto it = areas.begin(); it != areas.end();)
@@ -148,6 +151,8 @@ namespace Game
         ImGui::Begin("Debug");
 
         ImGui::Text("Rendered Area Count : %d", areas.size());
+        ImGui::SliderFloat("Min zoom for rendering", &minZoomForRendering, Camera::main->minZoom, Camera::main->maxZoom);
+        ImGui::SliderFloat("Camera Speed", &camera->moveSpeed, 1, 100);
 
         Engine::Vec2<int> cameraTilePosition = (Engine::Camera::main->position / Tile::TILE_SIZE).Floor();
         Engine::Vec2<int> cameraAreaPosition = cameraTilePosition / Area::AREA_SIZE;
@@ -226,5 +231,23 @@ namespace Game
         }
         areas.clear();
         delete camera;
+    }
+
+    void World::SaveWorld()
+    {
+        int regionSize = 32;
+        int regionCount = (WORLD_SIZE_X * WORLD_SIZE_Y) / (regionSize * regionSize);
+
+        for (int i = 0; i < regionCount; ++i)
+        {
+            for (int ry = 0; ry < regionSize; ++ry)
+            {
+                for (int rx = 0; rx < regionSize; ++rx)
+                {
+                    int x = i % WORLD_SIZE_X;
+                    int y = i / WORLD_SIZE_Y;
+                }
+            }
+        }
     }
 }

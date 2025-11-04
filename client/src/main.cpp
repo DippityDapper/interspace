@@ -3,13 +3,7 @@
 
 int main(int argc, char* argv[])
 {
-    Engine::Engine* engine = new Engine::Engine();
-
-    Game::World* world = new Game::World();
-    engine->Init(world);
-    engine->Update();
-    engine->Clean();
-
-    delete engine;
-    return 0;
+    std::unique_ptr<Engine::Engine> engine = std::make_unique<Engine::Engine>();
+    std::unique_ptr<Game::World> world = std::make_unique<Game::World>();
+    return engine->Run(world.get());
 }

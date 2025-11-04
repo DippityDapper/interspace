@@ -4,6 +4,8 @@
 
 #include "SDL3/SDL.h"
 
+#include "dapper2d/Input.hpp"
+
 // TODO : Move camera smoothing to the engine camera, make it general use
 
 namespace Game
@@ -22,6 +24,22 @@ namespace Game
 
     void Camera::Update(float delta)
     {
+        float mSpeed = moveSpeed * Tile::TILE_SIZE / zoom;
+
+        if (Input::IsKeyDown(SDLK_LSHIFT))
+            mSpeed *= 2;
+
+        mSpeed *= delta;
+
+        if (Input::IsKeyDown(SDLK_W))
+            targetPosition.y -= mSpeed;
+        if (Input::IsKeyDown(SDLK_S))
+            targetPosition.y += mSpeed;
+        if (Input::IsKeyDown(SDLK_A))
+            targetPosition.x -= mSpeed;
+        if (Input::IsKeyDown(SDLK_D))
+            targetPosition.x += mSpeed;
+
         float tPos = std::min(delta * panSpeed, 1.0f);
         float tZoom = std::min(delta * zoomSpeed, 1.0f);
 
@@ -30,53 +48,20 @@ namespace Game
             position = position + (targetPosition - position) * tPos;
             if (position.DistanceTo(targetPosition) < 0.1f)
                 position = targetPosition;
+            targetPosition = ClampToBounds(targetPosition, targetZoom);
         }
         if (targetZoom != zoom)
         {
             zoom = zoom + (targetZoom - zoom) * tZoom;
             if (std::abs(targetZoom - zoom) < 0.01f)
                 zoom = targetZoom;
+            targetZoom = ClampToBounds(targetZoom);
         }
     }
 
     void Game::Camera::HandleEvents(SDL_Event &event)
     {
-        if (event.type == SDL_EVENT_KEY_DOWN)
-        {
-            heldKeys[event.key.key] = true;
-            float mSpeed = moveSpeed * Tile::TILE_SIZE;
-
-            if (heldKeys.contains(SDLK_LSHIFT) && heldKeys[SDLK_LSHIFT])
-                mSpeed = Area::AREA_SIZE * Tile::TILE_SIZE;
-
-            if (heldKeys.contains(SDLK_W) && heldKeys[SDLK_W])
-                targetPosition.y -= mSpeed;
-            if (heldKeys.contains(SDLK_S) && heldKeys[SDLK_S])
-                targetPosition.y += mSpeed;
-            if (heldKeys.contains(SDLK_A) && heldKeys[SDLK_A])
-                targetPosition.x -= mSpeed;
-            if (heldKeys.contains(SDLK_D) && heldKeys[SDLK_D])
-                targetPosition.x += mSpeed;
-        }
-        if (event.type == SDL_EVENT_KEY_UP)
-        {
-            heldKeys[event.key.key] = false;
-        }
-        if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-        {
-            if (event.button.button == SDL_BUTTON_MIDDLE)
-            {
-                panning = true;
-            }
-        }
-        if (event.type == SDL_EVENT_MOUSE_BUTTON_UP)
-        {
-            if (event.button.button == SDL_BUTTON_MIDDLE)
-            {
-                panning = false;
-            }
-        }
-        if (event.type == SDL_EVENT_MOUSE_MOTION && panning)
+        if (event.type == SDL_EVENT_MOUSE_MOTION && Input::IsMouseButtonDown(SDL_BUTTON_MIDDLE))
         {
             targetPosition.x -= event.motion.xrel / zoom;
             targetPosition.y -= event.motion.yrel / zoom;

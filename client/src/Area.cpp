@@ -102,6 +102,9 @@ namespace Game
 
     void Area::UpdateTile(Engine::Vec2<int> tilePosition, Tiles::Type tileType)
     {
+        if (tiles.size() < AREA_SIZE * AREA_SIZE)
+            return;
+
         Tile* tile = Tiles::GetTile(tileType);
         tiles[tilePosition] = tile;
 
