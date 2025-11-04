@@ -28,7 +28,7 @@ namespace Game
                 AREA_SIZE * Tile::TILE_SIZE
         );
 
-        fogTexture = Engine::ResourceLoader::LoadTexture("tiles/fog.png");
+        fogTexture = Engine::ResourceLoader::LoadTexture("assets/tiles/fog.png");
     }
 
     void Area::GenerateTiles()

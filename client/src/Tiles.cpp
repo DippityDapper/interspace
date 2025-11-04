@@ -17,7 +17,7 @@ namespace Game
             int y = i / 4;
 
             Type type = (Type)((int)Tiles::GRASS_1 + i);
-            Tile* tile = new Tile("tilesets/grass_tileset.png", 32, 32, x, y);
+            Tile* tile = new Tile("assets/tilesets/grass_tileset.png", 32, 32, x, y);
             tile->type = type;
             RegisterTile(type, tile);
         }
@@ -28,13 +28,13 @@ namespace Game
             int y = i / 4;
 
             Type type = (Type)((int)Tiles::FLOWER_1 + i);
-            Tile* tile = new Tile("tilesets/grass_tileset.png", 32, 32, x, y);
+            Tile* tile = new Tile("assets/tilesets/grass_tileset.png", 32, 32, x, y);
             tile->type = type;
             RegisterTile(type, tile);
         }
 
 
-        RegisterTile(Tiles::STONE_PATH, new Tile("tilesets/grass_tileset.png", 32, 32, 0, 4));
+        RegisterTile(Tiles::STONE_PATH, new Tile("assets/tilesets/grass_tileset.png", 32, 32, 0, 4));
     }
 
     void Tiles::RegisterTile(Tiles::Type tileType, Tile *tile)
