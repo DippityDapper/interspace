@@ -7,10 +7,10 @@
 #include "dapper2d/Vec2.hpp"
 
 #include "client/ClientEntity.hpp"
+#include "client/Area.hpp"
 
 namespace Game
 {
-    class Area;
     class Camera;
 
     class World : public Engine::Scene
@@ -18,7 +18,7 @@ namespace Game
     public:
         Camera* camera = nullptr;
 
-        std::map<Engine::Vec2<int>, Area*> areas{};
+        std::map<Engine::Vec2<int>, std::unique_ptr<Game::Area>> areas;
 
         static uint32_t worldSeed;
         static int WORLD_SIZE_X;
@@ -29,6 +29,9 @@ namespace Game
 
     private:
         void SaveWorld();
+        bool FileExists(const std::string& fileName);
+        void SaveAreaToRegion(Game::Area* area, int rx, int ry, const std::string& filePath);
+        std::unique_ptr<Game::Area> LoadAreaFromRegion(int areaX, int areaY, int regionSize);
 
     public:
         void Init() override;

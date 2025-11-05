@@ -6,8 +6,8 @@
 
 namespace Game
 {
-    std::map<Tiles::Type, Tile*> Tiles::tiles{};
-    std::vector<Tile*> Tiles::uniqueTiles{};
+    std::map<Tiles::Type, std::unique_ptr<Tile>> Tiles::tiles{};
+    std::vector<std::unique_ptr<Tile>> Tiles::uniqueTiles{};
 
     void Tiles::InitRegistry()
     {
@@ -33,7 +33,6 @@ namespace Game
             RegisterTile(type, tile);
         }
 
-
         RegisterTile(Tiles::STONE_PATH, new Tile("assets/tilesets/grass_tileset.png", 32, 32, 0, 4));
     }
 
@@ -48,7 +47,7 @@ namespace Game
     {
         if (!tiles.contains(tileType))
             return nullptr;
-        return tiles[tileType];
+        return tiles[tileType].get();
     }
 
     Tile* Tiles::GetTileUnique(Type tileType)
@@ -56,20 +55,7 @@ namespace Game
         if (!tiles.contains(tileType))
             return nullptr;
 
-        Tile* tile = new Tile(*tiles[tileType]);
-        uniqueTiles.push_back(tile);
-        return tile;
-    }
-
-    Tiles::~Tiles()
-    {
-        for (auto& kvp : tiles)
-        {
-            delete kvp.second;
-        }
-        for (Tile* tile : uniqueTiles)
-        {
-            delete tile;
-        }
+        uniqueTiles.push_back(std::make_unique<Tile>(*tiles[tileType]));
+        return uniqueTiles[uniqueTiles.size()-1].get();
     }
 }

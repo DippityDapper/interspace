@@ -1,17 +1,20 @@
 #include "client/World.hpp"
 
 #include <fstream>
+#include <algorithm>
+
 #include "imgui.h"
 #include "SDL3/SDL.h"
 
 #include "dapper2d/ResourceLoader.hpp"
 #include "dapper2d/Window.hpp"
+#include "dapper2d/Renderer.hpp"
 #include "dapper2d/CFGParser.hpp"
 #include "dapper2d/Engine.hpp"
 #include "dapper2d/Input.hpp"
+#include "dapper2d/Sprite.hpp"
 
 #include "client/Camera.hpp"
-#include "client/Area.hpp"
 #include "client/Tile.hpp"
 
 namespace Game
@@ -86,8 +89,15 @@ namespace Game
 
             if (areas.contains(mouseAreaPosition))
             {
-                Area* area = areas[mouseAreaPosition];
+                Area* area = areas[mouseAreaPosition].get();
                 area->UpdateTile(mouseLocalTilePosition, Tiles::STONE_PATH);
+            }
+        }
+        if (event.type == SDL_EVENT_KEY_DOWN)
+        {
+            if (event.key.key == SDLK_F)
+            {
+                SaveWorld();
             }
         }
     }
@@ -115,12 +125,22 @@ namespace Game
                 }
                 else if (areasAdded <= 1 && !areas.contains(visibleAreaPosition) && x >= 0 && x < WORLD_SIZE_X && y >= 0 && y < WORLD_SIZE_Y)
                 {
-                    Area* area = new Area(x, y);
-                    areas[visibleAreaPosition] = area;
+                    int regionSize = 32;
 
-                    area->GenerateTiles();
-                    area->Update(delta);
+                    std::unique_ptr<Game::Area> loadedArea = LoadAreaFromRegion(x, y, regionSize);
 
+                    if (loadedArea)
+                    {
+                        areas[visibleAreaPosition] = std::move(loadedArea);
+                        areas[visibleAreaPosition]->AddTilesToTexture();
+                    }
+                    else
+                    {
+                        areas[visibleAreaPosition] = std::make_unique<Game::Area>(x, y);
+                        areas[visibleAreaPosition]->GenerateTiles();
+                    }
+
+                    areas[visibleAreaPosition]->Update(delta);
                     areasAdded++;
                 }
             }
@@ -133,7 +153,6 @@ namespace Game
             if (pos.x < minBounds.x - 1 || pos.x > maxBounds.x + 1 ||
                 pos.y < minBounds.y - 1 || pos.y > maxBounds.y + 1)
             {
-                delete it->second;
                 it = areas.erase(it);
             }
             else
@@ -192,6 +211,7 @@ namespace Game
         ImGui::Text("Rendered Y chunks : (%d, %d)", minBounds.y, maxBounds.y);
 
         ImGui::Text("Viewport Size : (%d, %d)", Engine::Window::viewport.x, Engine::Window::viewport.y);
+
         ImGui::End();
     }
 
@@ -225,10 +245,6 @@ namespace Game
     void World::Clean()
     {
         entities.clear();
-        for (auto &kvp : areas)
-        {
-            delete kvp.second;
-        }
         areas.clear();
         delete camera;
     }
@@ -236,18 +252,146 @@ namespace Game
     void World::SaveWorld()
     {
         int regionSize = 32;
-        int regionCount = (WORLD_SIZE_X * WORLD_SIZE_Y) / (regionSize * regionSize);
 
-        for (int i = 0; i < regionCount; ++i)
+        for (auto& [areaPos, areaPtr] : areas)
         {
-            for (int ry = 0; ry < regionSize; ++ry)
+            if (!areaPtr->needsSave)
+                continue;
+
+            int rx = areaPos.x / regionSize;
+            int ry = areaPos.y / regionSize;
+            std::string filePath = "worlds/w1/regions/region_" + std::to_string(rx) + "_" + std::to_string(ry) + ".data";
+
+            SaveAreaToRegion(areaPtr.get(), rx, ry, filePath);
+            SDL_Log("Saved area (%d, %d) to region file %s", areaPos.x, areaPos.y, filePath.c_str());
+            areaPtr->needsSave = false;
+        }
+    }
+
+
+    void World::SaveAreaToRegion(Game::Area* area, int rx, int ry, const std::string& filePath)
+    {
+        // Step 1: Read existing region data
+        std::vector<std::tuple<int,int,std::vector<std::tuple<int,int,int>>>> regionAreas;
+
+        if (FileExists(filePath))
+        {
+            std::ifstream infile(filePath, std::ios::in | std::ios::binary);
+            while (infile.peek() != EOF)
             {
-                for (int rx = 0; rx < regionSize; ++rx)
+                int savedAreaX, savedAreaY, tileCount;
+                infile.read(reinterpret_cast<char*>(&savedAreaX), sizeof(int));
+                infile.read(reinterpret_cast<char*>(&savedAreaY), sizeof(int));
+                infile.read(reinterpret_cast<char*>(&tileCount), sizeof(int));
+
+                std::vector<std::tuple<int,int,int>> tiles(tileCount);
+                for (int i = 0; i < tileCount; ++i)
                 {
-                    int x = i % WORLD_SIZE_X;
-                    int y = i / WORLD_SIZE_Y;
+                    int tx, ty, tType;
+                    infile.read(reinterpret_cast<char*>(&tx), sizeof(int));
+                    infile.read(reinterpret_cast<char*>(&ty), sizeof(int));
+                    infile.read(reinterpret_cast<char*>(&tType), sizeof(int));
+                    tiles[i] = {tx, ty, tType};
                 }
+
+                regionAreas.push_back({savedAreaX, savedAreaY, tiles});
+            }
+            infile.close();
+        }
+
+        // Step 2: Replace or append the area
+        auto it = std::find_if(regionAreas.begin(), regionAreas.end(),
+                               [&](auto& a){ return std::get<0>(a) == area->position.x &&
+                                                    std::get<1>(a) == area->position.y; });
+        std::vector<std::tuple<int,int,int>> newTiles;
+        newTiles.reserve(area->tiles.size());
+        for (auto& tileKvp : area->tiles)
+        {
+            auto tile = tileKvp.second;
+            newTiles.push_back({tileKvp.first.x, tileKvp.first.y, static_cast<int>(tile->type)});
+        }
+
+        if (it != regionAreas.end())
+            *it = {area->position.x, area->position.y, newTiles};
+        else
+            regionAreas.push_back({area->position.x, area->position.y, newTiles});
+
+        // Step 3: Write everything back cleanly
+        std::ofstream outfile(filePath, std::ios::out | std::ios::binary | std::ios::trunc);
+
+        for (auto& [ax, ay, tiles] : regionAreas)
+        {
+            int tileCount = static_cast<int>(tiles.size());
+            outfile.write(reinterpret_cast<char*>(&ax), sizeof(int));
+            outfile.write(reinterpret_cast<char*>(&ay), sizeof(int));
+            outfile.write(reinterpret_cast<char*>(&tileCount), sizeof(int));
+
+            for (auto& [tx, ty, tType] : tiles)
+            {
+                outfile.write(reinterpret_cast<char*>(&tx), sizeof(int));
+                outfile.write(reinterpret_cast<char*>(&ty), sizeof(int));
+                outfile.write(reinterpret_cast<char*>(&tType), sizeof(int));
             }
         }
+
+        outfile.close();
+    }
+
+    bool World::FileExists(const std::string& fileName)
+    {
+        std::ifstream infile(fileName, std::ios::binary);
+        return infile.good();
+    }
+
+    std::unique_ptr<Game::Area> World::LoadAreaFromRegion(int areaX, int areaY, int regionSize)
+    {
+        int rx = areaX / regionSize;
+        int ry = areaY / regionSize;
+        std::string fileName = "region_" + std::to_string(rx) + "_" + std::to_string(ry) + ".data";
+        std::string filePath = "worlds/w1/regions/" + fileName;
+
+        if (!FileExists(filePath))
+            return nullptr;
+
+        std::ifstream infile(filePath, std::ios::in | std::ios::binary);
+        if (!infile.is_open())
+            return nullptr;
+
+        while (infile.peek() != EOF)
+        {
+            int savedAreaX, savedAreaY;
+            infile.read(reinterpret_cast<char*>(&savedAreaX), sizeof(int));
+            infile.read(reinterpret_cast<char*>(&savedAreaY), sizeof(int));
+
+            int tileCount;
+            infile.read(reinterpret_cast<char*>(&tileCount), sizeof(int));
+
+            if (savedAreaX == areaX && savedAreaY == areaY)
+            {
+                auto area = std::make_unique<Game::Area>(areaX, areaY);
+                area->tiles.clear();
+
+                for (int i = 0; i < tileCount; ++i)
+                {
+                    int tx, ty, tileType;
+                    infile.read(reinterpret_cast<char*>(&tx), sizeof(int));
+                    infile.read(reinterpret_cast<char*>(&ty), sizeof(int));
+                    infile.read(reinterpret_cast<char*>(&tileType), sizeof(int));
+
+                    Game::Tile* tile = Tiles::GetTile(static_cast<Tiles::Type>(tileType));
+                    area->tiles[{tx, ty}] = tile;
+                }
+
+                infile.close();
+                return area;
+            }
+            else
+            {
+                infile.seekg(tileCount * (sizeof(int) * 3), std::ios::cur);
+            }
+        }
+
+        infile.close();
+        return nullptr;
     }
 }

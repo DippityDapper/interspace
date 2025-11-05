@@ -11,22 +11,17 @@ namespace Game
 
     Tile::Tile(const Tile &tile)
     {
-        sprite = tile.sprite;
+        sprite = std::make_unique<Engine::Sprite>(*tile.sprite);
     }
 
-    Tile::Tile(const std::string& texturePath)
+    Tile::Tile(const std::string& filePath)
     {
-        sprite = new Engine::Sprite(texturePath);
+        sprite = std::make_unique<Engine::Sprite>(filePath);
     }
 
-    Tile::Tile(const std::string &texturePath, float w, float h, int x, int y)
+    Tile::Tile(const std::string& filePath, float w, float h, int x, int y)
     {
-        sprite = new Engine::Sprite(texturePath, w, h, x, y);
-    }
-
-    Tile::~Tile()
-    {
-        delete sprite;
+        sprite = std::make_unique<Engine::Sprite>(filePath, w, h, x, y);
     }
 
     void Tile::Render(int tilePositionX, int tilePositionY) const
@@ -34,9 +29,9 @@ namespace Game
         if (!sprite)
             return;
 
-        if (sprite->tileW <= 0 || sprite->tileH <= 0)
+        if (sprite->atlasW <= 0 || sprite->atlasH <= 0)
             return;
         Engine::Vec2<float> position{(float)tilePositionX * Tile::TILE_SIZE, (float)tilePositionY * Tile::TILE_SIZE};
-        Engine::Renderer::BufferAdd(position, sprite);
+        Engine::Renderer::BufferAdd(position, sprite.get());
     }
 }

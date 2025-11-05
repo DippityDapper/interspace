@@ -26,10 +26,11 @@ namespace Game
         std::mt19937 seedGen;
         std::shared_ptr<SDL_Texture> cachedTexture = nullptr;
 
-        std::shared_ptr<SDL_Texture> fogTexture = nullptr;
-        float fogAlpha = 1.0f;
-        bool fadingOut = false;
+        float fogAlpha = 0.0f;
+        bool fadingIn = false;
         float fogFadeSpeed = 1.5f;
+
+        bool needsSave = false;
 
     public:
         Area(int _x, int _y);
@@ -38,5 +39,6 @@ namespace Game
 
         void GenerateTiles();
         void UpdateTile(Engine::Vec2<int> tilePosition, Tiles::Type tileType);
+        void AddTilesToTexture();
     };
 }

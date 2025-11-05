@@ -2,6 +2,7 @@
 
 #include <map>
 #include <vector>
+#include <memory>
 
 namespace Engine
 {
@@ -55,11 +56,10 @@ namespace Game
         };
 
     public:
-        static std::map<Type, Tile*> tiles;
-        static std::vector<Tile*> uniqueTiles;
+        static std::map<Type, std::unique_ptr<Tile>> tiles;
+        static std::vector<std::unique_ptr<Tile>> uniqueTiles;
 
     public:
-        ~Tiles();
         static void InitRegistry();
         static void RegisterTile(Type tileType, Tile* tile);
         static Tile* GetTile(Type tileType);
