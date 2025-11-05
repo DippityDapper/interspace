@@ -1,6 +1,4 @@
 #include "client/Camera.hpp"
-#include "client/Area.hpp"
-#include "client/Tile.hpp"
 
 #include "SDL3/SDL.h"
 
@@ -24,7 +22,7 @@ namespace Game
 
     void Camera::Update(float delta)
     {
-        float mSpeed = moveSpeed * Tile::TILE_SIZE / zoom;
+        float mSpeed = moveSpeed * 32 / zoom;
 
         if (Input::IsKeyDown(SDLK_LSHIFT))
             mSpeed *= 2;
@@ -48,14 +46,18 @@ namespace Game
             position = position + (targetPosition - position) * tPos;
             if (position.DistanceTo(targetPosition) < 0.1f)
                 position = targetPosition;
-            targetPosition = ClampToBounds(targetPosition, targetZoom);
+
+            if (limitBounds)
+                targetPosition = ClampToBounds(targetPosition, targetZoom);
         }
         if (targetZoom != zoom)
         {
             zoom = zoom + (targetZoom - zoom) * tZoom;
             if (std::abs(targetZoom - zoom) < 0.01f)
                 zoom = targetZoom;
-            targetZoom = ClampToBounds(targetZoom);
+
+            if (limitBounds)
+                targetZoom = ClampToBounds(targetZoom);
         }
     }
 
@@ -79,8 +81,11 @@ namespace Game
             if (targetZoom > maxZoom)
                 targetZoom = maxZoom;
 
-            targetZoom = ClampToBounds(targetZoom);
-            targetPosition = ClampToBounds(targetPosition, targetZoom);
+            if (limitBounds)
+            {
+                targetZoom = ClampToBounds(targetZoom);
+                targetPosition = ClampToBounds(targetPosition, targetZoom);
+            }
         }
     }
 }

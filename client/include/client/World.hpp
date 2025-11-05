@@ -8,21 +8,24 @@
 
 #include "client/ClientEntity.hpp"
 #include "client/Area.hpp"
+#include "client/Camera.hpp"
 
 namespace Game
 {
-    class Camera;
-
     class World : public Engine::Scene
     {
+    private:
+        std::string name{""};
+
     public:
-        Camera* camera = nullptr;
+        std::unique_ptr<Camera> camera = nullptr;
 
         std::map<Engine::Vec2<int>, std::unique_ptr<Game::Area>> areas;
 
         static uint32_t worldSeed;
         static int WORLD_SIZE_X;
         static int WORLD_SIZE_Y;
+        static int REGION_SIZE;
         float minZoomForRendering = 0.5;
 
         std::map<int, std::unique_ptr<ClientEntity>> entities{};
@@ -34,6 +37,7 @@ namespace Game
         std::unique_ptr<Game::Area> LoadAreaFromRegion(int areaX, int areaY, int regionSize);
 
     public:
+        World(const std::string& worldName);
         void Init() override;
         void HandleEvents(SDL_Event& event) override;
         void Update(float delta) override;

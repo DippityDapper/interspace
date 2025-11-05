@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <algorithm>
+#include <filesystem>
 
 #include "imgui.h"
 #include "SDL3/SDL.h"
@@ -14,31 +15,31 @@
 #include "dapper2d/Input.hpp"
 #include "dapper2d/Sprite.hpp"
 
-#include "client/Camera.hpp"
 #include "client/Tile.hpp"
+
+// TODO
+//  Generate worlds and save them in the worlds folder.
+//  Move the world config into the world folder.
 
 namespace Game
 {
     uint32_t World::worldSeed = 0;
     int World::WORLD_SIZE_X = 0;
     int World::WORLD_SIZE_Y = 0;
+    int World::REGION_SIZE = 32;
 
-    void World::Init()
+    World::World(const std::string &worldName)
     {
-        Engine::ResourceLoader::SetScaleMode(SDL_SCALEMODE_PIXELART);
-//        SDL_SetWindowFullscreen(Engine::Window::GetWindow(), true);
-
-        Engine::CFGParser::LoadConfig("configs/world.cfg", "world");
-
-        Tiles::InitRegistry();
+        name = worldName;
+        Engine::CFGParser::LoadConfig("worlds/" + worldName + "/configs.cfg", worldName);
 
         try
         {
-            worldSeed = Engine::CFGParser::GetUInt32("world", "world_seed");
-            WORLD_SIZE_X = Engine::CFGParser::GetInt("world", "world_size_x");
-            WORLD_SIZE_Y = Engine::CFGParser::GetInt("world", "world_size_y");
-            Area::AREA_SIZE = Engine::CFGParser::GetInt("world", "area_size");
-            Tile::TILE_SIZE = Engine::CFGParser::GetInt("world", "tile_size");
+            worldSeed = Engine::CFGParser::GetUInt32(worldName, "world_seed");
+            WORLD_SIZE_X = Engine::CFGParser::GetInt(worldName, "world_size_x");
+            WORLD_SIZE_Y = Engine::CFGParser::GetInt(worldName, "world_size_y");
+            Area::AREA_SIZE = Engine::CFGParser::GetInt(worldName, "area_size");
+            Tile::TILE_SIZE = Engine::CFGParser::GetInt(worldName, "tile_size");
         }
         catch (const std::exception& e)
         {
@@ -46,13 +47,21 @@ namespace Game
             Engine::Engine::Quit();
             return;
         }
+    }
 
-        camera = new Camera
+    void World::Init()
+    {
+        Engine::ResourceLoader::SetScaleMode(SDL_SCALEMODE_PIXELART);
+//        SDL_SetWindowFullscreen(Engine::Window::GetWindow(), true);
+        Tiles::InitRegistry();
+
+        camera = std::make_unique<Camera>
         (
             (WORLD_SIZE_X * Area::AREA_SIZE * Tile::TILE_SIZE) / 2.0f,
             (WORLD_SIZE_Y * Area::AREA_SIZE * Tile::TILE_SIZE) / 2.0f,
             1.0f
         );
+        camera->SetCurrent();
 
         camera->minZoom = 0.05;
         camera->limitBounds = true;
@@ -125,9 +134,7 @@ namespace Game
                 }
                 else if (areasAdded <= 1 && !areas.contains(visibleAreaPosition) && x >= 0 && x < WORLD_SIZE_X && y >= 0 && y < WORLD_SIZE_Y)
                 {
-                    int regionSize = 32;
-
-                    std::unique_ptr<Game::Area> loadedArea = LoadAreaFromRegion(x, y, regionSize);
+                    std::unique_ptr<Game::Area> loadedArea = LoadAreaFromRegion(x, y, REGION_SIZE);
 
                     if (loadedArea)
                     {
@@ -168,6 +175,8 @@ namespace Game
 
         ImGui::SetNextWindowPos({0,0});
         ImGui::Begin("Debug");
+
+        ImGui::Text("Seed : %zu", worldSeed);
 
         ImGui::Text("Rendered Area Count : %d", areas.size());
         ImGui::SliderFloat("Min zoom for rendering", &minZoomForRendering, Camera::main->minZoom, Camera::main->maxZoom);
@@ -246,21 +255,25 @@ namespace Game
     {
         entities.clear();
         areas.clear();
-        delete camera;
     }
 
     void World::SaveWorld()
     {
-        int regionSize = 32;
+        if (!std::filesystem::exists("worlds"))
+            std::filesystem::create_directories("worlds");
+        if (!std::filesystem::exists("worlds/" + name))
+            std::filesystem::create_directories("worlds/" + name);
+        if (!std::filesystem::exists("worlds/" + name + "/regions"))
+            std::filesystem::create_directories("worlds/" + name + "/regions");
 
         for (auto& [areaPos, areaPtr] : areas)
         {
             if (!areaPtr->needsSave)
                 continue;
 
-            int rx = areaPos.x / regionSize;
-            int ry = areaPos.y / regionSize;
-            std::string filePath = "worlds/w1/regions/region_" + std::to_string(rx) + "_" + std::to_string(ry) + ".data";
+            int rx = areaPos.x / REGION_SIZE;
+            int ry = areaPos.y / REGION_SIZE;
+            std::string filePath = "worlds/" + name + "/regions/region_" + std::to_string(rx) + "_" + std::to_string(ry) + ".data";
 
             SaveAreaToRegion(areaPtr.get(), rx, ry, filePath);
             SDL_Log("Saved area (%d, %d) to region file %s", areaPos.x, areaPos.y, filePath.c_str());
@@ -348,7 +361,7 @@ namespace Game
         int rx = areaX / regionSize;
         int ry = areaY / regionSize;
         std::string fileName = "region_" + std::to_string(rx) + "_" + std::to_string(ry) + ".data";
-        std::string filePath = "worlds/w1/regions/" + fileName;
+        std::string filePath = "worlds/" + name + "/regions/" + fileName;
 
         if (!FileExists(filePath))
             return nullptr;
