@@ -18,20 +18,10 @@ target_include_directories(client PRIVATE
 if (WIN32)
     add_custom_target(copy_client_files ALL
             COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:client>/assets"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:client>/configs"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:client>/worlds"
 
             COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_SOURCE_DIR}/assets"
             "$<TARGET_FILE_DIR:client>/assets"
-
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/configs"
-            "$<TARGET_FILE_DIR:client>/configs"
-
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/worlds"
-            "$<TARGET_FILE_DIR:client>/worlds"
     )
 
     add_dependencies(client copy_client_files)

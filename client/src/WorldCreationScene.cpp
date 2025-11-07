@@ -16,7 +16,6 @@
 
 namespace Game
 {
-
     void WorldCreationScene::Init()
     {
         Engine::ResourceLoader::SetScaleMode(SDL_SCALEMODE_PIXELART);
@@ -70,90 +69,127 @@ namespace Game
 
         if (ImGui::Button("Load World"))
         {
-            std::string name{worldName};
-            if (name.empty())
-            {
-                ImGui::End();
-                return;
-            }
-            Engine::Engine::SetScene(new Game::World(name));
+            LoadWorld();
         }
         ImGui::SameLine();
         if (ImGui::Button("Create World"))
         {
-            std::string name{worldName};
-            std::string seedStr{worldSeed};
-
-            if (name.empty())
-            {
-                ImGui::End();
-                return;
-            }
-
-            uint32_t seed = 0;
-            if (seedStr.empty())
-            {
-                std::mt19937 gen(std::random_device{}());
-                std::uniform_int_distribution<> seedDist(0, UINT32_MAX);
-                seed = seedDist(gen);
-            }
-            else
-            {
-                try
-                {
-                    seed = std::stoul(seedStr);
-                }
-                catch (const std::invalid_argument&)
-                {
-                    ImGui::End();
-                    return;
-                }
-            }
-
-            if (!std::filesystem::exists("worlds"))
-                std::filesystem::create_directories("worlds");
-            if (!std::filesystem::exists("worlds/" + name))
-                std::filesystem::create_directories("worlds/" + name);
-            if (!std::filesystem::exists("worlds/" + name + "/regions"))
-                std::filesystem::create_directories("worlds/" + name + "/regions");
-
-            std::fstream configFile("worlds/" + name + "/configs.cfg", std::ios::out);
-
-            std::string finalSeedStr{"world_seed=" + std::to_string(seed) + "\n"};
-            configFile.write(finalSeedStr.c_str(), finalSeedStr.size());
-
-            std::string areaSizeStr{"area_size=64\n"};
-            configFile.write(areaSizeStr.c_str(), areaSizeStr.size());
-
-            std::string tileSizeStr{"tile_size=32\n"};
-            configFile.write(tileSizeStr.c_str(), tileSizeStr.size());
-
-            if (worldSize == 0) // small
-            {
-                std::string worldSizeXStr{"world_size_x=128\n"};
-                configFile.write(worldSizeXStr.c_str(), worldSizeXStr.size());
-                std::string worldSizeYStr{"world_size_y=128\n"};
-                configFile.write(worldSizeYStr.c_str(), worldSizeYStr.size());
-            }
-            else if (worldSize == 1) // med
-            {
-                std::string worldSizeXStr{"world_size_x=512\n"};
-                configFile.write(worldSizeXStr.c_str(), worldSizeXStr.size());
-                std::string worldSizeYStr{"world_size_y=512\n"};
-                configFile.write(worldSizeYStr.c_str(), worldSizeYStr.size());
-            }
-            else if (worldSize == 2) //large
-            {
-                std::string worldSizeXStr{"world_size_x=1024\n"};
-                configFile.write(worldSizeXStr.c_str(), worldSizeXStr.size());
-                std::string worldSizeYStr{"world_size_y=1024\n"};
-                configFile.write(worldSizeYStr.c_str(), worldSizeYStr.size());
-            }
-
-            configFile.close();
+            CreateWorld();
         }
 
+        if (!errorMessage.empty())
+        {
+            ImGui::Text("%s", errorMessage.c_str());
+        }
         ImGui::End();
+    }
+
+    bool WorldCreationScene::LoadWorld()
+    {
+        std::string name{worldName};
+        if (name.empty())
+        {
+            errorMessage = "World name is empty.";
+            return false;
+        }
+        if (!std::filesystem::exists("worlds/" + name))
+        {
+            errorMessage = "World name does not exist.";
+            return false;
+        }
+        errorMessage = "";
+        Engine::Engine::SetScene(new Game::World(name));
+        return true;
+    }
+
+    bool WorldCreationScene::CreateWorld()
+    {
+        std::string name{worldName};
+        std::string seedStr{worldSeed};
+
+        if (name.empty())
+        {
+            errorMessage = "World name is empty.";
+            return false;
+        }
+
+        uint32_t seed = 0;
+        if (seedStr.empty())
+        {
+            std::mt19937 gen(std::random_device{}());
+            std::uniform_int_distribution<> seedDist(0, UINT32_MAX);
+            seed = seedDist(gen);
+        }
+        else
+        {
+            try
+            {
+                seed = std::stoul(seedStr);
+            }
+            catch (const std::invalid_argument&)
+            {
+                errorMessage = "World seed must be numerical.";
+                return false;
+            }
+        }
+
+        if (!std::filesystem::exists("worlds"))
+        {
+            std::filesystem::create_directories("worlds");
+            std::filesystem::create_directories("worlds/" + name);
+            std::filesystem::create_directories("worlds/" + name + "/regions");
+        }
+        else if (!std::filesystem::exists("worlds/" + name))
+        {
+            std::filesystem::create_directories("worlds/" + name);
+            std::filesystem::create_directories("worlds/" + name + "/regions");
+        }
+        else if (!std::filesystem::exists("worlds/" + name + "/regions"))
+        {
+            std::filesystem::create_directories("worlds/" + name + "/regions");
+        }
+        else
+        {
+            errorMessage = "World name already exists.";
+            return false;
+        }
+
+        std::fstream configFile("worlds/" + name + "/configs.cfg", std::ios::out);
+
+        std::string finalSeedStr{"world_seed=" + std::to_string(seed) + "\n"};
+        configFile.write(finalSeedStr.c_str(), finalSeedStr.size());
+
+        std::string areaSizeStr{"area_size=64\n"};
+        configFile.write(areaSizeStr.c_str(), areaSizeStr.size());
+
+        std::string tileSizeStr{"tile_size=32\n"};
+        configFile.write(tileSizeStr.c_str(), tileSizeStr.size());
+
+        if (worldSize == 0) // small
+        {
+            std::string worldSizeXStr{"world_size_x=128\n"};
+            configFile.write(worldSizeXStr.c_str(), worldSizeXStr.size());
+            std::string worldSizeYStr{"world_size_y=128\n"};
+            configFile.write(worldSizeYStr.c_str(), worldSizeYStr.size());
+        }
+        else if (worldSize == 1) // med
+        {
+            std::string worldSizeXStr{"world_size_x=512\n"};
+            configFile.write(worldSizeXStr.c_str(), worldSizeXStr.size());
+            std::string worldSizeYStr{"world_size_y=512\n"};
+            configFile.write(worldSizeYStr.c_str(), worldSizeYStr.size());
+        }
+        else if (worldSize == 2) //large
+        {
+            std::string worldSizeXStr{"world_size_x=1024\n"};
+            configFile.write(worldSizeXStr.c_str(), worldSizeXStr.size());
+            std::string worldSizeYStr{"world_size_y=1024\n"};
+            configFile.write(worldSizeYStr.c_str(), worldSizeYStr.size());
+        }
+
+        errorMessage = "";
+        configFile.close();
+        return true;
     }
 
     void WorldCreationScene::Clean()

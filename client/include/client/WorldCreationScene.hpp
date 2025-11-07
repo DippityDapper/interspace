@@ -16,6 +16,11 @@ namespace Game
         char worldName[16];
         char worldSeed[32];
         int worldSize = 0;
+        std::string errorMessage{""};
+
+    private:
+        bool LoadWorld();
+        bool CreateWorld();
 
     public:
         void Init() override;
