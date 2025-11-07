@@ -1,25 +1,19 @@
 #include "client/World.hpp"
 
-#include <fstream>
 #include <algorithm>
 #include <filesystem>
+#include <fstream>
 
 #include "imgui.h"
 #include "SDL3/SDL.h"
 
-#include "dapper2d/ResourceLoader.hpp"
-#include "dapper2d/Window.hpp"
-#include "dapper2d/Renderer.hpp"
 #include "dapper2d/CFGParser.hpp"
 #include "dapper2d/Engine.hpp"
 #include "dapper2d/Input.hpp"
-#include "dapper2d/Sprite.hpp"
+#include "dapper2d/ResourceLoader.hpp"
+#include "dapper2d/Window.hpp"
 
 #include "client/Tile.hpp"
-
-// TODO
-//  Generate worlds and save them in the worlds folder.
-//  Move the world config into the world folder.
 
 namespace Game
 {

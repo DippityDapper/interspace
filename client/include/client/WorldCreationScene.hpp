@@ -2,10 +2,9 @@
 
 #include <memory>
 
+#include "dapper2d/Camera.hpp"
 #include "dapper2d/Scene.hpp"
 #include "dapper2d/Sprite.hpp"
-
-#include "dapper2d/Camera.hpp"
 
 namespace Game
 {
@@ -13,8 +12,8 @@ namespace Game
     {
     private:
         std::unique_ptr<Engine::Camera> camera = nullptr;
-        char worldName[16];
-        char worldSeed[32];
+        char worldName[16] = "";
+        char worldSeed[32] = "";
         int worldSize = 0;
         std::string errorMessage{""};
 
