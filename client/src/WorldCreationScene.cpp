@@ -8,11 +8,11 @@
 #include "imgui.h"
 
 #include "dapper2d/Engine.hpp"
-#include "dapper2d/Renderer.hpp"
 #include "dapper2d/ResourceLoader.hpp"
 #include "dapper2d/Window.hpp"
 
 #include "client/World.hpp"
+#include "dapper2d/Networking.hpp"
 
 namespace Game
 {
@@ -42,7 +42,11 @@ namespace Game
 
     void WorldCreationScene::Update(float delta)
     {
-
+        while (const auto& msg = Engine::Networking::PollClientMessage())
+        {
+            std::string text(msg->data.begin(), msg->data.end());
+            SDL_Log("[Client] Recieved : %s", text.c_str());
+        }
     }
 
     void WorldCreationScene::Render()
@@ -67,6 +71,44 @@ namespace Game
         ImGui::SameLine();
         ImGui::RadioButton("Large", &worldSize, 2);
 
+        if (ImGui::Button("Host World"))
+        {
+            std::string name{worldName};
+
+            if (!name.empty())
+            {
+                if (Engine::Networking::CreateServerProcess("33333", name.c_str(), "32", true))
+                {
+                    int errorCode = 0;
+                    int count = 0;
+                    while (count < 5 && errorCode == 0)
+                    {
+                        SDL_Delay(50);
+                        count++;
+                        SDL_WaitProcess(Engine::Networking::serverProcess, false, &errorCode);
+                    }
+
+                    if (errorCode == 0)
+                    {
+                        Engine::Networking::StopClientThread(); // called in case of a previous sudden disconnect
+                        if (Engine::Networking::ConnectToServer("127.0.0.1", 33333))
+                        {
+                            SDL_Log("Connected to server.");
+                            Engine::Networking::StartClientThread();
+                        }
+                    }
+                    else
+                    {
+                        Engine::Networking::StopServerProcess();
+                    }
+                }
+            }
+            else
+            {
+                errorMessage = "World name is empty.";
+            }
+        }
+        ImGui::SameLine();
         if (ImGui::Button("Load World"))
         {
             LoadWorld();
@@ -75,6 +117,28 @@ namespace Game
         if (ImGui::Button("Create World"))
         {
             CreateWorld();
+        }
+        if (ImGui::Button("Connect"))
+        {
+            Engine::Networking::StopClientThread(); // called in case of a previous sudden disconnect
+            if (Engine::Networking::ConnectToServer("127.0.0.1", 33333))
+            {
+                SDL_Log("Connected to server.");
+                Engine::Networking::StartClientThread();
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Disconnect"))
+        {
+            Engine::Networking::StopClientThread();
+            Engine::Networking::DisconnectFromServer();
+        }
+
+        if (ImGui::Button("Send Message"))
+        {
+            std::string msg{"Hi from client."};
+            std::vector<uint8_t> message(msg.begin(), msg.end());
+            Engine::Networking::ClientSendToPeer(Engine::Networking::server, message);
         }
 
         if (!errorMessage.empty())
@@ -186,6 +250,9 @@ namespace Game
             std::string worldSizeYStr{"world_size_y=1024\n"};
             configFile.write(worldSizeYStr.c_str(), worldSizeYStr.size());
         }
+
+        std::string regionSize{"region_size=32\n"};
+        configFile.write(regionSize.c_str(), regionSize.size());
 
         errorMessage = "";
         configFile.close();

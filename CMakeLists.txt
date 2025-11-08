@@ -9,3 +9,4 @@ add_subdirectory(../dapper2d ${CMAKE_BINARY_DIR}/dapper2d_build)
 
 # --- Project modules ---
 add_subdirectory(client)
+add_subdirectory(server)
