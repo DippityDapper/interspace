@@ -1,4 +1,4 @@
-#include "client/WorldCreationScene.hpp"
+#include "game/WorldCreationScene.hpp"
 
 #include <fstream>
 #include <filesystem>
@@ -7,12 +7,13 @@
 #include "SDL3/SDL.h"
 #include "imgui.h"
 
-#include "dapper2d/Engine.hpp"
+#include "dapper2d/Networking.hpp"
+#include "dapper2d/Scenes.hpp"
 #include "dapper2d/ResourceLoader.hpp"
 #include "dapper2d/Window.hpp"
 
-#include "client/World.hpp"
-#include "dapper2d/Networking.hpp"
+#include "game/MainMenu.hpp"
+#include "game/World.hpp"
 
 namespace Game
 {
@@ -30,12 +31,16 @@ namespace Game
 
     void WorldCreationScene::HandleEvents(SDL_Event &event)
     {
-        if (event.key.down)
+        if (event.type == SDL_EVENT_KEY_DOWN)
         {
             if (event.key.key == SDLK_ESCAPE)
             {
-                Engine::Engine::Quit();
-                return;
+                if (!Engine::Scenes::SceneExists("main_menu"))
+                {
+                    MainMenu* mainMenuScene = new MainMenu();
+                    Engine::Scenes::CreateScene(mainMenuScene, "main_menu");
+                }
+                Engine::Scenes::LoadScene("main_menu");
             }
         }
     }
@@ -71,44 +76,6 @@ namespace Game
         ImGui::SameLine();
         ImGui::RadioButton("Large", &worldSize, 2);
 
-        if (ImGui::Button("Host World"))
-        {
-            std::string name{worldName};
-
-            if (!name.empty())
-            {
-                if (Engine::Networking::CreateServerProcess("33333", name.c_str(), "32", true))
-                {
-                    int errorCode = 0;
-                    int count = 0;
-                    while (count < 5 && errorCode == 0)
-                    {
-                        SDL_Delay(50);
-                        count++;
-                        SDL_WaitProcess(Engine::Networking::serverProcess, false, &errorCode);
-                    }
-
-                    if (errorCode == 0)
-                    {
-                        Engine::Networking::StopClientThread(); // called in case of a previous sudden disconnect
-                        if (Engine::Networking::ConnectToServer("127.0.0.1", 33333))
-                        {
-                            SDL_Log("Connected to server.");
-                            Engine::Networking::StartClientThread();
-                        }
-                    }
-                    else
-                    {
-                        Engine::Networking::StopServerProcess();
-                    }
-                }
-            }
-            else
-            {
-                errorMessage = "World name is empty.";
-            }
-        }
-        ImGui::SameLine();
         if (ImGui::Button("Load World"))
         {
             LoadWorld();
@@ -118,32 +85,30 @@ namespace Game
         {
             CreateWorld();
         }
+
         if (ImGui::Button("Connect"))
         {
-            Engine::Networking::StopClientThread(); // called in case of a previous sudden disconnect
-            if (Engine::Networking::ConnectToServer("127.0.0.1", 33333))
-            {
-                SDL_Log("Connected to server.");
-                Engine::Networking::StartClientThread();
-            }
+            ConnectToWorld();
         }
         ImGui::SameLine();
         if (ImGui::Button("Disconnect"))
         {
-            Engine::Networking::StopClientThread();
-            Engine::Networking::DisconnectFromServer();
+            DisconnectFromWorld();
         }
 
-        if (ImGui::Button("Send Message"))
+        if (ImGui::Button("Back"))
         {
-            std::string msg{"Hi from client."};
-            std::vector<uint8_t> message(msg.begin(), msg.end());
-            Engine::Networking::ClientSendToPeer(Engine::Networking::server, message);
+            if (!Engine::Scenes::SceneExists("main_menu"))
+            {
+                MainMenu* mainMenuScene = new MainMenu();
+                Engine::Scenes::CreateScene(mainMenuScene, "main_menu");
+            }
+            Engine::Scenes::LoadScene("main_menu");
         }
 
-        if (!errorMessage.empty())
+        if (!message.empty())
         {
-            ImGui::Text("%s", errorMessage.c_str());
+            ImGui::Text("%s", message.c_str());
         }
         ImGui::End();
     }
@@ -153,16 +118,19 @@ namespace Game
         std::string name{worldName};
         if (name.empty())
         {
-            errorMessage = "World name is empty.";
+            message = "World name is empty.";
             return false;
         }
         if (!std::filesystem::exists("worlds/" + name))
         {
-            errorMessage = "World name does not exist.";
+            message = "World name does not exist.";
             return false;
         }
-        errorMessage = "";
-        Engine::Engine::SetScene(new Game::World(name));
+
+        Scene* worldScene = Engine::Scenes::CreateScene(new Game::World(name), "world-" + name);
+        Engine::Scenes::LoadScene(worldScene);
+
+        message = "";
         return true;
     }
 
@@ -173,7 +141,7 @@ namespace Game
 
         if (name.empty())
         {
-            errorMessage = "World name is empty.";
+            message = "World name is empty.";
             return false;
         }
 
@@ -192,7 +160,7 @@ namespace Game
             }
             catch (const std::invalid_argument&)
             {
-                errorMessage = "World seed must be numerical.";
+                message = "World seed must be numerical.";
                 return false;
             }
         }
@@ -214,7 +182,7 @@ namespace Game
         }
         else
         {
-            errorMessage = "World name already exists.";
+            message = "World name already exists.";
             return false;
         }
 
@@ -254,8 +222,69 @@ namespace Game
         std::string regionSize{"region_size=32\n"};
         configFile.write(regionSize.c_str(), regionSize.size());
 
-        errorMessage = "";
         configFile.close();
+        message = "";
+        return true;
+    }
+
+    bool WorldCreationScene::HostWorld()
+    {
+        std::string name{worldName};
+
+        if (name.empty())
+        {
+            message = "World name is empty.";
+            return false;
+        }
+
+        if (!Engine::Networking::CreateServer(33333, 3, true))
+        {
+            Engine::Networking::StopServer();
+            message = "Failed to create server process.";
+            return false;
+        }
+
+        message = "Successfully hosted world " + name + ".";
+        return true;
+    }
+
+    bool WorldCreationScene::StopHostingWorld()
+    {
+        if (!Engine::Networking::StopServer())
+        {
+            message = "No server running.";
+            return false;
+        }
+
+        message = "Stopped hosting.";
+        return true;
+    }
+
+    bool WorldCreationScene::ConnectToWorld()
+    {
+        Engine::Networking::StopClientThread();
+
+        if (!Engine::Networking::ConnectToServer("127.0.0.1", 33333))
+        {
+            message = "Failed to connect to server.";
+            return false;
+        }
+
+        Engine::Networking::StartClientThread();
+        message = "Connected to server.";
+        return true;
+    }
+
+    bool WorldCreationScene::DisconnectFromWorld()
+    {
+        if (!Engine::Networking::DisconnectFromServer())
+        {
+            message = "Not connected to a server.";
+            return false;
+        }
+
+        Engine::Networking::StopClientThread();
+        message = "Disconnected from server.";
         return true;
     }
 

@@ -1,4 +1,4 @@
-#include "client/Area.hpp"
+#include "game/Area.hpp"
 
 #include "SDL3/SDL.h"
 
@@ -7,8 +7,8 @@
 #include "dapper2d/Sprite.hpp"
 #include <dapper2d/ResourceLoader.hpp>
 
-#include "client/Tile.hpp"
-#include "client/World.hpp"
+#include "game/Tile.hpp"
+#include "game/World.hpp"
 
 namespace Game
 {
@@ -45,7 +45,7 @@ namespace Game
             std::uniform_int_distribution<> flowerChance(0, 9);
             bool isFlower = flowerChance(seedGen) == 0;
 
-            Tiles::Type tileType = Tiles::GRASS_1;
+            TileType tileType = GRASS_1;
             Engine::Vec2<int> localPosition{x, y};
 //            if (localPosition.x == 0 || localPosition.x == AREA_SIZE-1 || localPosition.y == 0 || localPosition.y == AREA_SIZE-1)
 //            {
@@ -53,13 +53,13 @@ namespace Game
 //            }
             if (isFlower)
             {
-                std::uniform_int_distribution<> flowerTileDistribution((int)Tiles::FLOWER_1, (int)Tiles::FLOWER_16);
-                tileType = (Tiles::Type)flowerTileDistribution(seedGen);
+                std::uniform_int_distribution<> flowerTileDistribution((int)FLOWER_1, (int)FLOWER_16);
+                tileType = (TileType)flowerTileDistribution(seedGen);
             }
             else
             {
-                std::uniform_int_distribution<> grassTileDistribution((int)Tiles::GRASS_1, (int)Tiles::GRASS_16);
-                tileType = (Tiles::Type)grassTileDistribution(seedGen);
+                std::uniform_int_distribution<> grassTileDistribution((int)GRASS_1, (int)GRASS_16);
+                tileType = (TileType)grassTileDistribution(seedGen);
             }
 
             Tile* tile = Tiles::GetTile(tileType);
@@ -111,7 +111,7 @@ namespace Game
         }
     }
 
-    void Area::UpdateTile(Engine::Vec2<int> tilePosition, Tiles::Type tileType)
+    void Area::UpdateTile(Engine::Vec2<int> tilePosition, TileType tileType)
     {
         if (tiles.size() < AREA_SIZE * AREA_SIZE)
             return;

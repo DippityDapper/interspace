@@ -1,9 +1,8 @@
-#include "client/Tile.hpp"
-
-#include "SDL3/SDL.h"
+#include "game/Tile.hpp"
 
 #include "dapper2d/Renderer.hpp"
 #include "dapper2d/Sprite.hpp"
+#include "dapper2d/Vec2.hpp"
 
 namespace Game
 {
@@ -31,7 +30,7 @@ namespace Game
 
         if (sprite->atlasW <= 0 || sprite->atlasH <= 0)
             return;
-        Engine::Vec2<float> position{(float)tilePositionX * Tile::TILE_SIZE, (float)tilePositionY * Tile::TILE_SIZE};
+        Engine::Vec2<float> position{(float)tilePositionX * TILE_SIZE, (float)tilePositionY * TILE_SIZE};
         Engine::Renderer::BufferAdd(position, sprite.get());
     }
 }

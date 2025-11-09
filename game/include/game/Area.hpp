@@ -5,7 +5,8 @@
 #include <random>
 
 #include "dapper2d/Vec2.hpp"
-#include "client/Tiles.hpp"
+
+#include "TileType.hpp"
 
 struct SDL_Texture;
 
@@ -38,7 +39,7 @@ namespace Game
         void Render();
 
         void GenerateTiles();
-        void UpdateTile(Engine::Vec2<int> tilePosition, Tiles::Type tileType);
+        void UpdateTile(Engine::Vec2<int> tilePosition, TileType tileType);
         void AddTilesToTexture();
     };
 }

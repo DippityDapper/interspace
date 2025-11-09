@@ -3,9 +3,9 @@
 #include <string>
 #include <memory>
 
-#include "dapper2d/Vec2.hpp"
+#include "TileType.hpp"
 
-#include "client/Tiles.hpp"
+#include "game/Tiles.hpp"
 
 namespace Engine
 {
@@ -27,7 +27,7 @@ namespace Game
         static int TILE_SIZE;
 
         std::unique_ptr<Engine::Sprite> sprite;
-        Tiles::Type type = Tiles::GRASS_1;
+        TileType type;
 
     public:
         explicit Tile(const std::string& filePath);

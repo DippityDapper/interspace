@@ -6,16 +6,15 @@
 #include "dapper2d/Scene.hpp"
 #include "dapper2d/Vec2.hpp"
 
-#include "client/ClientEntity.hpp"
-#include "client/Area.hpp"
-#include "client/Camera.hpp"
+#include "game/Area.hpp"
+#include "game/Camera.hpp"
 
 namespace Game
 {
     class World : public Engine::Scene
     {
     private:
-        std::string name{""};
+        std::string name;
 
     public:
         std::unique_ptr<Camera> camera = nullptr;
@@ -27,8 +26,6 @@ namespace Game
         static int WORLD_SIZE_Y;
         static int REGION_SIZE;
         float minZoomForRendering = 0.5;
-
-        std::map<int, std::unique_ptr<ClientEntity>> entities{};
 
     private:
         void SaveWorld();

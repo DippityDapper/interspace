@@ -1,4 +1,4 @@
-#include "client/World.hpp"
+#include "game/World.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -13,7 +13,7 @@
 #include "dapper2d/ResourceLoader.hpp"
 #include "dapper2d/Window.hpp"
 
-#include "client/Tile.hpp"
+#include "game/Tile.hpp"
 
 namespace Game
 {
@@ -93,7 +93,7 @@ namespace Game
             if (areas.contains(mouseAreaPosition))
             {
                 Area* area = areas[mouseAreaPosition].get();
-                area->UpdateTile(mouseLocalTilePosition, Tiles::STONE_PATH);
+                area->UpdateTile(mouseLocalTilePosition, STONE_PATH);
             }
         }
         if (event.type == SDL_EVENT_KEY_DOWN)
@@ -247,7 +247,6 @@ namespace Game
 
     void World::Clean()
     {
-        entities.clear();
         areas.clear();
     }
 
@@ -385,7 +384,7 @@ namespace Game
                     infile.read(reinterpret_cast<char*>(&ty), sizeof(int));
                     infile.read(reinterpret_cast<char*>(&tileType), sizeof(int));
 
-                    Game::Tile* tile = Tiles::GetTile(static_cast<Tiles::Type>(tileType));
+                    Game::Tile* tile = Tiles::GetTile(static_cast<TileType>(tileType));
                     area->tiles[{tx, ty}] = tile;
                 }
 

@@ -1,4 +1,4 @@
-#include "client/Camera.hpp"
+#include "game/Camera.hpp"
 
 #include "SDL3/SDL.h"
 
