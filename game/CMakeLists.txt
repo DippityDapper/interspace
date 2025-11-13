@@ -1,5 +1,5 @@
-file(GLOB_RECURSE GAME_SOURCE_FILES "src/*.cpp")
-file(GLOB_RECURSE GAME_HEADER_FILES "include/game/*.hpp")
+file(GLOB_RECURSE GAME_SOURCE_FILES "src/*/*")
+file(GLOB_RECURSE GAME_HEADER_FILES "include/game/*/*")
 
 add_executable(game
         src/main.cpp

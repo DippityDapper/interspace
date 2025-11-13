@@ -2,7 +2,7 @@
 #include <memory>
 
 #include "dapper2d/Scenes.hpp"
-#include "game/Game.hpp"
+#include "game/game/Game.hpp"
 
 int main(int argc, char* argv[])
 {

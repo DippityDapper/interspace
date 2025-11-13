@@ -1,0 +1,81 @@
+#include "game/world/AreaClient.hpp"
+
+#include "dapper2d/Renderer.hpp"
+#include "dapper2d/ResourceLoader.hpp"
+#include "game/world/TileRegistryClient.hpp"
+#include "game/world/WorldClient.hpp"
+#include "SDL3/SDL_render.h"
+
+namespace Game
+{
+    AreaClient::AreaClient(const Engine::Vec2<uint16_t>& _position, const std::vector<uint8_t>& tileData)
+    {
+        position = _position;
+
+        bakedTexture = Engine::ResourceLoader::CreateTexture(
+            SDL_PIXELFORMAT_RGBA8888,
+            SDL_TEXTUREACCESS_TARGET,
+            WorldClient::AREA_SIZE * WorldClient::TILE_SIZE,
+            WorldClient::AREA_SIZE * WorldClient::TILE_SIZE
+        );
+
+        queuedTileData = tileData;
+    }
+
+    void AreaClient::Create()
+    {
+        uint32_t offset = 0;
+
+        uint32_t tileCount = 0;
+        memcpy(&tileCount, &queuedTileData[offset], sizeof(uint32_t));
+        offset += sizeof(uint32_t);
+
+        uint32_t queueCount = 0;
+        while (queueCount < tileCount)
+        {
+            uint8_t tileX = queueCount % WorldClient::AREA_SIZE;
+            uint8_t tileY = queueCount / WorldClient::AREA_SIZE;
+
+            TileType tileType = GRASS_1;
+            memcpy(&tileType, &queuedTileData[offset], sizeof(uint8_t));
+            offset += sizeof(uint8_t);
+
+            Engine::Vec2<uint8_t> tilePosition = {tileX, tileY};
+            TileClient* tile = TileRegistryClient::GetTile(tileType);
+            tiles[tilePosition] = tile;
+            queueCount++;
+        }
+
+        queuedTileData.clear();
+    }
+
+    void AreaClient::BakeSprite()
+    {
+        SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), bakedTexture.get());
+
+        for (const auto& tile : tiles)
+        {
+            tile.second->LocalRender(Engine::Vec2<float>(tile.first));
+        }
+
+        SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), nullptr);
+    }
+
+    void AreaClient::Update(float delta)
+    {
+
+    }
+
+    void AreaClient::Render()
+    {
+        if (!bakedTexture)
+            return;
+
+        if (tiles.size() >= WorldClient::AREA_SIZE * WorldClient::AREA_SIZE)
+        {
+            // SDL_SetTextureAlphaMod(cachedTexture.get(), static_cast<Uint8>(fogAlpha * 255));
+            Engine::Vec2<float> areaPosition = (Engine::Vec2<float>)position * WorldClient::AREA_SIZE * WorldClient::TILE_SIZE;
+            Engine::Renderer::BufferAdd(areaPosition, bakedTexture.get(), nullptr, false);
+        }
+    }
+}
