@@ -7,7 +7,7 @@
 
 #include "enet/enet.h"
 
-#include "game/network/ServerNetEvent.hpp"
+#include "game/server/ServerNetEvent.hpp"
 #include "game/network/NetInterface.hpp"
 
 namespace Game
@@ -42,6 +42,7 @@ namespace Game
         void HandleUnRequestedDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
 
         uint32_t GetUserId(const std::string& username);
+        std::string GetUsername(uint32_t peerId);
         ENetPeer* GetPeer(uint32_t peerId);
         ENetPeer* GetPeer(const std::string& username);
 

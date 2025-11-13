@@ -1,4 +1,4 @@
-#include "game/network/Server.hpp"
+#include "game/server/Server.hpp"
 
 #include <cstring>
 #include <string>
@@ -71,6 +71,13 @@ namespace Game
                 return user.first;
         }
         return 0;
+    }
+
+    std::string Server::GetUsername(uint32_t peerId)
+    {
+        if (!idToUsernameLookup.contains(peerId))
+            return "";
+        return idToUsernameLookup[peerId];
     }
 
     ENetPeer* Server::GetPeer(uint32_t peerId)

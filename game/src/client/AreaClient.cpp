@@ -1,10 +1,13 @@
 #include "game/client/AreaClient.hpp"
 
+#include "SDL3/SDL_render.h"
+
 #include "dapper2d/Renderer.hpp"
 #include "dapper2d/ResourceLoader.hpp"
+
 #include "game/client/TileRegistryClient.hpp"
 #include "game/client/WorldClient.hpp"
-#include "SDL3/SDL_render.h"
+#include "game/network/NetworkPackets.hpp"
 
 namespace Game
 {
@@ -24,11 +27,9 @@ namespace Game
 
     void AreaClient::Create()
     {
-        uint32_t offset = 0;
+        size_t offset = 0;
 
-        uint32_t tileCount = 0;
-        memcpy(&tileCount, &queuedTileData[offset], sizeof(uint32_t));
-        offset += sizeof(uint32_t);
+        uint32_t tileCount = UnpackUint32(queuedTileData, offset);
 
         uint32_t queueCount = 0;
         while (queueCount < tileCount)
@@ -36,9 +37,7 @@ namespace Game
             uint8_t tileX = queueCount % WorldClient::AREA_SIZE;
             uint8_t tileY = queueCount / WorldClient::AREA_SIZE;
 
-            TileType tileType = GRASS_1;
-            memcpy(&tileType, &queuedTileData[offset], sizeof(uint8_t));
-            offset += sizeof(uint8_t);
+            TileType tileType = static_cast<TileType>(UnpackUint8(queuedTileData, offset));
 
             Engine::Vec2<uint8_t> tilePosition = {tileX, tileY};
             TileClient* tile = TileRegistryClient::GetTile(tileType);

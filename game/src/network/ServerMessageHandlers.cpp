@@ -1,4 +1,4 @@
-#include "game/network/Server.hpp"
+#include "game/server/Server.hpp"
 
 #include "SDL3/SDL_log.h"
 
@@ -10,67 +10,53 @@ namespace Game
     {
         size_t offset = 1; // start after the request
 
-        uint32_t usernameLength;
-        memcpy(&usernameLength, &data[offset], sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-
-        std::string username(reinterpret_cast<const char*>(&data[offset]), usernameLength);
+        uint32_t usernameLength = UnpackUint32(data, offset);
+        std::string username = UnpackString(data, offset, usernameLength);
 
         uint32_t newId = nextPeerId++;
 
-        SDL_Log("[Server] User %s [%u] connected.", username.c_str(), newId);
-
         std::vector<uint8_t> response;
         response.push_back(CONNECTION_ACCEPTED);
-
-        uint8_t* idBytes = reinterpret_cast<uint8_t*>(&newId);
-        response.insert(response.end(), idBytes, idBytes + sizeof(uint32_t));
-
+        PackBytes(response, &newId, sizeof(uint32_t));
         netInterface->SendToClient(from, response);
 
-        std::vector<uint8_t> responseAll;
-        responseAll.push_back(CLIENT_CONNECTED);
-
-        uint8_t* newClientIdBytes = reinterpret_cast<uint8_t*>(&newId);
-        responseAll.insert(responseAll.end(), newClientIdBytes, newClientIdBytes + sizeof(uint32_t));
+        std::vector<uint8_t> newClientData;
+        newClientData.push_back(CLIENT_CONNECTED);
 
         uint32_t usernameLen = username.size();
-        uint8_t* usernameBytes = reinterpret_cast<uint8_t*>(&usernameLen);
-        responseAll.insert(responseAll.end(), usernameBytes, usernameBytes + sizeof(uint32_t));
-        responseAll.insert(responseAll.end(), username.begin(), username.end());
+        PackBytes(newClientData, &newId, sizeof(uint32_t));
+        PackBytes(newClientData, &usernameLen, sizeof(uint32_t));
+        PackBytes(newClientData, username.data(), usernameLen);
 
         for (const auto& peer : peers)
         {
-            netInterface->SendToClient(peer.second, responseAll);
+            netInterface->SendToClient(peer.second, newClientData);
 
-            std::vector<uint8_t> responseOfPeers;
-            responseOfPeers.push_back(CLIENT_CONNECTED);
+            std::vector<uint8_t> peerData;
+            peerData.push_back(CLIENT_CONNECTED);
 
             uint32_t peerId = peer.first;
-            uint8_t* peerIdBytes = reinterpret_cast<uint8_t*>(&peerId);
-            responseOfPeers.insert(responseOfPeers.end(), peerIdBytes, peerIdBytes + sizeof(uint32_t));
-
             std::string peerUsername = idToUsernameLookup[peerId];
             uint32_t peerUsernameLen = peerUsername.size();
-            uint8_t* peerUsernameLenBytes = reinterpret_cast<uint8_t*>(&peerUsernameLen);
-            responseOfPeers.insert(responseOfPeers.end(), peerUsernameLenBytes, peerUsernameLenBytes + sizeof(uint32_t));
-            responseOfPeers.insert(responseOfPeers.end(), peerUsername.begin(), peerUsername.end());
+            PackBytes(peerData, &peerId, sizeof(uint32_t));
+            PackBytes(peerData, &peerUsernameLen, sizeof(uint32_t));
+            PackBytes(peerData, peerUsername.data(), peerUsernameLen);
 
-            netInterface->SendToClient(from, responseOfPeers);
+            netInterface->SendToClient(from, peerData);
         }
 
         peers.emplace(newId, from);
         idToUsernameLookup.emplace(newId, username);
 
-        EmitEvent(CLIENT_CONNECTED, data, from);
+        EmitEvent(CLIENT_CONNECTED, newClientData, from);
+        SDL_Log("[Server] User %s [%u] connected.", username.c_str(), newId);
     }
 
     void Server::HandleDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from)
     {
         size_t offset = 1;
 
-        uint32_t clientId;
-        memcpy(&clientId, &data[offset], sizeof(uint32_t));
+        uint32_t clientId = UnpackUint32(data, offset);
 
         if (peers.contains(clientId))
         {
@@ -78,21 +64,19 @@ namespace Game
             peers.erase(clientId);
             idToUsernameLookup.erase(clientId);
 
-            SDL_Log("[Server] Client Disconnected: %s [%u]", username.c_str(), clientId);
+            std::vector<uint8_t> acknowledgment;
+            acknowledgment.push_back(DISCONNECTION_ACKNOWLEDGED);
+            netInterface->SendToClient(from, acknowledgment);
 
-            std::vector<uint8_t> responseBack;
-            responseBack.push_back(DISCONNECTION_ACKNOWLEDGED);
-            netInterface->SendToClient(from, responseBack);
-
-            std::vector<uint8_t> responseAll;
-            responseAll.push_back(CLIENT_DISCONNECTED);
-            uint8_t* clientIdBytes = reinterpret_cast<uint8_t*>(&clientId);
-            responseAll.insert(responseAll.end(), clientIdBytes, clientIdBytes + sizeof(uint32_t));
+            std::vector<uint8_t> notifyAllData;
+            notifyAllData.push_back(CLIENT_DISCONNECTED);
+            PackBytes(notifyAllData, &clientId, sizeof(uint32_t));
 
             for (const auto& client : peers)
-                netInterface->SendToClient(client.second, responseAll);
+                netInterface->SendToClient(client.second, notifyAllData);
 
             EmitEvent(CLIENT_DISCONNECTED, data, from);
+            SDL_Log("[Server] Client Disconnected: %s [%u]", username.c_str(), clientId);
         }
     }
 
@@ -120,16 +104,14 @@ namespace Game
         peers.erase(clientId);
         idToUsernameLookup.erase(clientId);
 
-        SDL_Log("[Server] Client Disconnected: %u", clientId);
-
-        std::vector<uint8_t> responseAll;
-        responseAll.push_back(CLIENT_DISCONNECTED);
-        uint8_t* clientIdBytes = reinterpret_cast<uint8_t*>(&clientId);
-        responseAll.insert(responseAll.end(), clientIdBytes, clientIdBytes + sizeof(uint32_t));
+        std::vector<uint8_t> notifyAllData;
+        notifyAllData.push_back(CLIENT_DISCONNECTED);
+        PackBytes(notifyAllData, &clientId, sizeof(uint32_t));
 
         for (const auto& client : peers)
-            netInterface->SendToClient(client.second, responseAll);
+            netInterface->SendToClient(client.second, notifyAllData);
 
         EmitEvent(CLIENT_DISCONNECTED, data, from);
+        SDL_Log("[Server] Client Disconnected: %u", clientId);
     }
 }

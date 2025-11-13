@@ -1,9 +1,13 @@
 #include "game/client/WorldClient.hpp"
 
-#include "dapper2d/Window.hpp"
-#include "game/game/Camera.hpp"
-#include "game/network/Client.hpp"
+#include <cstring>
+
 #include "SDL3/SDL_log.h"
+
+#include "dapper2d/Window.hpp"
+
+#include "game/game/Camera.hpp"
+#include "game/client/Client.hpp"
 
 namespace Game
 {
@@ -16,6 +20,11 @@ namespace Game
     {
         client->ConnectToEvent(WORLD_DATA_PACKET, this, &WorldClient::OnWorldDataReceived);
         client->ConnectToEvent(AREA_DATA_PACKET, this, &WorldClient::OnAreaDataReceived);
+
+        client->ConnectToEvent(CONNECTION_ACCEPTED, this, &WorldClient::OnConnectionAccepted);
+        client->ConnectToEvent(CLIENT_CONNECTED, this, &WorldClient::OnClientConnected);
+        client->ConnectToEvent(CLIENT_DISCONNECTED, this, &WorldClient::OnClientDisconnected);
+
         RequestWorldData();
     }
 
@@ -119,6 +128,50 @@ namespace Game
     {
     }
 
+    uint32_t WorldClient::AddFaction(uint32_t ownerId, const std::string& factionName)
+    {
+        uint32_t factionId = nextFactionId++;
+        factions.emplace(factionId, std::make_unique<FactionClient>(factionId, ownerId, factionName));
+        factionIdToName.emplace(factionId, factionName);
+        factionNameToId.emplace(factionName, factionId);
+        factionOwnerToId.emplace(ownerId, factionId);
+
+        SDL_Log("[Client] Faction created: %s [%u]", factionName.c_str(), factionId);
+
+        return factionId;
+    }
+
+    bool WorldClient::RemoveFaction(uint32_t factionId)
+    {
+        if (!factions.contains(factionId))
+            return false;
+
+        factions.erase(factionId);
+
+        if (!factionIdToName.contains(factionId))
+            return false;
+
+        std::string factionName = factionIdToName[factionId];
+        if (!factionNameToId.contains(factionName))
+        {
+            factionIdToName.erase(factionId);
+            return false;
+        }
+
+        uint32_t ownerId = factionNameToId[factionName];
+        if (!factionOwnerToId.contains(ownerId))
+        {
+            factionNameToId.erase(factionName);
+            factionIdToName.erase(factionId);
+            return false;
+        }
+
+        factionOwnerToId.erase(ownerId);
+        factionNameToId.erase(factionName);
+        factionIdToName.erase(factionId);
+        return true;
+    }
+
     void WorldClient::RequestWorldData()
     {
         std::vector<uint8_t> request;
@@ -128,22 +181,12 @@ namespace Game
 
     void WorldClient::OnWorldDataReceived(const std::vector<uint8_t>& data)
     {
-        uint32_t offset = 1;
+        size_t offset = 1;
 
-        uint32_t worldNameLen = 0;
-        memcpy(&worldNameLen, &data[offset], sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-
-        if (worldNameLen == 0)
-            return;
-
-        std::string worldName(reinterpret_cast<const char*>(&data[offset]), worldNameLen);
-        name = worldName;
-        offset += worldNameLen;
-
-        memcpy(&worldSizeX, &data[offset], sizeof(uint16_t));
-        offset += sizeof(uint16_t);
-        memcpy(&worldSizeY, &data[offset], sizeof(uint16_t));
+        uint32_t worldNameLen = UnpackUint32(data, offset);
+        name = UnpackString(data, offset, worldNameLen);
+        worldSizeX = UnpackUint16(data, offset);
+        worldSizeY = UnpackUint16(data, offset);
 
         camera = std::make_unique<Camera>
         (
@@ -163,16 +206,10 @@ namespace Game
 
     void WorldClient::OnAreaDataReceived(const std::vector<uint8_t>& data)
     {
-        uint32_t offset = 1;
+        size_t offset = 1;
         
-        uint16_t areaPositionX = 0;
-        memcpy(&areaPositionX, &data[offset], sizeof(uint16_t));
-        offset += sizeof(uint16_t);
-
-        uint16_t areaPositionY = 0;
-        memcpy(&areaPositionY, &data[offset], sizeof(uint16_t));
-        offset += sizeof(uint16_t);
-        
+        uint16_t areaPositionX = UnpackUint16(data, offset);
+        uint16_t areaPositionY = UnpackUint16(data, offset);
         Engine::Vec2<uint16_t> areaPosition = {areaPositionX, areaPositionY};
 
         if (requestedAreas.contains(areaPosition))
@@ -189,5 +226,34 @@ namespace Game
         area->Create();
         area->generationComplete = true;
         area->BakeSprite();
+    }
+
+    void WorldClient::OnConnectionAccepted(const std::vector<uint8_t>& data)
+    {
+        uint32_t id = client->clientId;
+        std::string username = client->username;
+
+        AddFaction(id, username);
+    }
+
+    void WorldClient::OnClientConnected(const std::vector<uint8_t>& data)
+    {
+        size_t offset = 1;
+
+        uint32_t peerId = UnpackUint32(data, offset);
+        uint32_t usernameLen = UnpackUint32(data, offset);
+        std::string peerUsername = UnpackString(data, offset, usernameLen);
+
+        AddFaction(peerId, peerUsername);
+    }
+
+    void WorldClient::OnClientDisconnected(const std::vector<uint8_t>& data)
+    {
+        size_t offset = 1;
+
+        uint32_t peerId = UnpackUint32(data, offset);
+        std::string peerUsername = client->GetUsername(peerId);
+
+        RemoveFaction(factionOwnerToId[peerId]);
     }
 }

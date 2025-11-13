@@ -3,9 +3,11 @@
 #include <filesystem>
 #include <fstream>
 
+#include "game/network/NetworkPackets.hpp"
+#include "SDL3/SDL_log.h"
+
 #include "game/server/TileRegistryServer.hpp"
 #include "game/server/WorldServer.hpp"
-#include "SDL3/SDL_log.h"
 
 namespace Game
 {
@@ -131,15 +133,11 @@ namespace Game
     std::vector<uint8_t> AreaServer::Serialize()
     {
         std::vector<uint8_t> data;
-        uint8_t* positionXBytes = reinterpret_cast<uint8_t*>(&position.x);
-        data.insert(data.end(), positionXBytes, positionXBytes + sizeof(uint16_t));
-
-        uint8_t* positionYBytes = reinterpret_cast<uint8_t*>(&position.y);
-        data.insert(data.end(), positionYBytes, positionYBytes + sizeof(uint16_t));
 
         uint32_t tileCount = tiles.size();
-        uint8_t* tileCountBytes = reinterpret_cast<uint8_t*>(&tileCount);
-        data.insert(data.end(), tileCountBytes, tileCountBytes + sizeof(uint32_t));
+        PackBytes(data, &position.x, sizeof(uint16_t));
+        PackBytes(data, &position.y, sizeof(uint16_t));
+        PackBytes(data, &tileCount, sizeof(uint32_t));
 
         for (const auto& tile : tiles)
         {

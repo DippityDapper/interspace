@@ -5,10 +5,9 @@
 #include <vector>
 #include <memory>
 
-#include "NetworkPackets.hpp"
-#include "game/network/ClientNetEvent.hpp"
+#include "game/network/NetworkPackets.hpp"
+#include "game/client/ClientNetEvent.hpp"
 #include "game/network/NetInterface.hpp"
-#include "game/client/WorldClient.hpp"
 
 namespace Game
 {
@@ -39,6 +38,8 @@ namespace Game
         void HandleConnectionAccepted(const std::vector<uint8_t>& data);
         void HandleClientDisconnected(const std::vector<uint8_t>& data);
         void HandlePeerConnected(const std::vector<uint8_t>& data);
+
+        std::string GetUsername(uint32_t peerId);
 
     public:
         template <typename T>

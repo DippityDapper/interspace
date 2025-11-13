@@ -4,8 +4,8 @@
 
 #include "dapper2d/Scene.hpp"
 
-#include "game/network/Client.hpp"
-#include "game/network/Server.hpp"
+#include "game/client/Client.hpp"
+#include "game/server/Server.hpp"
 #include "game/world/World.hpp"
 
 namespace Game

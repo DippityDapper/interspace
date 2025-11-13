@@ -2,7 +2,7 @@
 
 #include "SDL3/SDL_log.h"
 
-#include "game/network/Client.hpp"
+#include "game/client/Client.hpp"
 #include "game/game/Game.hpp"
 #include "game/network/NetworkPackets.hpp"
 
@@ -12,7 +12,6 @@ namespace Game
     {
         uint32_t offset = 1;
         std::memcpy(&clientId, &data[offset], sizeof(uint32_t));
-        SDL_Log("[Client] Connected. Assigned ID: %u", clientId);
     }
 
     void Client::HandleClientDisconnected(const std::vector<uint8_t>& data)
@@ -41,6 +40,5 @@ namespace Game
         std::string peerUsername(reinterpret_cast<const char*>(&data[offset]), usernameLen);
 
         peers[peerId] = peerUsername;
-        SDL_Log("[Client] Peer Connected: %s [%u]", peerUsername.c_str(), peerId);
     }
 }
