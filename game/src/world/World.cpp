@@ -3,8 +3,8 @@
 #include "dapper2d/Scenes.hpp"
 #include "game/game/Game.hpp"
 #include "game/menus/MainMenu.hpp"
-#include "game/world/WorldClient.hpp"
-#include "game/world/WorldServer.hpp"
+#include "game/client/WorldClient.hpp"
+#include "game/server/WorldServer.hpp"
 
 namespace Game
 {

@@ -1,8 +1,8 @@
-#include "game/world/TileClient.hpp"
+#include "game/client/TileClient.hpp"
 
 #include "dapper2d/Renderer.hpp"
 
-#include "game/world/WorldClient.hpp"
+#include "game/client/WorldClient.hpp"
 
 namespace Game
 {

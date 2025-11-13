@@ -3,8 +3,8 @@
 #include <memory>
 #include <string>
 
-#include "game/world/WorldClient.hpp"
-#include "game/world/WorldServer.hpp"
+#include "game/client/WorldClient.hpp"
+#include "game/server/WorldServer.hpp"
 #include "SDL3/SDL_events.h"
 
 namespace Game

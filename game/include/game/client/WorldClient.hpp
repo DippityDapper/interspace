@@ -4,7 +4,7 @@
 
 #include "dapper2d/Camera.hpp"
 
-#include "game/world/AreaClient.hpp"
+#include "game/client/AreaClient.hpp"
 
 namespace Game
 {

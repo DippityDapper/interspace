@@ -1,4 +1,4 @@
-#include "game/world/TileServer.hpp"
+#include "game/server/TileServer.hpp"
 
 namespace Game
 {

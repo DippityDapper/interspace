@@ -19,4 +19,7 @@ enum NetMessageType : uint8_t
 
     AREA_DATA_REQUEST,
     AREA_DATA_PACKET,
+
+    POSITION_REQUEST,
+    POSITION_PACKET,
 };

@@ -1,10 +1,10 @@
-#include "game/world/AreaServer.hpp"
+#include "game/server/AreaServer.hpp"
 
 #include <filesystem>
 #include <fstream>
 
-#include "game/world/TileRegistryServer.hpp"
-#include "game/world/WorldServer.hpp"
+#include "game/server/TileRegistryServer.hpp"
+#include "game/server/WorldServer.hpp"
 #include "SDL3/SDL_log.h"
 
 namespace Game

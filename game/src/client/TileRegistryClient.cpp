@@ -1,6 +1,6 @@
-#include "game/world/TileRegistryClient.hpp"
+#include "game/client/TileRegistryClient.hpp"
 
-#include "game/world/TileClient.hpp"
+#include "game/client/TileClient.hpp"
 
 namespace Game
 {

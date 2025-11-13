@@ -8,7 +8,7 @@
 #include "NetworkPackets.hpp"
 #include "game/network/ClientNetEvent.hpp"
 #include "game/network/NetInterface.hpp"
-#include "game/world/WorldClient.hpp"
+#include "game/client/WorldClient.hpp"
 
 namespace Game
 {

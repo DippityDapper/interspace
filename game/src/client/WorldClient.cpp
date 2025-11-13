@@ -1,4 +1,4 @@
-#include "game/world/WorldClient.hpp"
+#include "game/client/WorldClient.hpp"
 
 #include "dapper2d/Window.hpp"
 #include "game/game/Camera.hpp"

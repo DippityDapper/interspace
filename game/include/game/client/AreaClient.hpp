@@ -6,7 +6,7 @@
 
 #include "dapper2d/Vec2.hpp"
 
-#include "game/world/TileClient.hpp"
+#include "game/client/TileClient.hpp"
 
 namespace Game
 {

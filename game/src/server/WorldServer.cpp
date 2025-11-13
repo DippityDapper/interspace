@@ -1,4 +1,4 @@
-#include "game/world/WorldServer.hpp"
+#include "game/server/WorldServer.hpp"
 
 #include "SDL3/SDL_log.h"
 

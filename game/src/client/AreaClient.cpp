@@ -1,9 +1,9 @@
-#include "game/world/AreaClient.hpp"
+#include "game/client/AreaClient.hpp"
 
 #include "dapper2d/Renderer.hpp"
 #include "dapper2d/ResourceLoader.hpp"
-#include "game/world/TileRegistryClient.hpp"
-#include "game/world/WorldClient.hpp"
+#include "game/client/TileRegistryClient.hpp"
+#include "game/client/WorldClient.hpp"
 #include "SDL3/SDL_render.h"
 
 namespace Game

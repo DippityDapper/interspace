@@ -8,8 +8,8 @@
 #include "game/menus/MainMenu.hpp"
 #include "game/network/MultiplayerInterface.hpp"
 #include "game/network/SingleplayerInterface.hpp"
-#include "game/world/TileRegistryClient.hpp"
-#include "game/world/TileRegistryServer.hpp"
+#include "game/client/TileRegistryClient.hpp"
+#include "game/server/TileRegistryServer.hpp"
 
 namespace Game
 {

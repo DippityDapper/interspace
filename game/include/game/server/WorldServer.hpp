@@ -10,7 +10,7 @@
 
 #include "dapper2d/Vec2.hpp"
 
-#include "game/world/AreaServer.hpp"
+#include "game/server/AreaServer.hpp"
 
 namespace Game
 {
