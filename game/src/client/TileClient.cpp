@@ -6,8 +6,9 @@
 
 namespace Game
 {
-    TileClient::TileClient(const std::string& texturePath, int w, int h, int x, int y)
+    TileClient::TileClient(TileType _type, const std::string& texturePath, int w, int h, int x, int y)
     {
+        type = _type;
         sprite = std::make_unique<Engine::Sprite>(texturePath, w, h, x, y);
     }
 

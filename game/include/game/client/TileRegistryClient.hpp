@@ -4,12 +4,10 @@
 #include <memory>
 #include <vector>
 
-#include "game/world/TileType.hpp"
+#include "game/client/TileClient.hpp"
 
 namespace Game
 {
-    class TileClient;
-
     class TileRegistryClient
     {
     public:

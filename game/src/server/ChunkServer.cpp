@@ -1,33 +1,33 @@
-#include "game/server/AreaServer.hpp"
+#include "game/server/ChunkServer.hpp"
 
 #include <filesystem>
 #include <fstream>
 
 #include "game/network/NetworkPackets.hpp"
-#include "SDL3/SDL_log.h"
-
 #include "game/server/TileRegistryServer.hpp"
+#include "game/server/TileServer.hpp"
 #include "game/server/WorldServer.hpp"
 
 namespace Game
 {
-    AreaServer::AreaServer(Engine::Vec2<uint16_t> _position, uint32_t worldSeed)
+    ChunkServer::ChunkServer(Engine::Vec2<uint16_t> _position, uint32_t worldSeed)
     {
         position = _position;
+
         seed = worldSeed ^ (position.x * 73856093) ^ (position.y * 19349663);
         seedGen.seed(seed);
     }
 
-    void AreaServer::Init()
+    void ChunkServer::Init()
     {
     }
 
-    void AreaServer::Clean()
+    void ChunkServer::Clean()
     {
 
     }
 
-    bool AreaServer::Create()
+    bool ChunkServer::Create()
     {
         if (Load())
             return true;
@@ -38,13 +38,13 @@ namespace Game
         return false;
     }
 
-    void AreaServer::Update(float delta)
+    void ChunkServer::Update(float delta)
     {
 
     }
 
 
-    bool AreaServer::Load()
+    bool ChunkServer::Load()
     {
         uint8_t areaSize = WorldServer::AREA_SIZE;
         uint8_t regionSize = WorldServer::REGION_SIZE;
@@ -99,7 +99,7 @@ namespace Game
         return false;
     }
 
-    bool AreaServer::Generate()
+    bool ChunkServer::Generate()
     {
         uint8_t areaSize = WorldServer::AREA_SIZE;
 
@@ -130,21 +130,17 @@ namespace Game
         return true;
     }
 
-    std::vector<uint8_t> AreaServer::Serialize()
+    std::vector<uint8_t> ChunkServer::Serialize() const
     {
         std::vector<uint8_t> data;
-
-        uint32_t tileCount = tiles.size();
         PackBytes(data, &position.x, sizeof(uint16_t));
         PackBytes(data, &position.y, sizeof(uint16_t));
+
+        uint32_t tileCount = tiles.size();
         PackBytes(data, &tileCount, sizeof(uint32_t));
 
         for (const auto& tile : tiles)
-        {
-            std::vector<uint8_t> tileData = tile.second->Serialize();
-            data.insert(data.end(), tileData.begin(), tileData.end());
-        }
-
+            data.push_back(tile.second->type);
         return data;
     }
 }

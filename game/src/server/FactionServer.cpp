@@ -4,6 +4,7 @@ namespace Game
 {
     FactionServer::FactionServer(uint32_t _id, uint32_t _ownerId, const std::string& _name)
     {
+        id = _id;
         ownerId = _ownerId;
         name = _name;
 

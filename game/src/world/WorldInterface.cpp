@@ -1,4 +1,4 @@
-#include "game/world/World.hpp"
+#include "game/world/WorldInterface.hpp"
 
 #include "dapper2d/Scenes.hpp"
 #include "game/game/Game.hpp"
@@ -8,11 +8,11 @@
 
 namespace Game
 {
-    void World::Init()
+    void WorldInterface::Init()
     {
     }
 
-    void World::Update(float delta)
+    void WorldInterface::Update(float delta)
     {
         if (serverWorld)
             serverWorld->Update(delta);
@@ -20,13 +20,13 @@ namespace Game
             clientWorld->Update(delta);
     }
 
-    void World::Render()
+    void WorldInterface::Render()
     {
         if (clientWorld)
             clientWorld->Render();
     }
 
-    void World::HandleEvents(SDL_Event& event)
+    void WorldInterface::HandleEvents(SDL_Event& event)
     {
         if (event.type == SDL_EVENT_KEY_DOWN)
         {
@@ -37,8 +37,7 @@ namespace Game
                     std::vector<uint8_t> request;
                     request.push_back(DISCONNECTION_REQUEST);
 
-                    uint8_t* idBytes = reinterpret_cast<uint8_t*>(&client->clientId);
-                    request.insert(request.end(), idBytes, idBytes + sizeof(uint32_t));
+                    PackBytes(request, &client->clientId, sizeof(uint32_t));
 
                     client->netInterface->SendToServer(request);
                     disconnectRequested = true;
@@ -51,7 +50,7 @@ namespace Game
             clientWorld->HandleEvents(event);
     }
 
-    void World::Clean()
+    void WorldInterface::Clean()
     {
         if (serverWorld)
             serverWorld->Clean();
@@ -59,22 +58,23 @@ namespace Game
             clientWorld->Clean();
     }
 
-    void World::SetServer(Server* _server, const std::string& worldName)
+    void WorldInterface::SetServer(Server* _server, const std::string& worldName)
     {
         server = _server;
         serverWorld = std::make_unique<WorldServer>(server, worldName);
         serverWorld->Init();
     }
 
-    void World::SetClient(Client* _client)
+    void WorldInterface::SetClient(Client* _client)
     {
         client = _client;
         clientWorld = std::make_unique<WorldClient>(client);
         clientWorld->Init();
-        client->ConnectToEvent(DISCONNECTION_ACKNOWLEDGED, this, &World::OnDisconnectAcknowledged);
+        client->ConnectToEvent(DISCONNECTION_ACKNOWLEDGED, this, &WorldInterface::OnDisconnectAcknowledged);
+        client->ConnectToEvent(DISCONNECTION_REQUEST_, this, &WorldInterface::OnDisconnectAcknowledged);
     }
 
-    void World::OnDisconnectAcknowledged(const std::vector<uint8_t>& data)
+    void WorldInterface::OnDisconnectAcknowledged(const std::vector<uint8_t>& data)
     {
         Game::Disconnect();
 

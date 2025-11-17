@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-
 #include "dapper2d/Camera.hpp"
 
 namespace Game
@@ -9,10 +7,12 @@ namespace Game
     class Camera : public Engine::Camera
     {
     private:
+        Engine::Vec2<int> oldViewport{};
+
+    public:
         Engine::Vec2<float> targetPosition{0,0};
         float targetZoom = 1.0;
 
-    public:
         float panSpeed = 10;
         float zoomSpeed = 10;
         float moveSpeed = 20;

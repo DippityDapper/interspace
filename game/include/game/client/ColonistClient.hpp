@@ -17,7 +17,8 @@ namespace Game
         std::unique_ptr<Engine::Sprite> sprite = nullptr;
 
     public:
+        ColonistClient() = default;
         ColonistClient(uint32_t _id, const std::string& _name, const Engine::Vec2<float>& _position);
-
+        void Render();
     };
 }

@@ -62,7 +62,7 @@ namespace Game
             return false;
 
         if (!world)
-            world = std::make_unique<World>();
+            world = std::make_unique<WorldInterface>();
 
         world->SetServer(server.get(), worldName);
         world->Init();
@@ -79,7 +79,7 @@ namespace Game
             return false;
 
         if (!world)
-            world = std::make_unique<World>();
+            world = std::make_unique<WorldInterface>();
 
         world->SetClient(client.get());
         world->Init();
@@ -97,7 +97,7 @@ namespace Game
             return false;
 
         if (!world)
-            world = std::make_unique<World>();
+            world = std::make_unique<WorldInterface>();
 
         world->SetServer(server.get(), worldName);
         world->SetClient(client.get());

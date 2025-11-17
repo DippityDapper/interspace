@@ -5,13 +5,14 @@
 #include <map>
 #include <vector>
 
-#include "FactionServer.hpp"
 #include "enet/enet.h"
 #include "SDL3/SDL_events.h"
 
 #include "dapper2d/Vec2.hpp"
 
-#include "game/server/AreaServer.hpp"
+#include "game/server/FactionServer.hpp"
+#include "game/server/PlayerServer.hpp"
+#include "game/server/ChunkServer.hpp"
 
 namespace Game
 {
@@ -25,7 +26,9 @@ namespace Game
     public:
         static inline std::string name{};
 
-        std::map<Engine::Vec2<uint16_t>, std::unique_ptr<AreaServer>> areas{};
+        std::map<Engine::Vec2<uint16_t>, std::unique_ptr<ChunkServer>> areas{};
+
+        std::map<uint32_t, std::unique_ptr<PlayerServer>> players{};
 
         std::map<uint32_t, std::unique_ptr<FactionServer>> factions{};
         std::map<uint32_t, std::string> factionIdToName{};
@@ -43,17 +46,28 @@ namespace Game
 
     public:
         WorldServer(Server* _server, const std::string& worldName);
+
         void Init();
         void Update(float delta);
         void HandleEvents(SDL_Event& event);
         void Clean();
 
+        bool AddPlayer(uint32_t clientId, const Engine::Vec2<uint64_t>& position);
+        bool RemovePlayer(uint32_t clientId);
+
         uint32_t AddFaction(uint32_t ownerId, const std::string& factionName);
         bool RemoveFaction(uint32_t factionId);
+        FactionServer* GetFaction(uint32_t factionId);
 
     private:
+        void ConnectNetEvents();
+
         void OnWorldDataRequest(const std::vector<uint8_t>& data, ENetPeer* from);
         void OnAreaDataRequest(const std::vector<uint8_t>& data, ENetPeer* from);
+        void OnFactionDataRequest(const std::vector<uint8_t>& data, ENetPeer* from);
+        void OnColonistPositionDataRequest(const std::vector<uint8_t>& data, ENetPeer* from);
+
+        void OnPositionPacketReceived(const std::vector<uint8_t>& data, _ENetPeer* from);
 
         void OnClientConnected(const std::vector<uint8_t>& data, ENetPeer* from);
         void OnClientDisconnected(const std::vector<uint8_t>& data, ENetPeer* from);

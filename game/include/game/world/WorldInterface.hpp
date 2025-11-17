@@ -12,7 +12,7 @@ namespace Game
     class Client;
     class Server;
 
-    class World
+    class WorldInterface
     {
     private:
         Server* server = nullptr;

@@ -14,7 +14,8 @@ namespace Game
         std::unique_ptr<Engine::Sprite> sprite = nullptr;
 
     public:
-        TileClient(const std::string& texturePath, int w, int h, int x, int y);
+        TileClient(TileType _type, const std::string& texturePath, int w, int h, int x, int y);
+
         void LocalRender(const Engine::Vec2<float>&);
     };
 }

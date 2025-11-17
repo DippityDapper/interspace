@@ -1,23 +1,27 @@
 #include "game/game/Camera.hpp"
 
+#include <algorithm>
+
 #include "SDL3/SDL.h"
 
 #include "dapper2d/Input.hpp"
-
-// TODO : Move camera smoothing to the engine camera, make it general use
+#include "dapper2d/Window.hpp"
+#include "game/world/WorldInterface.hpp"
 
 namespace Game
 {
-    Camera::Camera() : Engine::Camera()
+    Camera::Camera()
     {
         targetPosition = position;
         targetZoom = zoom;
+        oldViewport = Engine::Window::viewport;
     }
 
     Camera::Camera(float x, float y, float zoom) : Engine::Camera(x, y, zoom)
     {
         targetPosition = position;
         targetZoom = zoom;
+        oldViewport = Engine::Window::viewport;
     }
 
     void Camera::Update(float delta)
@@ -86,6 +90,24 @@ namespace Game
                 targetZoom = ClampToBounds(targetZoom);
                 targetPosition = ClampToBounds(targetPosition, targetZoom);
             }
+        }
+        if (event.type == SDL_EVENT_WINDOW_RESIZED)
+        {
+            Engine::Vec2<int> newViewport = Engine::Window::viewport;
+
+            float newViewportW = newViewport.x;
+
+            float oldZoom = targetZoom;
+            float oldViewportW = oldViewport.x;
+
+            float oldVisibleWorldW = oldViewportW / oldZoom;
+
+            float newZoom = newViewportW / oldVisibleWorldW;
+
+            newZoom = std::clamp(newZoom, minZoom, maxZoom);
+
+            targetZoom = newZoom;
+            oldViewport = newViewport;
         }
     }
 }

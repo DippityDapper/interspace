@@ -23,7 +23,9 @@ namespace Game
 
     public:
         FactionClient(uint32_t _id, uint32_t _ownerId, const std::string& _name);
+        void Render();
 
         uint32_t AddColonist(const std::string& colonistName, const Engine::Vec2<float>& position);
+        std::map<uint32_t,ColonistClient*> GetColonists();
     };
 }

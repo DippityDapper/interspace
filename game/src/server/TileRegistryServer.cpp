@@ -1,7 +1,5 @@
 #include "game/server/TileRegistryServer.hpp"
 
-#include "game/server/TileServer.hpp"
-
 namespace Game
 {
     void TileRegistryServer::InitRegistry()

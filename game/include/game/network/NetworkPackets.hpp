@@ -24,8 +24,14 @@ namespace Game
         AREA_DATA_REQUEST,
         AREA_DATA_PACKET,
 
+        FACTION_DATA_REQUEST,
+        FACTION_DATA_PACKET,
+
         POSITION_REQUEST,
         POSITION_PACKET,
+
+        COLONIST_POSITION_REQUEST,
+        COLONIST_POSITION_PACKET,
     };
 
     inline void PackBytes(std::vector<uint8_t>& buffer, const void* data, size_t len)
@@ -39,6 +45,14 @@ namespace Game
         std::string str(reinterpret_cast<const char*>(&data[offset]), len);
         offset += len;
         return str;
+    }
+
+    inline float UnpackFloat(const std::vector<uint8_t>& data, size_t& offset)
+    {
+        float num = 0;
+        memcpy(&num, &data[offset], sizeof(float));
+        offset += sizeof(float);
+        return num;
     }
 
     inline uint8_t UnpackUint8(const std::vector<uint8_t>& data, size_t& offset)
@@ -62,6 +76,14 @@ namespace Game
         uint32_t num = 0;
         memcpy(&num, &data[offset], sizeof(uint32_t));
         offset += sizeof(uint32_t);
+        return num;
+    }
+
+    inline uint64_t UnpackUint64(const std::vector<uint8_t>& data, size_t& offset)
+    {
+        uint64_t num = 0;
+        memcpy(&num, &data[offset], sizeof(uint64_t));
+        offset += sizeof(uint64_t);
         return num;
     }
 }

@@ -1,9 +1,10 @@
-#include "game/client/AreaClient.hpp"
+#include "game/client/ChunkClient.hpp"
 
 #include "SDL3/SDL_render.h"
 
 #include "dapper2d/Renderer.hpp"
 #include "dapper2d/ResourceLoader.hpp"
+#include "game/client/TileClient.hpp"
 
 #include "game/client/TileRegistryClient.hpp"
 #include "game/client/WorldClient.hpp"
@@ -11,7 +12,7 @@
 
 namespace Game
 {
-    AreaClient::AreaClient(const Engine::Vec2<uint16_t>& _position, const std::vector<uint8_t>& tileData)
+    ChunkClient::ChunkClient(const Engine::Vec2<uint16_t>& _position, const std::vector<uint8_t>& tileData)
     {
         position = _position;
 
@@ -25,7 +26,11 @@ namespace Game
         queuedTileData = tileData;
     }
 
-    void AreaClient::Create()
+    void ChunkClient::Init()
+    {
+    }
+
+    bool ChunkClient::Create()
     {
         size_t offset = 0;
 
@@ -46,33 +51,49 @@ namespace Game
         }
 
         queuedTileData.clear();
+        return true;
     }
 
-    void AreaClient::BakeSprite()
+    void ChunkClient::BakeSprite() const
     {
         SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), bakedTexture.get());
 
-        for (const auto& tile : tiles)
+        for (const auto& kvp : tiles)
         {
-            tile.second->LocalRender(Engine::Vec2<float>(tile.first));
+            TileClient* tile = kvp.second;
+            tile->LocalRender(Engine::Vec2<float>(kvp.first));
         }
 
         SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), nullptr);
     }
 
-    void AreaClient::Update(float delta)
+    void ChunkClient::Update(float delta)
     {
-
+        if (fogAlpha < 1.0f)
+            fogAlpha += delta / fadeInSpeed;
     }
 
-    void AreaClient::Render()
+    void ChunkClient::Clean()
+    {
+    }
+
+    void ChunkClient::Render()
     {
         if (!bakedTexture)
             return;
 
         if (tiles.size() >= WorldClient::AREA_SIZE * WorldClient::AREA_SIZE)
         {
-            // SDL_SetTextureAlphaMod(cachedTexture.get(), static_cast<Uint8>(fogAlpha * 255));
+            if (fogAlpha < 1.0f)
+            {
+                SDL_SetTextureAlphaMod(bakedTexture.get(), static_cast<Uint8>(fogAlpha * 255));
+            }
+            else if (fogAlpha > 1.0f)
+            {
+                SDL_SetTextureAlphaMod(bakedTexture.get(), 255);
+                fogAlpha = 1.0f;
+            }
+
             Engine::Vec2<float> areaPosition = (Engine::Vec2<float>)position * WorldClient::AREA_SIZE * WorldClient::TILE_SIZE;
             Engine::Renderer::BufferAdd(areaPosition, bakedTexture.get(), nullptr, false);
         }

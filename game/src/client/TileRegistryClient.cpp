@@ -1,7 +1,5 @@
 #include "game/client/TileRegistryClient.hpp"
 
-#include "game/client/TileClient.hpp"
-
 namespace Game
 {
     void TileRegistryClient::InitRegistry()
@@ -12,7 +10,7 @@ namespace Game
             int y = i / 4;
 
             TileType type = (TileType)((int)GRASS_1 + i);
-            TileClient* tile = new TileClient("assets/tilesets/grass_tileset.png", 32, 32, x, y);
+            TileClient* tile = new TileClient(type, "assets/tilesets/grass_tileset.png", 32, 32, x, y);
 
             tile->type = type;
             RegisterTile(type, tile);
@@ -24,14 +22,14 @@ namespace Game
             int y = i / 4;
 
             TileType type = (TileType)((int)FLOWER_1 + i);
-            TileClient* tile = new TileClient("assets/tilesets/grass_tileset.png", 32, 32, x, y);
+            TileClient* tile = new TileClient(type, "assets/tilesets/grass_tileset.png", 32, 32, x, y);
 
             tile->type = type;
             RegisterTile(type, tile);
         }
 
         TileType type = STONE_PATH;
-        TileClient* tile = new TileClient("assets/tilesets/grass_tileset.png", 32, 32, 0, 4);
+        TileClient* tile = new TileClient(type, "assets/tilesets/grass_tileset.png", 32, 32, 0, 4);
 
         tile->type = type;
         RegisterTile(type, tile);

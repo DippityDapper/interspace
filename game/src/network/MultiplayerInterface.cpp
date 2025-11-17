@@ -154,6 +154,9 @@ namespace Game
             }
         case ENET_EVENT_TYPE_DISCONNECT:
             {
+                std::vector<uint8_t> msg;
+                msg.push_back(DISCONNECTION_REQUEST_);
+                fromNetwork.Push({event.peer, msg});
                 break;
             }
         default:

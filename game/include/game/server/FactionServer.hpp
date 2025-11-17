@@ -1,9 +1,9 @@
 #pragma once
-#include <cstdint>
+
 #include <map>
 #include <memory>
 
-#include "ColonistServer.hpp"
+#include "game/server/ColonistServer.hpp"
 
 namespace Game
 {

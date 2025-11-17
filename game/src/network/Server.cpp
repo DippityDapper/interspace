@@ -1,6 +1,5 @@
 #include "game/server/Server.hpp"
 
-#include <cstring>
 #include <string>
 
 #include "SDL3/SDL_log.h"
@@ -91,5 +90,13 @@ namespace Game
     {
         uint32_t peerId = GetUserId(username);
         return GetPeer(peerId);
+    }
+
+    std::map<uint32_t, ENetPeer*> Server::GetPeers()
+    {
+        std::map<uint32_t, ENetPeer*> result{};
+        for (auto& peer : peers)
+            result.emplace(peer.first, peer.second);
+        return result;
     }
 }

@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <map>
 
 #include "enet/enet.h"
 
@@ -15,11 +15,11 @@ namespace Game
     class Server
     {
     private:
-        std::unordered_map<uint8_t, std::function<void(const std::vector<uint8_t>& data, ENetPeer* from)>> messageHandler{};
-        std::unordered_map<uint8_t, std::unique_ptr<ServerNetEvent>> netEvents;
+        std::map<uint8_t, std::function<void(const std::vector<uint8_t>& data, ENetPeer* from)>> messageHandler{};
+        std::map<uint8_t, std::unique_ptr<ServerNetEvent>> netEvents;
 
-        std::unordered_map<uint32_t, ENetPeer*> peers{};
-        std::unordered_map<uint32_t, std::string> idToUsernameLookup{};
+        std::map<uint32_t, ENetPeer*> peers{};
+        std::map<uint32_t, std::string> idToUsernameLookup{};
 
         uint32_t nextPeerId = 1;
 
@@ -45,6 +45,7 @@ namespace Game
         std::string GetUsername(uint32_t peerId);
         ENetPeer* GetPeer(uint32_t peerId);
         ENetPeer* GetPeer(const std::string& username);
+        std::map<uint32_t, ENetPeer*> GetPeers();
 
     public:
         template <typename T>

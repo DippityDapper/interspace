@@ -1,7 +1,3 @@
-#include <cstring>
-
-#include "SDL3/SDL_log.h"
-
 #include "game/client/Client.hpp"
 #include "game/game/Game.hpp"
 #include "game/network/NetworkPackets.hpp"
@@ -10,16 +6,15 @@ namespace Game
 {
     void Client::HandleConnectionAccepted(const std::vector<uint8_t>& data)
     {
-        uint32_t offset = 1;
-        std::memcpy(&clientId, &data[offset], sizeof(uint32_t));
+        size_t offset = 1;
+        clientId = UnpackUint32(data, offset);
     }
 
     void Client::HandleClientDisconnected(const std::vector<uint8_t>& data)
     {
-        uint32_t offset = 1;
-        uint32_t peerId;
-        std::memcpy(&peerId, &data[offset], sizeof(uint32_t));
+        size_t offset = 1;
 
+        uint32_t peerId = UnpackUint32(data, offset);
         std::string peerUsername = peers[peerId];
 
         if (peers.contains(peerId))
@@ -28,16 +23,12 @@ namespace Game
 
     void Client::HandlePeerConnected(const std::vector<uint8_t>& data)
     {
-        uint32_t offset = 1;
+        size_t offset = 1;
 
-        uint32_t peerId;
-        std::memcpy(&peerId, &data[offset], sizeof(uint32_t));
-        offset += sizeof(uint32_t);
+        uint32_t peerId =  UnpackUint32(data, offset);
 
-        uint32_t usernameLen = 0;
-        std::memcpy(&usernameLen, &data[offset], sizeof(uint32_t));
-        offset += sizeof(uint32_t);
-        std::string peerUsername(reinterpret_cast<const char*>(&data[offset]), usernameLen);
+        uint32_t usernameLen = UnpackUint32(data, offset);
+        std::string peerUsername = UnpackString(data, offset, usernameLen);
 
         peers[peerId] = peerUsername;
     }

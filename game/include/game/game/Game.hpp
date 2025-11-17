@@ -6,7 +6,7 @@
 
 #include "game/client/Client.hpp"
 #include "game/server/Server.hpp"
-#include "game/world/World.hpp"
+#include "game/world/WorldInterface.hpp"
 
 namespace Game
 {
@@ -17,7 +17,7 @@ namespace Game
     private:
         static inline std::unique_ptr<Server> server = nullptr;
         static inline std::unique_ptr<Client> client = nullptr;
-        static inline std::unique_ptr<World> world = nullptr;
+        static inline std::unique_ptr<WorldInterface> world = nullptr;
 
         static inline std::unique_ptr<NetInterface> serverNetInterface = nullptr;
         static inline std::unique_ptr<NetInterface> clientNetInterface = nullptr;
