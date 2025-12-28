@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- Dependencies ---
-add_subdirectory(../dapper2d ${CMAKE_BINARY_DIR}/dapper2d_build)
+add_subdirectory(../igneous ${CMAKE_BINARY_DIR}/igneous_build)
 
 # --- Project modules ---
 add_subdirectory(game)

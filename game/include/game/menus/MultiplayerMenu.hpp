@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dapper2d/Scene.hpp"
+#include "igneous/Scene.hpp"
 
 namespace Game
 {
@@ -8,9 +8,6 @@ namespace Game
     {
     public:
         void Init() override;
-        // void Update(float delta) override;
         void Render() override;
-        // void HandleEvents(SDL_Event& event) override;
-        // void Clean() override;
     };
 }

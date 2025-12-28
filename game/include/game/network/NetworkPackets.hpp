@@ -18,20 +18,8 @@ namespace Game
         DISCONNECTION_ACKNOWLEDGED,
         CLIENT_DISCONNECTED,
 
-        WORLD_DATA_REQUEST,
         WORLD_DATA_PACKET,
-
-        AREA_DATA_REQUEST,
-        AREA_DATA_PACKET,
-
-        FACTION_DATA_REQUEST,
         FACTION_DATA_PACKET,
-
-        POSITION_REQUEST,
-        POSITION_PACKET,
-
-        COLONIST_POSITION_REQUEST,
-        COLONIST_POSITION_PACKET,
     };
 
     inline void PackBytes(std::vector<uint8_t>& buffer, const void* data, size_t len)

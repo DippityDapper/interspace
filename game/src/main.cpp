@@ -1,7 +1,7 @@
-#include "dapper2d/Engine.hpp"
-#include <memory>
+#include "igneous/Engine.hpp"
 
-#include "dapper2d/Scenes.hpp"
+#include <memory>
+#include "igneous/Scenes.hpp"
 #include "game/game/Game.hpp"
 
 int main(int argc, char* argv[])

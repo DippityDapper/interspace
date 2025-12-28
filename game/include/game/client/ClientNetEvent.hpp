@@ -2,9 +2,9 @@
 
 #include <vector>
 
-#include "dapper2d/Event.hpp"
+#include "igneous/Event.hpp"
 
-namespace Game
+namespace Game::Client
 {
     class ClientNetEvent : public Engine::Event<void, const std::vector<uint8_t>&>
     {

@@ -2,9 +2,10 @@
 
 #include "imgui.h"
 
-#include "dapper2d/Scenes.hpp"
-#include "dapper2d/Window.hpp"
-#include "dapper2d/Engine.hpp"
+#include "igneous/Scenes.hpp"
+#include "igneous/Window.hpp"
+#include "igneous/Engine.hpp"
+#include "game/game/Sounds.hpp"
 
 #include "game/menus/JoinMenu.hpp"
 #include "game/menus/MultiplayerMenu.hpp"
@@ -42,6 +43,7 @@ namespace Game
 
         if (ImGui::Button("Singleplayer", singleplayerButtonSize))
         {
+            Sounds::PlaySound("button_1", 1.0f);
             Engine::Scenes::LoadScene("worlds_menu_singleplayer");
         }
 
@@ -51,6 +53,7 @@ namespace Game
 
         if (ImGui::Button("Multiplayer", singleplayerButtonSize))
         {
+            Sounds::PlaySound("button_1", 1.0f);
             Engine::Scenes::LoadScene("multiplayer_menu");
         }
 

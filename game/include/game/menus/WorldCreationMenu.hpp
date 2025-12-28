@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "dapper2d/Camera.hpp"
-#include "dapper2d/Scene.hpp"
+#include "igneous/Camera.hpp"
+#include "igneous/Scene.hpp"
 
 namespace Game
 {
@@ -20,20 +20,10 @@ namespace Game
         std::string prevMenu = "worlds_menu_singleplayer";
 
     private:
-        bool LoadWorld();
         bool CreateWorld();
-
-        bool HostWorld();
-        bool StopHostingWorld();
-
-        bool ConnectToWorld();
-        bool DisconnectFromWorld();
 
     private:
         void Init() override;
-        // void HandleEvents(SDL_Event& event) override;
-        // void Update(float delta) override;
         void Render() override;
-        // void Clean() override;
     };
 }

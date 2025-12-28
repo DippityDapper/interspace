@@ -15,8 +15,8 @@ namespace Game
 
     public:
         ~SingleplayerInterface() override = default;
-        void SendToServer(std::vector<uint8_t> data) override;
-        void SendToClient(ENetPeer* peer, std::vector<uint8_t> data) override;
+        void SendToServer(std::vector<uint8_t> data, enet_uint32 packetType) override;
+        void SendToClient(ENetPeer* peer, std::vector<uint8_t> data, enet_uint32 packetType) override;
         void Poll() override;
         bool Connected() override;
     };

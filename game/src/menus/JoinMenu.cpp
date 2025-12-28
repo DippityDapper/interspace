@@ -2,11 +2,11 @@
 
 #include "imgui.h"
 
-#include "dapper2d/Scenes.hpp"
-#include "dapper2d/Window.hpp"
+#include "igneous/Scenes.hpp"
+#include "igneous/Window.hpp"
 
 #include "game/game/Game.hpp"
-#include "SDL3/SDL_log.h"
+#include "game/game/Sounds.hpp"
 
 namespace Game
 {
@@ -18,8 +18,8 @@ namespace Game
     {
         Engine::Vec2<int> viewport = Engine::Window::viewport;
 
-        const float windowWidth = Engine::Window::viewport.x/2.0f;
-        const float windowHeight = Engine::Window::viewport.y/2.0f;
+        const float windowWidth = viewport.x/2.0f;
+        const float windowHeight = viewport.y/2.0f;
 
         ImGui::SetNextWindowPos({windowWidth, windowHeight}, 0, {0.5f,0.5f});
 
@@ -33,10 +33,10 @@ namespace Game
 
         ImGui::InputText("Username", usernameLineEdit, sizeof(usernameLineEdit));
         ImGui::InputText("ip Address", ipLineEdit, sizeof(ipLineEdit));
-        // ImGui::InputText("Port", portLineEdit, sizeof(portLineEdit));
 
         if (ImGui::Button("Back"))
         {
+            Sounds::PlaySound("button_back", 1.0f);
             Engine::Scenes::LoadScene("multiplayer_menu");
         }
         ImGui::SameLine();
@@ -51,6 +51,7 @@ namespace Game
 
         if (ImGui::Button("Join", joinButtonSize))
         {
+            Sounds::PlaySound("button_1", 1.0f);
             if (JoinWorld())
                 Engine::Scenes::RemoveAllScenes();
         }
@@ -64,24 +65,9 @@ namespace Game
         if (ipStr.empty())
             return false;
 
-        // std::string portStr = portLineEdit;
-        // if (portStr.empty())
-        //     return false;
-
         std::string usernameStr = usernameLineEdit;
         if (usernameStr.empty())
             return false;
-
-        // int port = -1;
-        // try
-        // {
-        //     port = std::stoi(portStr);
-        // }
-        // catch (std::exception& e)
-        // {
-        //     SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", e.what());
-        //     return false;
-        // }
 
         if (!Game::JoinWorld(usernameStr, ipStr, 33333))
             return false;

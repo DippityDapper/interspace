@@ -14,8 +14,8 @@ namespace Game
 
     public:
         virtual ~NetInterface() = default;
-        virtual void SendToServer(std::vector<uint8_t> data) = 0;
-        virtual void SendToClient(ENetPeer* peer, std::vector<uint8_t> data) = 0;
+        virtual void SendToServer(std::vector<uint8_t> data, enet_uint32 packetType) = 0;
+        virtual void SendToClient(ENetPeer* peer, std::vector<uint8_t> data, enet_uint32 packetType) = 0;
         virtual void Poll() = 0;
         virtual bool Connected() = 0;
     };

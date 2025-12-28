@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dapper2d/Camera.hpp"
+#include "igneous/Camera.hpp"
 
 namespace Game
 {

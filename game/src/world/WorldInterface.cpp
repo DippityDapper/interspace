@@ -1,10 +1,10 @@
 #include "game/world/WorldInterface.hpp"
 
-#include "dapper2d/Scenes.hpp"
+#include "igneous/Scenes.hpp"
 #include "game/game/Game.hpp"
 #include "game/menus/MainMenu.hpp"
-#include "game/client/WorldClient.hpp"
-#include "game/server/WorldServer.hpp"
+#include "game/client/World.hpp"
+#include "game/server/World.hpp"
 
 namespace Game
 {
@@ -39,7 +39,7 @@ namespace Game
 
                     PackBytes(request, &client->clientId, sizeof(uint32_t));
 
-                    client->netInterface->SendToServer(request);
+                    client->netInterface->SendToServer(request, ENET_PACKET_FLAG_RELIABLE);
                     disconnectRequested = true;
                 }
             }
@@ -58,17 +58,17 @@ namespace Game
             clientWorld->Clean();
     }
 
-    void WorldInterface::SetServer(Server* _server, const std::string& worldName)
+    void WorldInterface::SetServer(Server::Server* _server, const std::string& worldName)
     {
         server = _server;
-        serverWorld = std::make_unique<WorldServer>(server, worldName);
+        serverWorld = std::make_unique<Server::World>(server, worldName);
         serverWorld->Init();
     }
 
-    void WorldInterface::SetClient(Client* _client)
+    void WorldInterface::SetClient(Client::Client* _client)
     {
         client = _client;
-        clientWorld = std::make_unique<WorldClient>(client);
+        clientWorld = std::make_unique<Client::World>(client);
         clientWorld->Init();
         client->ConnectToEvent(DISCONNECTION_ACKNOWLEDGED, this, &WorldInterface::OnDisconnectAcknowledged);
         client->ConnectToEvent(DISCONNECTION_REQUEST_, this, &WorldInterface::OnDisconnectAcknowledged);

@@ -2,11 +2,10 @@
 
 #include <string>
 #include <thread>
-#include <unordered_map>
 
 #include "enet/enet.h"
 
-#include "dapper2d/ThreadSafeQueue.hpp"
+#include "igneous/ThreadSafeQueue.hpp"
 
 #include "game/network/NetInterface.hpp"
 
@@ -16,6 +15,7 @@ namespace Game
     {
         ENetPeer* peer = nullptr;
         std::vector<uint8_t> data{};
+        enet_uint32 packetType = 0;
     };
 
     class MultiplayerInterface : public NetInterface
@@ -39,14 +39,14 @@ namespace Game
         MultiplayerInterface(int port, const std::string& ip);
         ~MultiplayerInterface() override;
 
-        void SendToServer(std::vector<uint8_t> data) override;
-        void SendToClient(ENetPeer* peer, std::vector<uint8_t> data) override;
+        void SendToServer(std::vector<uint8_t> data, enet_uint32 packetType) override;
+        void SendToClient(ENetPeer* peer, std::vector<uint8_t> data, enet_uint32 packetType) override;
         void Poll() override;
         bool Connected() override;
 
         void HandleServerEvent(const ENetEvent& event);
         void HandleClientEvent(const ENetEvent& event);
 
-        void SendPacket(ENetPeer* peer, std::vector<uint8_t> data);
+        void SendPacket(ENetPeer* peer, std::vector<uint8_t> data, enet_uint32 packetType);
     };
 }

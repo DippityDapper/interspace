@@ -4,8 +4,8 @@
 
 #include "SDL3/SDL.h"
 
-#include "dapper2d/Input.hpp"
-#include "dapper2d/Window.hpp"
+#include "igneous/Input.hpp"
+#include "igneous/Window.hpp"
 #include "game/world/WorldInterface.hpp"
 
 namespace Game

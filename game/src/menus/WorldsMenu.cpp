@@ -5,10 +5,11 @@
 
 #include "imgui.h"
 
-#include "dapper2d/Scenes.hpp"
-#include "dapper2d/Vec2.hpp"
-#include "dapper2d/Window.hpp"
+#include "igneous/Scenes.hpp"
+#include "igneous/Vec2.hpp"
+#include "igneous/Window.hpp"
 #include "game/game/Game.hpp"
+#include "game/game/Sounds.hpp"
 #include "game/menus/MainMenu.hpp"
 
 #include "game/menus/WorldCreationMenu.hpp"
@@ -102,6 +103,8 @@ namespace Game
 
             if (ImGui::Button("Load", buttonSize))
             {
+                Sounds::PlaySound("button_1", 1.0f);
+
                 if (isHostingMenu)
                 {
                     if (Game::HostWorld(worldName, 33333, 32, true))
@@ -124,6 +127,7 @@ namespace Game
 
             if (ImGui::Button("Delete", buttonSize))
             {
+                Sounds::PlaySound("button_1", 1.0f);
                 DeleteWorld(worldName);
             }
 
@@ -141,6 +145,7 @@ namespace Game
 
         if (ImGui::Button("Back", buttonSize))
         {
+            Sounds::PlaySound("button_back", 1.0f);
             Engine::Scenes::LoadScene(prevMenu);
         }
 
@@ -155,6 +160,7 @@ namespace Game
 
         if (ImGui::Button("Create World", createButtonSize))
         {
+            Sounds::PlaySound("button_1", 1.0f);
             WorldCreationMenu* worldCreationMenu = dynamic_cast<WorldCreationMenu*>(Engine::Scenes::GetScene("world_creation_menu"));
 
             if (isHostingMenu)
@@ -167,24 +173,6 @@ namespace Game
 
         ImGui::End();
     }
-
-    // bool WorldsMenu::LoadWorld(const std::string& worldName)
-    // {
-    //     if (worldName.empty())
-    //     {
-    //         return false;
-    //     }
-    //     if (!std::filesystem::exists("worlds/" + worldName))
-    //     {
-    //         return false;
-    //     }
-    //
-    //     Engine::Scenes::RemoveAllScenes();
-    //     Scene* worldScene = Engine::Scenes::CreateScene(new World(worldName), "world_" + worldName);
-    //     Engine::Scenes::LoadScene(worldScene);
-    //
-    //     return true;
-    // }
 
     bool WorldsMenu::DeleteWorld(const std::string& worldName)
     {

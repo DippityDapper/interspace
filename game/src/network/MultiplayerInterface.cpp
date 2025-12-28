@@ -97,9 +97,9 @@ namespace Game
             while (const auto& packet = toNetwork.Pop())
             {
                 if (isServer)
-                    SendPacket(packet->peer, packet->data);
+                    SendPacket(packet->peer, packet->data, packet->packetType);
                 else if (serverPeer)
-                    SendPacket(serverPeer, packet->data);
+                    SendPacket(serverPeer, packet->data, packet->packetType);
             }
 
             enet_host_flush(host);
@@ -164,9 +164,9 @@ namespace Game
         }
     }
 
-    void MultiplayerInterface::SendPacket(ENetPeer* peer, std::vector<uint8_t> data)
+    void MultiplayerInterface::SendPacket(ENetPeer* peer, std::vector<uint8_t> data, enet_uint32 packetType)
     {
-        ENetPacket* enetPacket = enet_packet_create(data.data(), data.size(), ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket* enetPacket = enet_packet_create(data.data(), data.size(), packetType);
         enet_peer_send(peer, 0, enetPacket);
     }
 
@@ -186,21 +186,21 @@ namespace Game
         return running;
     }
 
-    void MultiplayerInterface::SendToClient(ENetPeer* peer, std::vector<uint8_t> data)
+    void MultiplayerInterface::SendToClient(ENetPeer* peer, std::vector<uint8_t> data, enet_uint32 packetType)
     {
         if (!isServer)
             return;
 
-        ENetPacket* packet = enet_packet_create(data.data(), data.size(), ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket* packet = enet_packet_create(data.data(), data.size(), packetType);
         enet_peer_send(peer, 0, packet);
     }
 
-    void MultiplayerInterface::SendToServer(std::vector<uint8_t> data)
+    void MultiplayerInterface::SendToServer(std::vector<uint8_t> data, enet_uint32 packetType)
     {
         if (isServer || !serverPeer)
             return;
 
-        ENetPacket* packet = enet_packet_create(data.data(), data.size(), ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket* packet = enet_packet_create(data.data(), data.size(), packetType);
         enet_peer_send(serverPeer, 0, packet);
     }
 }

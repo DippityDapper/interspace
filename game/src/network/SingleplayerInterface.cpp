@@ -24,12 +24,12 @@ namespace Game
         return true;
     }
 
-    void SingleplayerInterface::SendToClient(ENetPeer* peer, std::vector<uint8_t> data)
+    void SingleplayerInterface::SendToClient(ENetPeer* peer, std::vector<uint8_t> data, enet_uint32 packetType)
     {
         serverToClient.push(data);
     }
 
-    void SingleplayerInterface::SendToServer(std::vector<uint8_t> data)
+    void SingleplayerInterface::SendToServer(std::vector<uint8_t> data, enet_uint32 packetType)
     {
         clientToServer.push(data);
     }

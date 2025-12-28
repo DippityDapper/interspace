@@ -2,7 +2,7 @@
 
 #include <queue>
 
-#include "dapper2d/Scene.hpp"
+#include "igneous/Scene.hpp"
 
 namespace Game
 {

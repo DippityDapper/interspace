@@ -9,7 +9,7 @@
 #include "game/client/ClientNetEvent.hpp"
 #include "game/network/NetInterface.hpp"
 
-namespace Game
+namespace Game::Client
 {
     class Client
     {

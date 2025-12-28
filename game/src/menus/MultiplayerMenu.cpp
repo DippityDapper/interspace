@@ -2,12 +2,9 @@
 
 #include "imgui.h"
 
-#include "dapper2d/Scenes.hpp"
-#include "dapper2d/Window.hpp"
-#include "game/menus/JoinMenu.hpp"
-
-#include "game/menus/MainMenu.hpp"
-#include "game/menus/WorldsMenu.hpp"
+#include "igneous/Scenes.hpp"
+#include "igneous/Window.hpp"
+#include "game/game/Sounds.hpp"
 
 namespace Game
 {
@@ -44,6 +41,7 @@ namespace Game
 
         if (ImGui::Button("Host", buttonSize))
         {
+            Sounds::PlaySound("button_1", 1.0f);
             Engine::Scenes::LoadScene("worlds_menu_multiplayer");
         }
 
@@ -53,6 +51,7 @@ namespace Game
 
         if (ImGui::Button("Join", buttonSize))
         {
+            Sounds::PlaySound("button_1", 1.0f);
             Engine::Scenes::LoadScene("join_menu");
         }
 
@@ -70,6 +69,7 @@ namespace Game
 
         if (ImGui::Button("Back", backButtonSize))
         {
+            Sounds::PlaySound("button_back", 1.0f);
             Engine::Scenes::LoadScene("main_menu");
         }
 

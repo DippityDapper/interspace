@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "dapper2d/Scene.hpp"
+#include "igneous/Scene.hpp"
 
 #include "game/client/Client.hpp"
 #include "game/server/Server.hpp"
@@ -10,13 +10,12 @@
 
 namespace Game
 {
-    class NetInterface;
-
     class Game: public Engine::Scene
     {
     private:
-        static inline std::unique_ptr<Server> server = nullptr;
-        static inline std::unique_ptr<Client> client = nullptr;
+        static inline std::unique_ptr<Server::Server> server = nullptr;
+        static inline std::unique_ptr<Client::Client> client = nullptr;
+
         static inline std::unique_ptr<WorldInterface> world = nullptr;
 
         static inline std::unique_ptr<NetInterface> serverNetInterface = nullptr;

@@ -10,7 +10,7 @@
 #include "game/server/ServerNetEvent.hpp"
 #include "game/network/NetInterface.hpp"
 
-namespace Game
+namespace Game::Server
 {
     class Server
     {

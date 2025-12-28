@@ -5,9 +5,9 @@
 
 #include "enet/enet.h"
 
-#include "dapper2d/Event.hpp"
+#include "igneous/Event.hpp"
 
-namespace Game
+namespace Game::Server
 {
     class ServerNetEvent : public Engine::Event<void, const std::vector<uint8_t>&, ENetPeer*>
     {

@@ -7,10 +7,9 @@
 #include "SDL3/SDL.h"
 #include "imgui.h"
 
-#include "dapper2d/Networking.hpp"
-#include "dapper2d/Scenes.hpp"
-#include "dapper2d/ResourceLoader.hpp"
-#include "dapper2d/Window.hpp"
+#include "igneous/Scenes.hpp"
+#include "igneous/Window.hpp"
+#include "game/game/Sounds.hpp"
 
 #include "game/menus/MainMenu.hpp"
 #include "game/menus/WorldsMenu.hpp"
@@ -44,6 +43,7 @@ namespace Game
 
         if (ImGui::Button("Create World"))
         {
+            Sounds::PlaySound("button_1", 1.0f);
             CreateWorld();
             ImGui::End();
             return;
@@ -51,6 +51,7 @@ namespace Game
 
         if (ImGui::Button("Back"))
         {
+            Sounds::PlaySound("button_back", 1.0f);
             Engine::Scenes::LoadScene(prevMenu);
         }
 
@@ -118,12 +119,6 @@ namespace Game
         std::string finalSeedStr{"world_seed=" + std::to_string(seed) + "\n"};
         configFile.write(finalSeedStr.c_str(), finalSeedStr.size());
 
-        std::string areaSizeStr{"area_size=64\n"};
-        configFile.write(areaSizeStr.c_str(), areaSizeStr.size());
-
-        std::string tileSizeStr{"tile_size=32\n"};
-        configFile.write(tileSizeStr.c_str(), tileSizeStr.size());
-
         if (worldSize == 0) // small
         {
             std::string worldSizeXStr{"world_size_x=128\n"};
@@ -159,67 +154,6 @@ namespace Game
         }
         Engine::Scenes::LoadScene("worlds_menu");
 
-        return true;
-    }
-
-    bool WorldCreationMenu::HostWorld()
-    {
-        std::string name{worldNameLineEdit};
-
-        if (name.empty())
-        {
-            message = "World name is empty.";
-            return false;
-        }
-
-        if (!Engine::Networking::CreateServer(33333, 3, true))
-        {
-            Engine::Networking::StopServer();
-            message = "Failed to create server process.";
-            return false;
-        }
-
-        message = "Successfully hosted world " + name + ".";
-        return true;
-    }
-
-    bool WorldCreationMenu::StopHostingWorld()
-    {
-        if (!Engine::Networking::StopServer())
-        {
-            message = "No server running.";
-            return false;
-        }
-
-        message = "Stopped hosting.";
-        return true;
-    }
-
-    bool WorldCreationMenu::ConnectToWorld()
-    {
-        Engine::Networking::StopClientThread();
-
-        if (!Engine::Networking::ConnectToServer("127.0.0.1", 33333))
-        {
-            message = "Failed to connect to server.";
-            return false;
-        }
-
-        Engine::Networking::StartClientThread();
-        message = "Connected to server.";
-        return true;
-    }
-
-    bool WorldCreationMenu::DisconnectFromWorld()
-    {
-        if (!Engine::Networking::DisconnectFromServer())
-        {
-            message = "Not connected to a server.";
-            return false;
-        }
-
-        Engine::Networking::StopClientThread();
-        message = "Disconnected from server.";
         return true;
     }
 }
