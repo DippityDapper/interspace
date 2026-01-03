@@ -1,0 +1,28 @@
+#include "interspace/network/Serializer.hpp"
+#include "interspace/server/World.hpp"
+
+namespace Interspace::Server
+{
+    void World::OnClientConnected(const std::vector<uint8_t>& data, ENetPeer* from)
+    {
+        uint32_t clientId = 0;
+        std::string username{};
+        Deserializer deserializer(data);
+        deserializer >> clientId >> username;
+
+        SendWorldData(from);
+        SendFactionData(from);
+
+        JoinFaction(clientId);
+    }
+
+    void World::OnClientDisconnected(const std::vector<uint8_t>& data, ENetPeer* from)
+    {
+        uint32_t clientId = 0;
+
+        Deserializer deserializer(data);
+        deserializer >> clientId;
+
+        BroadcastColonistDeselectAllData(clientId);
+    }
+}

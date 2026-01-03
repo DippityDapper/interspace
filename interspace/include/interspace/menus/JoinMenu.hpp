@@ -1,0 +1,18 @@
+#pragma once
+
+#include "igneous/Scene.hpp"
+
+namespace Interspace
+{
+    class JoinMenu : public Engine::Scene
+    {
+    private:
+        char ipLineEdit[32] = "127.0.0.1";
+
+    private:
+        void Init() override;
+        void Render() override;
+
+        bool JoinWorld();
+    };
+}

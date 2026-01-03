@@ -8,4 +8,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(../igneous ${CMAKE_BINARY_DIR}/igneous_build)
 
 # --- Project modules ---
-add_subdirectory(game)
+add_subdirectory(interspace)
