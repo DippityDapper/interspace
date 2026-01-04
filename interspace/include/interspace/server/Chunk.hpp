@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 
 #include "interspace/server/Tile.hpp"
 #include "interspace/world/ChunkData.hpp"
@@ -12,6 +13,7 @@ namespace Interspace::Server
     {
     public:
         ChunkData data{};
-        std::map<uint8_t, std::unique_ptr<Tile>> tiles{};
+        std::map<Engine::Vec2<uint8_t>, Tile*> tiles{};
+        std::set<uint16_t> seenBy{};
     };
 }

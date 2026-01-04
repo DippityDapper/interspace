@@ -4,6 +4,8 @@
 #include "igneous/Database.hpp"
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/game/Game.hpp"
+#include "interspace/network/Serializer.hpp"
+#include "interspace/server/Tiles.hpp"
 #include "interspace/server/World.hpp"
 #include "SDL3/SDL_log.h"
 
@@ -298,5 +300,86 @@ namespace Interspace::Server
         std::string factionName = factions[factionId]->data.name;
         SDL_Log("[Server] Player (%s [%u]) left faction (%s [%u]).", playerName.c_str(), playerId, factionName.c_str(), factionId);
         return true;
+    }
+
+    void World::BeginChunkGeneration()
+    {
+        for (const auto& faction : factions | std::views::values)
+        {
+            for (const auto& colonist : faction->colonists | std::views::values)
+            {
+                Engine::Vec2<float> colonistPosition = colonist->entityData.position;
+                uint16_t colonistSight = colonist->entityData.sight;
+                uint16_t colonistGlobalSight = colonistSight * worldData->TILE_SIZE;
+
+                uint32_t sightMinX = colonistPosition.x - colonistGlobalSight;
+                uint32_t sightMinY = colonistPosition.y - colonistGlobalSight;
+                uint32_t sightMaxX = colonistPosition.x + colonistGlobalSight;
+                uint32_t sightMaxY = colonistPosition.y + colonistGlobalSight;
+
+                uint16_t chunkMinX = sightMinX / (worldData->TILE_SIZE * worldData->CHUNK_SIZE);
+                uint16_t chunkMinY = sightMinY / (worldData->TILE_SIZE * worldData->CHUNK_SIZE);
+                uint16_t chunkMaxX = sightMaxX / (worldData->TILE_SIZE * worldData->CHUNK_SIZE);
+                uint16_t chunkMaxY = sightMaxY / (worldData->TILE_SIZE * worldData->CHUNK_SIZE);
+
+                for (uint16_t chunkX = chunkMinX; chunkX <= chunkMaxX; chunkX++)
+                {
+                    for (uint16_t chunkY = chunkMinY; chunkY <= chunkMaxY; chunkY++)
+                    {
+                        Engine::Vec2<uint16_t> chunkPosition{chunkX, chunkY};
+
+                        if (!chunks.contains(chunkPosition))
+                        {
+                            chunks.emplace(chunkPosition, std::make_unique<Chunk>());
+                            Chunk* chunk = chunks[chunkPosition].get();
+                            chunk->data.position = chunkPosition;
+
+                            chunkQueue.emplace(chunk);
+                            SDL_Log("[Server] Chunk added to queue at (%u, %u).", chunkX, chunkY);
+                        }
+
+                        Chunk* chunk = chunks[chunkPosition].get();
+
+                        if (!chunk->seenBy.contains(faction->data.id))
+                            chunk->seenBy.emplace(faction->data.id);
+                    }
+                }
+            }
+        }
+    }
+
+    void World::GenerateChunks()
+    {
+        uint8_t maxChunkPerCycle = 4;
+        uint8_t maxChunkIndex = 0;
+
+        for (int i = 0; i < chunkQueue.size(); i++)
+        {
+            Chunk* chunk = chunkQueue.front();
+
+            uint8_t maxTilesPerCycle = 128;
+            uint8_t maxTilesIndex = 0;
+            for (uint16_t w = chunk->tiles.size(); w < worldData->CHUNK_SIZE * worldData->CHUNK_SIZE; w++)
+            {
+                uint8_t tileX = w % worldData->CHUNK_SIZE;
+                uint8_t tileY = w / worldData->CHUNK_SIZE;
+                Engine::Vec2<uint8_t> tilePosition{tileX, tileY};
+                chunk->tiles.emplace(tilePosition, Tiles::GetRandomTileOfType("grass"));
+
+                maxTilesIndex++;
+                if (maxTilesIndex > maxTilesPerCycle)
+                    break;
+            }
+
+            if (chunk->tiles.size() >= worldData->CHUNK_SIZE * worldData->CHUNK_SIZE)
+            {
+                chunkQueue.pop();
+                SDL_Log("[Server] Chunk finished at (%u, %u).", chunk->data.position.x, chunk->data.position.y);
+            }
+
+            maxChunkIndex++;
+            if (maxChunkIndex > maxChunkPerCycle)
+                break;
+        }
     }
 }

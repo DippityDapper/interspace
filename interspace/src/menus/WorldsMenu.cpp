@@ -12,7 +12,6 @@
 #include "igneous/Window.hpp"
 #include "interspace/game/Game.hpp"
 #include "interspace/game/Sounds.hpp"
-#include "interspace/menus/MainMenu.hpp"
 
 #include "interspace/menus/WorldCreationMenu.hpp"
 #include "interspace/game/DBHelper.hpp"

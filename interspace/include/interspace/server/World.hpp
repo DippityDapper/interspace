@@ -1,5 +1,7 @@
 #pragma once
 
+#include <queue>
+
 #include "SDL3/SDL_events.h"
 
 #include "interspace/server/Server.hpp"
@@ -24,10 +26,14 @@ namespace Interspace::Server
         float autosaveClock = 5.0f;
         float autosaveTimer = 0.0f;
 
+        float chunkGenerationClock = 1.0f;
+        float chunkGenerationTimer = 0.0f;
+
     public:
         static inline std::unique_ptr<WorldData> worldData{};
 
-        std::unordered_map<uint16_t, std::unique_ptr<Chunk>> chunks{};
+        std::map<Engine::Vec2<uint16_t>, std::unique_ptr<Chunk>> chunks{};
+        std::queue<Chunk*> chunkQueue{};
         std::unordered_map<uint16_t, std::unique_ptr<Faction>> factions{};
 
         uint16_t nextFactionId = 1;
@@ -55,6 +61,9 @@ namespace Interspace::Server
 
         bool LeaveFaction(uint16_t factionId, uint32_t playerId);
 
+        void BeginChunkGeneration();
+        void GenerateChunks();
+
     private:
         void AutoSave();
 
@@ -74,6 +83,7 @@ namespace Interspace::Server
         void BroadcastColonistDeselectAllData(uint32_t clientId);
 
         void SendWorldData(ENetPeer* to);
+        void BroadcastChunksData();
 
         void OnCreateFactionRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from);
         void SendFactionData(ENetPeer* to);

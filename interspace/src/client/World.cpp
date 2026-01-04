@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "igneous/Camera.hpp"
+#include "interspace/client/Tiles.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
 #include "interspace/network/Serializer.hpp"
 #include "SDL3/SDL_log.h"
@@ -18,6 +19,7 @@ namespace Interspace::Client
     {
         worldData = std::make_unique<WorldData>();
         RegisterNetEvents();
+        Tiles::Init();
     }
 
     void World::Update(float delta)
@@ -25,6 +27,14 @@ namespace Interspace::Client
         for (const auto& faction : factions | std::views::values)
         {
             faction->Update(delta);
+        }
+
+        if (chunkGenerationTimer < chunkGenerationClock)
+            chunkGenerationTimer += delta;
+        else
+        {
+            chunkGenerationTimer -= chunkGenerationClock;
+            GenerateChunks();
         }
     }
 
@@ -177,5 +187,62 @@ namespace Interspace::Client
 
     void World::Clean()
     {
+    }
+
+    void World::GenerateChunks()
+    {
+        uint8_t maxChunkPerCycle = 1;
+        uint8_t maxChunkIndex = 0;
+
+        for (int i = 0; i < chunkDataQueue.size(); i++)
+        {
+            std::vector<uint8_t>& data = chunkDataQueue.front();
+
+            uint16_t chunkX = 0;
+            uint16_t chunkY = 0;
+
+            Deserializer deserializer(data);
+            deserializer >> chunkX >> chunkY;
+
+            Engine::Vec2<uint16_t> chunkPos{chunkX, chunkY};
+            if (!chunks.contains(chunkPos))
+                return;
+
+            Chunk* chunk = chunks[chunkPos].get();
+
+            uint8_t maxTilesPerCycle = 32;
+            uint8_t maxTilesIndex = 0;
+            for (uint16_t w = chunk->tiles.size(); w < worldData->CHUNK_SIZE * worldData->CHUNK_SIZE; w++)
+            {
+                uint8_t tileX = w % worldData->CHUNK_SIZE;
+                uint8_t tileY = w / worldData->CHUNK_SIZE;
+
+                uint32_t tileId = 0;
+                uint32_t tileVariant = 0;
+
+                deserializer >> tileId >> tileVariant;
+                data.erase(data.begin() + sizeof(uint16_t)*2, data.begin() + sizeof(uint16_t)*2 + sizeof(uint32_t)*2);
+
+                Engine::Vec2<uint8_t> tilePos{tileX, tileY};
+                chunk->tiles.emplace(tilePos, Tiles::GetTileOfType(tileId, tileVariant));
+                Tile* tile = chunk->tiles[tilePos];
+
+                chunk->UpdateTile(tilePos, tile);
+
+                maxTilesIndex++;
+                if (maxTilesIndex > maxTilesPerCycle)
+                    break;
+            }
+
+            if (chunk->tiles.size() >= worldData->CHUNK_SIZE * worldData->CHUNK_SIZE)
+            {
+                chunkDataQueue.pop();
+                SDL_Log("[Client] Chunk finished at (%u, %u).", chunk->data.position.x, chunk->data.position.y);
+            }
+
+            maxChunkIndex++;
+            if (maxChunkIndex > maxChunkPerCycle)
+                break;
+        }
     }
 }

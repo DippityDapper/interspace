@@ -16,8 +16,8 @@ namespace Interspace
 {
     void Game::Init()
     {
-        TileRegistry::Init();
         DBHelper::InitDatabase();
+        TileRegistry::Init();
         Engine::ResourceLoader::SetScaleMode(SDL_SCALEMODE_PIXELART);
 
         Sounds::AddSound("button_1", "assets/sounds/buttons/button_1.mp3", 0);

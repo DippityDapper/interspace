@@ -38,5 +38,8 @@ namespace Interspace
 
         COLONIST_DESELECT_ALL_REQUEST,
         COLONIST_DESELECTED_ALL_PACKET,
+
+        CHUNK_GENERATED_PACKET,
+        CHUNK_REMOVED_PACKET,
     };
 }

@@ -1,7 +1,9 @@
 #include <random>
 
+#include "interspace/client/Tiles.hpp"
 #include "interspace/client/World.hpp"
 #include "interspace/network/Serializer.hpp"
+#include "SDL3/SDL_log.h"
 
 namespace Interspace::Client
 {
@@ -37,5 +39,26 @@ namespace Interspace::Client
         camera->limitRight = worldData->worldSizeX * worldData->CHUNK_SIZE * worldData->TILE_SIZE;
         camera->limitTop = 0.0f;
         camera->limitBottom = worldData->worldSizeX * worldData->CHUNK_SIZE * worldData->TILE_SIZE;
+    }
+
+    void World::OnGeneratedChunkReceived(const std::vector<uint8_t>& data)
+    {
+        uint16_t chunkX = 0;
+        uint16_t chunkY = 0;
+
+        Deserializer deserializer(data);
+        deserializer >> chunkX >> chunkY;
+
+        Engine::Vec2<uint16_t> chunkPos{chunkX, chunkY};
+        if (chunks.contains(chunkPos))
+            return;
+
+        chunks.emplace(chunkPos, std::make_unique<Chunk>(chunkPos));
+
+        Chunk* chunk = chunks[chunkPos].get();
+        chunkDataQueue.push(data);
+        chunk->data.position = chunkPos;
+
+        SDL_Log("[Client] Chunk received (%u, %u).", chunkX, chunkY);
     }
 }

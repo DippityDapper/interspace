@@ -7,6 +7,7 @@ namespace Interspace::Client
     void World::RegisterNetEvents()
     {
         client->ConnectToEvent(WORLD_DATA_PACKET, this, &World::OnWorldDataReceived);
+        client->ConnectToEvent(CHUNK_GENERATED_PACKET, this, &World::OnGeneratedChunkReceived);
 
         client->ConnectToEvent(FACTION_DATA_PACKET, this, &World::OnFactionDataReceived);
 

@@ -21,6 +21,8 @@ if (WIN32)
             COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_SOURCE_DIR}/assets"
             "$<TARGET_FILE_DIR:interspace>/assets"
+
+            COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:interspace>/data"
     )
 
     add_dependencies(interspace copy_game_files)

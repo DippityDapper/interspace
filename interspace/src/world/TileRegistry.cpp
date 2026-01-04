@@ -1,29 +1,65 @@
 #include "interspace/world/TileRegistry.hpp"
 
+#include "interspace/game/DBHelper.hpp"
+#include "interspace/world/TileType.hpp"
+
 namespace Interspace
 {
     void TileRegistry::Init()
     {
-        for (int i = 0; i < static_cast<int>(GRASS_16) - static_cast<int>(GRASS_1) + 1; ++i)
+        if (!DBHelper::TileDataExistsByName("grass"))
         {
-            TileType type = (TileType)(static_cast<int>(GRASS_1) + i);
-            tiles.emplace(type, std::make_unique<TileData>(type));
+            for (int variant = 0; variant < static_cast<int>(GRASS_16) - static_cast<int>(GRASS_1) + 1; ++variant)
+            {
+                int atlasX = variant % 4;
+                int atlasY = variant / 4;
+                DBHelper::InsertTileData(
+                    1,
+                    variant,
+                    "grass",
+                    true,
+                    "assets/tilesets/grass_tileset.png",
+                    32,
+                    32,
+                    atlasX,
+                    atlasY
+                );
+            }
         }
 
-        for (int i = 0; i < static_cast<int>(FLOWER_16) - static_cast<int>(FLOWER_1) + 1; ++i)
+        if (!DBHelper::TileDataExistsByName("grass_flower"))
         {
-            TileType type = (TileType)(static_cast<int>(FLOWER_1) + i);
-            tiles.emplace(type, std::make_unique<TileData>(type));
+            for (int variant = 0; variant < static_cast<int>(FLOWER_16) - static_cast<int>(FLOWER_1) + 1; ++variant)
+            {
+                int atlasX = variant % 4;
+                int atlasY = variant / 4;
+                DBHelper::InsertTileData(
+                    2,
+                    variant,
+                    "grass_flower",
+                    true,
+                    "assets/tilesets/grass_tileset.png",
+                    32,
+                    32,
+                    atlasX,
+                    atlasY
+                );
+            }
         }
 
-        TileType type = STONE_PATH;
-        tiles.emplace(type, std::make_unique<TileData>(type));
-    }
-
-    TileData* TileRegistry::GetTile(TileType tileType)
-    {
-        if (!tiles.contains(tileType))
-            return nullptr;
-        return tiles[tileType].get();
+        if (!DBHelper::TileDataExistsByName("grass_stone_path"))
+        {
+            DBHelper::InsertTileData(
+                3,
+                0,
+                "grass_stone_path",
+                true,
+                "assets/tilesets/grass_tileset.png",
+                32,
+                32,
+                0,
+                4
+            );
+        }
     }
 }

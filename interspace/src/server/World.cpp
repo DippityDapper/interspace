@@ -8,6 +8,7 @@
 #include "igneous/Database.hpp"
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/game/Game.hpp"
+#include "interspace/server/Tiles.hpp"
 
 namespace Interspace::Server
 {
@@ -19,6 +20,7 @@ namespace Interspace::Server
 
     void World::Init()
     {
+        Tiles::Init();
         DBHelper::UpdateWorldLastPlayed(worldName);
 
         SQLite::Database* db = DBHelper::db.get();
@@ -46,6 +48,9 @@ namespace Interspace::Server
         else
         {
             serverTimer -= serverClock;
+
+            GenerateChunks();
+
             BroadcastColonistPositionData();
         }
 
@@ -55,6 +60,15 @@ namespace Interspace::Server
         {
             autosaveTimer -= autosaveClock;
             AutoSave();
+        }
+
+        if (chunkGenerationTimer < chunkGenerationClock)
+            chunkGenerationTimer += delta;
+        else
+        {
+            chunkGenerationTimer -= chunkGenerationClock;
+            BeginChunkGeneration();
+            BroadcastChunksData();
         }
     }
 

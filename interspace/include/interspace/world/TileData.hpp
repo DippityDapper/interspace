@@ -1,11 +1,17 @@
 #pragma once
 
-#include "interspace/world/TileType.hpp"
+#include <string>
+#include <cstdint>
+
+#include "igneous/Vec2.hpp"
 
 namespace Interspace
 {
     struct TileData
     {
-        TileType type;
+        uint32_t tileId = 0;
+        uint32_t variant = 0;
+        std::string tileName{};
+        bool walkable = true;
     };
 }

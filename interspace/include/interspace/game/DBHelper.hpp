@@ -17,6 +17,20 @@ namespace Interspace
         static void InitDatabase();
 
         // ============================================================
+        // TABLE CREATION
+        // ============================================================
+
+        static void CreateWorldTable();
+        static void CreateChunkTable();
+        static void CreateTileTable();
+        static void CreatePlayerTable();
+        static void CreateFactionTable();
+        static void CreateColonistTable();
+        static void CreateFactionMemberTable();
+        static void CreateTileDataTable();
+        static void CreateIndices();
+
+        // ============================================================
         // EXISTS CHECKS
         // ============================================================
         static bool WorldExists(const std::string& worldId);
@@ -28,8 +42,8 @@ namespace Interspace
         static bool FactionExistsByName(const std::string& worldId, const std::string& factionName);
         static bool ColonistExists(const std::string& worldId, uint16_t colonistId);
         static bool ColonistExistsByName(const std::string& worldId, const std::string& colonistName);
-        static bool TileTypeExists(int32_t tileId);
-        static bool TileTypeExistsByName(const std::string& tileName);
+        static bool TileDataExistsByName(const std::string& tileName);
+        static bool TileDataExists(uint32_t tileId, uint32_t tileVariant);
 
         // ============================================================
         // GET METHODS
@@ -42,6 +56,8 @@ namespace Interspace
         static uint16_t GetColonistByName(const std::string& worldId, const std::string& colonistName);
         static Engine::Vec2<float> GetColonistPosition(const std::string& worldId, uint16_t colonistId);
         static uint32_t GetPlayerIdByName(const std::string& playerName);
+        static uint32_t GetTileDataIdByName(const std::string& tileName, uint32_t tileVariant);
+        static std::vector<uint32_t> GetTileDataIdsByName(const std::string& tileName);
 
         // ============================================================
         // INSERT METHODS
@@ -52,7 +68,7 @@ namespace Interspace
         static bool InsertPlayer(uint32_t playerId, const std::string& playerName);
         static bool InsertFaction(uint16_t factionId, const std::string& worldId, const std::string& factionName, uint32_t factionOwner);
         static bool InsertColonist(uint16_t colonistId, const std::string& worldId, uint16_t factionId, const std::string& colonistName, float x, float y);
-        static bool InsertTileType(int32_t tileId, const std::string& tileName, bool walkable, const std::string& textureId);
+        static bool InsertTileData(uint32_t tileId, uint32_t tileVariant, const std::string& tileName, bool walkable, const std::string& texturePath, uint32_t atlasW, uint32_t atlasH, uint32_t atlasX, uint32_t atlasY);
 
         // ============================================================
         // UPDATE METHODS
@@ -66,7 +82,6 @@ namespace Interspace
         static bool UpdateColonistPosition(const std::string& worldId, uint16_t colonistId, float x, float y);
         static bool UpdateColonistFaction(const std::string& worldId, uint16_t colonistId, uint16_t factionId);
         static bool UpdateColonistName(const std::string& worldId, uint16_t colonistId, const std::string& colonistName);
-        static bool UpdateTileType(int32_t tileId, const std::string& tileName, bool walkable, const std::string& textureId);
 
         // ============================================================
         // RELATIONSHIP METHODS
@@ -85,6 +100,5 @@ namespace Interspace
         static bool DeletePlayer(uint32_t playerId);
         static bool DeleteFaction(uint16_t factionId);
         static bool DeleteColonist(const std::string& worldId, uint16_t colonistId);
-        static bool DeleteTileType(int32_t tileId);
     };
 }
