@@ -12,6 +12,7 @@ namespace Interspace::Server
 
         SendWorldData(from);
         SendFactionData(from);
+        SendChunkData(from, clientId);
 
         JoinFaction(clientId);
     }

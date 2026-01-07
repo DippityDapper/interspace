@@ -31,7 +31,7 @@ namespace Interspace
         {
             for (int variant = 0; variant < static_cast<int>(FLOWER_16) - static_cast<int>(FLOWER_1) + 1; ++variant)
             {
-                int atlasX = variant % 4;
+                int atlasX = variant % 4 + 4;
                 int atlasY = variant / 4;
                 DBHelper::InsertTileData(
                     2,

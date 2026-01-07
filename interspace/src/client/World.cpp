@@ -191,8 +191,8 @@ namespace Interspace::Client
 
     void World::GenerateChunks()
     {
-        uint8_t maxChunkPerCycle = 1;
-        uint8_t maxChunkIndex = 0;
+        uint16_t maxChunkPerCycle = 4;
+        uint16_t maxChunkIndex = 0;
 
         for (int i = 0; i < chunkDataQueue.size(); i++)
         {
@@ -210,8 +210,7 @@ namespace Interspace::Client
 
             Chunk* chunk = chunks[chunkPos].get();
 
-            uint8_t maxTilesPerCycle = 32;
-            uint8_t maxTilesIndex = 0;
+            chunk->BeginTileUpdate();
             for (uint16_t w = chunk->tiles.size(); w < worldData->CHUNK_SIZE * worldData->CHUNK_SIZE; w++)
             {
                 uint8_t tileX = w % worldData->CHUNK_SIZE;
@@ -221,18 +220,14 @@ namespace Interspace::Client
                 uint32_t tileVariant = 0;
 
                 deserializer >> tileId >> tileVariant;
-                data.erase(data.begin() + sizeof(uint16_t)*2, data.begin() + sizeof(uint16_t)*2 + sizeof(uint32_t)*2);
 
                 Engine::Vec2<uint8_t> tilePos{tileX, tileY};
                 chunk->tiles.emplace(tilePos, Tiles::GetTileOfType(tileId, tileVariant));
                 Tile* tile = chunk->tiles[tilePos];
 
                 chunk->UpdateTile(tilePos, tile);
-
-                maxTilesIndex++;
-                if (maxTilesIndex > maxTilesPerCycle)
-                    break;
             }
+            chunk->EndTileUpdate();
 
             if (chunk->tiles.size() >= worldData->CHUNK_SIZE * worldData->CHUNK_SIZE)
             {

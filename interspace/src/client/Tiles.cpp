@@ -32,11 +32,18 @@ namespace Interspace::Client
             tile->data.variant = tileVariant;
             tile->data.tileName = tileName;
             tile->data.walkable = walkable;
-            tile->texturePath = tileTexturePath;
-            tile->atlasWidth = tileAtlasWidth;
-            tile->atlasHeight = tileAtlasHeight;
-            tile->atlasX = tileAtlasX;
-            tile->atlasY = tileAtlasY;
+
+            Engine::Vec2<float> dummyPosition{};
+            tile->sprite = std::make_unique<Engine::Sprite>(
+                dummyPosition,
+                tileTexturePath,
+                tileAtlasWidth,
+                tileAtlasHeight,
+                tileAtlasX,
+                tileAtlasY);
+
+            tile->sprite->render = false;
+            tile->sprite->centered = false;
 
             tiles[tileId][tileVariant] = std::move(tile);
         }
@@ -44,17 +51,28 @@ namespace Interspace::Client
 
     Tile* Tiles::GetRandomTileOfType(const std::string& tileName)
     {
-        if (!DBHelper::TileDataExistsByName(tileName))
-            return nullptr;
+        if (!tileNameToId.contains(tileName))
+        {
+            if (!DBHelper::TileDataExistsByName(tileName))
+            {
+                return nullptr;
+            }
+            tileNameToId.emplace(tileName, DBHelper::GetTileDataIdByName(tileName));
+        }
 
-        std::vector<uint32_t> tileVariants = DBHelper::GetTileDataIdsByName(tileName);
+        if (!tileVariantsByName.contains(tileName))
+        {
+            tileVariantsByName.emplace(tileName, DBHelper::GetTileDataVariantsByName(tileName));
+        }
 
-        int tileIdsCount = tileVariants.size();
+        std::vector<uint32_t> tileVariants = tileVariantsByName[tileName];
+
+        int tileVariantCount = tileVariants.size();
         std::mt19937 gen(std::random_device{}());
-        std::uniform_int_distribution<> tileIdDist(0, tileIdsCount - 1);
+        std::uniform_int_distribution<> tileVariantDist(0, tileVariantCount - 1);
 
-        uint32_t tileVariant = tileIdDist(gen);
-        uint32_t tileId = DBHelper::GetTileDataIdByName(tileName, tileVariant);
+        uint32_t tileVariant = tileVariantDist(gen);
+        uint32_t tileId = tileNameToId[tileName];
 
         if (!tiles.contains(tileId))
             return nullptr;
@@ -67,10 +85,16 @@ namespace Interspace::Client
 
     Tile* Tiles::GetTileOfType(const std::string& tileName, uint32_t tileVariant)
     {
-        if (!DBHelper::TileDataExistsByName(tileName))
-            return nullptr;
+        if (!tileNameToId.contains(tileName))
+        {
+            if (!DBHelper::TileDataExistsByName(tileName))
+            {
+                return nullptr;
+            }
+            tileNameToId.emplace(tileName, DBHelper::GetTileDataIdByName(tileName));
+        }
 
-        uint32_t tileId = DBHelper::GetTileDataIdByName(tileName, tileVariant);
+        uint32_t tileId = tileNameToId[tileName];
 
         if (!tiles.contains(tileId))
             return nullptr;
@@ -83,9 +107,6 @@ namespace Interspace::Client
 
     Tile* Tiles::GetTileOfType(uint32_t tileId, uint32_t tileVariant)
     {
-        if (!DBHelper::TileDataExists(tileId, tileVariant))
-            return nullptr;
-
         if (!tiles.contains(tileId))
             return nullptr;
         if (!tiles[tileId].contains(tileVariant))

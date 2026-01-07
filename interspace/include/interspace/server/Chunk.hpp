@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <random>
 #include <set>
 
 #include "interspace/server/Tile.hpp"
@@ -13,7 +14,8 @@ namespace Interspace::Server
     {
     public:
         ChunkData data{};
+        std::mt19937 tileGen{};
         std::map<Engine::Vec2<uint8_t>, Tile*> tiles{};
-        std::set<uint16_t> seenBy{};
+        std::set<uint16_t> seenByFaction{};
     };
 }

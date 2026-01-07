@@ -1,11 +1,8 @@
-#include <ranges>
-
 #include "igneous/Scene.hpp"
 #include "igneous/Scenes.hpp"
 #include "interspace/client/World.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
 #include "interspace/network/Serializer.hpp"
-#include "SDL3/SDL_log.h"
 
 namespace Interspace::Client
 {

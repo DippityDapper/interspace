@@ -26,45 +26,35 @@ namespace Interspace::Client
         sprite->SetZIndex(-1);
     }
 
-    void Chunk::UpdateTile(const Engine::Vec2<uint8_t>& tilePos, Tile* tile)
+    void Chunk::BeginTileUpdate()
     {
         SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), tileAtlas.get());
+    }
 
+    void Chunk::EndTileUpdate()
+    {
+        SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), nullptr);
+    }
+
+    void Chunk::UpdateTile(const Engine::Vec2<uint8_t>& tilePos, Tile* tile)
+    {
         WorldData* worldData = Game::world->clientWorld->worldData.get();
         Engine::Vec2<float> tileLocalPos{(float)tilePos.x * worldData->TILE_SIZE, (float)tilePos.y * worldData->TILE_SIZE};
 
-        auto tileTexture = Engine::ResourceLoader::LoadTexture(tile->texturePath);
-        std::unique_ptr<Engine::Sprite> tileSprite = std::make_unique<Engine::Sprite>(
-            tileLocalPos,
-            tileTexture,
-            tile->atlasWidth,
-            tile->atlasHeight,
-            tile->atlasX,
-            tile->atlasY);
-
-        tileSprite->centered = false;
-
-        Engine::Renderer::BufferAdd(tileSprite->position, tileSprite.get());
-
-        SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), nullptr);
+        Engine::Renderer::BufferAdd(tileLocalPos, tile->sprite.get());
     }
 
     void Chunk::UpdateTiles(std::map<Engine::Vec2<uint8_t>, Tile*>& newTiles)
     {
-        SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), tileAtlas.get());
-
         for (const auto& newTile : newTiles)
         {
             WorldData* worldData = Game::world->clientWorld->worldData.get();
             Tile* tile = newTile.second;
             Engine::Vec2<uint8_t> tilePos = newTile.first;
-            Engine::Vec2<float> tileGlobalPos{(float)tilePos.x * worldData->TILE_SIZE, (float)tilePos.y * worldData->TILE_SIZE};
+            Engine::Vec2<float> tileLocalPos{(float)tilePos.x * worldData->TILE_SIZE, (float)tilePos.y * worldData->TILE_SIZE};
 
-            auto tileTexture = Engine::ResourceLoader::LoadTexture(tile->texturePath);
-            std::unique_ptr<Engine::Sprite> tileSprite = std::make_unique<Engine::Sprite>(tileGlobalPos, tileTexture);
+            Engine::Renderer::BufferAdd(tileLocalPos, tile->sprite.get());
             Engine::Renderer::BufferAdd(sprite->position, sprite.get(), nullptr);
         }
-
-        SDL_SetRenderTarget(Engine::Renderer::GetRenderer(), nullptr);
     }
 }

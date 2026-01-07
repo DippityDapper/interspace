@@ -22,6 +22,8 @@ namespace Interspace::Client
     public:
         explicit Chunk(const Engine::Vec2<uint16_t>& pos);
 
+        void BeginTileUpdate();
+        void EndTileUpdate();
         void UpdateTile(const Engine::Vec2<uint8_t>& tilePos, Tile* tile);
         void UpdateTiles(std::map<Engine::Vec2<uint8_t>, Tile*>& newTiles);
     };

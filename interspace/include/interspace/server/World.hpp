@@ -83,7 +83,8 @@ namespace Interspace::Server
         void BroadcastColonistDeselectAllData(uint32_t clientId);
 
         void SendWorldData(ENetPeer* to);
-        void BroadcastChunksData();
+        void SendChunkData(ENetPeer* to, uint32_t playerId);
+        void BroadcastChunkData(Chunk* chunk);
 
         void OnCreateFactionRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from);
         void SendFactionData(ENetPeer* to);

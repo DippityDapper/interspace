@@ -49,6 +49,7 @@ namespace Interspace::Server
         {
             serverTimer -= serverClock;
 
+            BeginChunkGeneration();
             GenerateChunks();
 
             BroadcastColonistPositionData();
@@ -67,8 +68,7 @@ namespace Interspace::Server
         else
         {
             chunkGenerationTimer -= chunkGenerationClock;
-            BeginChunkGeneration();
-            BroadcastChunksData();
+
         }
     }
 

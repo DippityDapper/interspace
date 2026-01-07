@@ -51,6 +51,26 @@ namespace Interspace
         )");
     }
 
+    void DBHelper::CreateTileDataTable()
+    {
+        db->exec("DROP TABLE IF EXISTS tileData");
+
+        db->exec(R"(
+            CREATE TABLE IF NOT EXISTS tileData(
+                tileId INTEGER NOT NULL,
+                tileVariant INTEGER NOT NULL,
+                tileName VARCHAR(255) NOT NULL,
+                walkable INTEGER NOT NULL DEFAULT 1,
+                tileTexturePath VARCHAR(255) NOT NULL,
+                tileAtlasWidth INTEGER NOT NULL,
+                tileAtlasHeight INTEGER NOT NULL,
+                tileAtlasX INTEGER NOT NULL,
+                tileAtlasY INTEGER NOT NULL,
+                PRIMARY KEY(tileId, tileVariant)
+            );
+        )");
+    }
+
     void DBHelper::CreateTileTable()
     {
         db->exec(R"(
@@ -60,10 +80,11 @@ namespace Interspace
                 chunkY INTEGER NOT NULL,
                 tileX INTEGER NOT NULL,
                 tileY INTEGER NOT NULL,
-                tileType INTEGER NOT NULL,
+                tileId INTEGER NOT NULL,
+                tileVariant INTEGER NOT NULL,
                 PRIMARY KEY (worldId, chunkX, chunkY, tileX, tileY),
                 FOREIGN KEY (worldId, chunkX, chunkY) REFERENCES chunk(worldId, chunkX, chunkY) ON DELETE CASCADE,
-                FOREIGN KEY (tileType) REFERENCES tileData(tileId) ON DELETE RESTRICT
+                FOREIGN KEY (tileId, tileVariant) REFERENCES tileData(tileId, tileVariant) ON DELETE RESTRICT
             );
         )");
     }
@@ -126,26 +147,6 @@ namespace Interspace
         )");
     }
 
-    void DBHelper::CreateTileDataTable()
-    {
-        db->exec("DROP TABLE IF EXISTS tileData");
-
-        db->exec(R"(
-            CREATE TABLE IF NOT EXISTS tileData(
-                tileId INTEGER NOT NULL,
-                tileVariant INTEGER NOT NULL,
-                tileName VARCHAR(255) NOT NULL,
-                walkable INTEGER NOT NULL DEFAULT 1,
-                tileTexturePath VARCHAR(255) NOT NULL,
-                tileAtlasWidth INTEGER NOT NULL,
-                tileAtlasHeight INTEGER NOT NULL,
-                tileAtlasX INTEGER NOT NULL,
-                tileAtlasY INTEGER NOT NULL,
-                PRIMARY KEY(tileId, tileVariant)
-            );
-        )");
-    }
-
     void DBHelper::CreateIndices()
     {
         db->exec(R"(
@@ -185,7 +186,7 @@ namespace Interspace
         return query.executeStep();
     }
 
-    bool DBHelper::ChunkExists(const std::string& worldId, int32_t chunkX, int32_t chunkY)
+    bool DBHelper::ChunkExists(const std::string& worldId, uint16_t chunkX, uint16_t chunkY)
     {
         SQLite::Statement query(*db, "SELECT 1 FROM chunk WHERE worldId = ? AND chunkX = ? AND chunkY = ?");
         query.bind(1, worldId);
@@ -194,7 +195,7 @@ namespace Interspace
         return query.executeStep();
     }
 
-    bool DBHelper::TileExists(const std::string& worldId, int32_t chunkX, int32_t chunkY, int32_t tileX, int32_t tileY)
+    bool DBHelper::TileExists(const std::string& worldId, uint16_t chunkX, uint16_t chunkY, uint8_t tileX, uint8_t tileY)
     {
         SQLite::Statement query(*db, "SELECT 1 FROM tile WHERE worldId = ? AND chunkX = ? AND chunkY = ? AND tileX = ? AND tileY = ?");
         query.bind(1, worldId);
@@ -377,11 +378,10 @@ namespace Interspace
         return 0;
     }
 
-    uint32_t DBHelper::GetTileDataIdByName(const std::string& tileName, uint32_t tileVariant)
+    uint32_t DBHelper::GetTileDataIdByName(const std::string& tileName)
     {
-        SQLite::Statement query(*db, "SELECT tileId FROM tileData WHERE tileName = ? AND tileVariant = ?");
+        SQLite::Statement query(*db, "SELECT DISTINCT tileId FROM tileData WHERE tileName = ?");
         query.bind(1, tileName);
-        query.bind(2, tileVariant);
 
         if (query.executeStep())
         {
@@ -390,17 +390,17 @@ namespace Interspace
         return 0;
     }
 
-    std::vector<uint32_t> DBHelper::GetTileDataIdsByName(const std::string& tileName)
+    std::vector<uint32_t> DBHelper::GetTileDataVariantsByName(const std::string& tileName)
     {
-        std::vector<uint32_t> tileIds{};
-        SQLite::Statement query(*db, "SELECT tileId FROM tileData WHERE tileName = ?");
+        std::vector<uint32_t> tileVariants{};
+        SQLite::Statement query(*db, "SELECT tileVariant FROM tileData WHERE tileName = ?");
         query.bind(1, tileName);
 
         while (query.executeStep())
         {
-            tileIds.push_back(static_cast<uint32_t>(query.getColumn(0).getInt()));
+            tileVariants.push_back(static_cast<uint32_t>(query.getColumn(0).getInt()));
         }
-        return tileIds;
+        return tileVariants;
     }
 
     // ============================================================
@@ -423,7 +423,7 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    bool DBHelper::InsertChunk(const std::string& worldId, int32_t chunkX, int32_t chunkY)
+    bool DBHelper::InsertChunk(const std::string& worldId, uint16_t chunkX, uint16_t chunkY)
     {
         SQLite::Statement statement(*db, R"(
             INSERT INTO chunk(worldId, chunkX, chunkY)
@@ -437,11 +437,11 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    bool DBHelper::InsertTile(const std::string& worldId, int32_t chunkX, int32_t chunkY, int32_t tileX, int32_t tileY, int32_t tileType)
+    bool DBHelper::InsertTile(const std::string& worldId, uint16_t chunkX, uint16_t chunkY, uint8_t tileX, uint8_t tileY, uint32_t tileId, uint32_t tileVariant)
     {
         SQLite::Statement statement(*db, R"(
-            INSERT INTO tile(worldId, chunkX, chunkY, tileX, tileY, tileType)
-            VALUES(?, ?, ?, ?, ?, ?)
+            INSERT INTO tile(worldId, chunkX, chunkY, tileX, tileY, tileId, tileVariant)
+            VALUES(?, ?, ?, ?, ?, ?, ?)
         )");
 
         statement.bind(1, worldId);
@@ -449,7 +449,8 @@ namespace Interspace
         statement.bind(3, chunkY);
         statement.bind(4, tileX);
         statement.bind(5, tileY);
-        statement.bind(6, tileType);
+        statement.bind(6, tileId);
+        statement.bind(7, tileVariant);
 
         return statement.exec() > 0;
     }
@@ -568,14 +569,15 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    bool DBHelper::UpdateTile(const std::string& worldId, int32_t chunkX, int32_t chunkY, int32_t tileX, int32_t tileY, int32_t tileType)
+    bool DBHelper::UpdateTile(const std::string& worldId, uint16_t chunkX, uint16_t chunkY, uint8_t tileX, uint8_t tileY, uint32_t tileId, uint32_t tileVariant)
     {
         SQLite::Statement statement(*db, R"(
-            UPDATE tile SET tileType = ?
+            UPDATE tile SET tileId = ?, tileVariant = ?
             WHERE worldId = ? AND chunkX = ? AND chunkY = ? AND tileX = ? AND tileY = ?
         )");
 
-        statement.bind(1, tileType);
+        statement.bind(1, tileId);
+        statement.bind(2, tileVariant);
         statement.bind(2, worldId);
         statement.bind(3, chunkX);
         statement.bind(4, chunkY);
@@ -742,7 +744,7 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    bool DBHelper::DeleteChunk(const std::string& worldId, int32_t chunkX, int32_t chunkY)
+    bool DBHelper::DeleteChunk(const std::string& worldId, uint16_t chunkX, uint16_t chunkY)
     {
         SQLite::Statement statement(*db, R"(
             DELETE FROM chunk
@@ -756,7 +758,7 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    bool DBHelper::DeleteTile(const std::string& worldId, int32_t chunkX, int32_t chunkY, int32_t tileX, int32_t tileY)
+    bool DBHelper::DeleteTile(const std::string& worldId, uint16_t chunkX, uint16_t chunkY, uint8_t tileX, uint8_t tileY)
     {
         SQLite::Statement statement(*db, R"(
             DELETE FROM tile

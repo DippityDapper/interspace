@@ -4,7 +4,6 @@
 #include "igneous/Database.hpp"
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/game/Game.hpp"
-#include "interspace/network/Serializer.hpp"
 #include "interspace/server/Tiles.hpp"
 #include "interspace/server/World.hpp"
 #include "SDL3/SDL_log.h"
@@ -308,19 +307,23 @@ namespace Interspace::Server
         {
             for (const auto& colonist : faction->colonists | std::views::values)
             {
-                Engine::Vec2<float> colonistPosition = colonist->entityData.position;
-                uint16_t colonistSight = colonist->entityData.sight;
-                uint16_t colonistGlobalSight = colonistSight * worldData->TILE_SIZE;
+                Engine::Vec2<float> colonistTilePos = colonist->entityData.position / worldData->CHUNK_SIZE;
+                uint32_t colonistTileSight = colonist->entityData.sight;
 
-                uint32_t sightMinX = colonistPosition.x - colonistGlobalSight;
-                uint32_t sightMinY = colonistPosition.y - colonistGlobalSight;
-                uint32_t sightMaxX = colonistPosition.x + colonistGlobalSight;
-                uint32_t sightMaxY = colonistPosition.y + colonistGlobalSight;
+                int32_t sightMinX = colonistTilePos.x - colonistTileSight;
+                int32_t sightMinY = colonistTilePos.y - colonistTileSight;
+                int32_t sightMaxX = colonistTilePos.x + colonistTileSight;
+                int32_t sightMaxY = colonistTilePos.y + colonistTileSight;
 
-                uint16_t chunkMinX = sightMinX / (worldData->TILE_SIZE * worldData->CHUNK_SIZE);
-                uint16_t chunkMinY = sightMinY / (worldData->TILE_SIZE * worldData->CHUNK_SIZE);
-                uint16_t chunkMaxX = sightMaxX / (worldData->TILE_SIZE * worldData->CHUNK_SIZE);
-                uint16_t chunkMaxY = sightMaxY / (worldData->TILE_SIZE * worldData->CHUNK_SIZE);
+                int32_t chunkMinX = sightMinX / worldData->TILE_SIZE;
+                int32_t chunkMinY = sightMinY / worldData->TILE_SIZE;
+                int32_t chunkMaxX = sightMaxX / worldData->TILE_SIZE;
+                int32_t chunkMaxY = sightMaxY / worldData->TILE_SIZE;
+
+                chunkMinX = std::clamp(chunkMinX, 0, (int32_t)worldData->worldSizeX);
+                chunkMinY = std::clamp(chunkMinY, 0, (int32_t)worldData->worldSizeY);
+                chunkMaxX = std::clamp(chunkMaxX, 0, (int32_t)worldData->worldSizeX);
+                chunkMaxY = std::clamp(chunkMaxY, 0, (int32_t)worldData->worldSizeY);
 
                 for (uint16_t chunkX = chunkMinX; chunkX <= chunkMaxX; chunkX++)
                 {
@@ -333,6 +336,8 @@ namespace Interspace::Server
                             chunks.emplace(chunkPosition, std::make_unique<Chunk>());
                             Chunk* chunk = chunks[chunkPosition].get();
                             chunk->data.position = chunkPosition;
+                            uint32_t tileSeed = seed ^ (chunk->data.position.x * 73856093) ^ (chunk->data.position.y * 19349663);
+                            chunk->tileGen.seed(tileSeed);
 
                             chunkQueue.emplace(chunk);
                             SDL_Log("[Server] Chunk added to queue at (%u, %u).", chunkX, chunkY);
@@ -340,8 +345,11 @@ namespace Interspace::Server
 
                         Chunk* chunk = chunks[chunkPosition].get();
 
-                        if (!chunk->seenBy.contains(faction->data.id))
-                            chunk->seenBy.emplace(faction->data.id);
+                        if (!chunk->seenByFaction.contains(faction->data.id))
+                        {
+                            chunk->seenByFaction.emplace(faction->data.id);
+                            BroadcastChunkData(chunk);
+                        }
                     }
                 }
             }
@@ -357,24 +365,19 @@ namespace Interspace::Server
         {
             Chunk* chunk = chunkQueue.front();
 
-            uint8_t maxTilesPerCycle = 128;
-            uint8_t maxTilesIndex = 0;
             for (uint16_t w = chunk->tiles.size(); w < worldData->CHUNK_SIZE * worldData->CHUNK_SIZE; w++)
             {
                 uint8_t tileX = w % worldData->CHUNK_SIZE;
                 uint8_t tileY = w / worldData->CHUNK_SIZE;
                 Engine::Vec2<uint8_t> tilePosition{tileX, tileY};
-                chunk->tiles.emplace(tilePosition, Tiles::GetRandomTileOfType("grass"));
-
-                maxTilesIndex++;
-                if (maxTilesIndex > maxTilesPerCycle)
-                    break;
+                chunk->tiles.emplace(tilePosition, Tiles::GetRandomTileBySeed("grass_flower", chunk->tileGen));
             }
 
             if (chunk->tiles.size() >= worldData->CHUNK_SIZE * worldData->CHUNK_SIZE)
             {
                 chunkQueue.pop();
-                SDL_Log("[Server] Chunk finished at (%u, %u).", chunk->data.position.x, chunk->data.position.y);
+                BroadcastChunkData(chunk);
+                SDL_Log("[Server] Chunk generated at (%u, %u).", chunk->data.position.x, chunk->data.position.y);
             }
 
             maxChunkIndex++;

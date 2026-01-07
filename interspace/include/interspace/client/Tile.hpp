@@ -10,10 +10,6 @@ namespace Interspace::Client
     public:
         TileData data{};
 
-        std::string texturePath{};
-        uint32_t atlasWidth = 0;
-        uint32_t atlasHeight = 0;
-        uint32_t atlasX = 0;
-        uint32_t atlasY = 0;
+        std::unique_ptr<Engine::Sprite> sprite = nullptr;
     };
 }

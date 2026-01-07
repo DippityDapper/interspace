@@ -21,8 +21,6 @@ namespace Interspace::Server
         std::unordered_map<uint32_t, ENetPeer*> peers{};
         std::unordered_map<uint32_t, std::string> idToUsernameLookup{};
 
-        uint32_t nextPeerId = 1;
-
     public:
         NetInterface* netInterface = nullptr;
 
@@ -45,6 +43,7 @@ namespace Interspace::Server
         std::string GetUsername(uint32_t peerId);
         ENetPeer* GetPeer(uint32_t peerId);
         ENetPeer* GetPeer(const std::string& username);
+        bool PeerExists(uint32_t peerId);
         std::unordered_map<uint32_t, ENetPeer*> GetPeers();
 
     public:
