@@ -1,5 +1,5 @@
-#include "igneous/Scene.hpp"
-#include "igneous/Scenes.hpp"
+#include "igneous/scenes/Scene.hpp"
+#include "igneous/scenes/SceneManager.hpp"
 #include "interspace/client/World.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
 #include "interspace/network/Serializer.hpp"
@@ -84,14 +84,14 @@ namespace Interspace::Client
             if (!faction->data.members.contains(client->clientId))
                 continue;
 
-            Engine::Scene* factionCreationMenu = Engine::Scenes::GetScene("faction_creation_menu");
+            Engine::Scene* factionCreationMenu = Engine::SceneManager::GetSceneRoot()->GetScene("faction_creation_menu");
             if (!factionCreationMenu)
-                factionCreationMenu = Engine::Scenes::CreateScene(new CreateFactionMenu(), "faction_creation_menu");
+                factionCreationMenu = Engine::SceneManager::GetSceneRoot()->AddScene<CreateFactionMenu>("faction_creation_menu", false);
 
-            if (factionCreationMenu->active)
+            if (factionCreationMenu->IsActive())
                 continue;
 
-            Engine::Scenes::LoadScene("faction_creation_menu");
+            Engine::SceneManager::GetSceneRoot()->LoadScene("faction_creation_menu");
         }
     }
 }

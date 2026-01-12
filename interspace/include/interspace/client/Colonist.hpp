@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "igneous/Sprite.hpp"
+#include "igneous/resources/Sprite.hpp"
 
 #include "interspace/client/Entity.hpp"
 #include "interspace/world/ColonistData.hpp"

@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include "SDL3/SDL_log.h"
-
 #include "interspace/network/NetworkPackets.hpp"
 
 namespace Interspace::Server

@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "igneous/Scene.hpp"
+#include "igneous/scenes/Scene.hpp"
 
 namespace Interspace
 {
@@ -17,7 +17,8 @@ namespace Interspace
 
     private:
         void Init() override;
-        void Render() override;
+        void OnActiveChanged(bool value) override;
+        void UI(Engine::InputLayer &layer) override;
 
     public:
         bool DeleteWorld(const std::string& worldName);

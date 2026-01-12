@@ -1,8 +1,8 @@
 #include "interspace/client/Colonist.hpp"
 
 #include "imgui.h"
-#include "igneous/Camera.hpp"
-#include "igneous/Window.hpp"
+#include "igneous/engine/Camera.hpp"
+#include "igneous/rendering/Window.hpp"
 
 namespace Interspace::Client
 {

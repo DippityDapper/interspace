@@ -1,9 +1,10 @@
 #include "interspace/menus/CreateFactionMenu.hpp"
 
 #include "imgui.h"
-#include "igneous/Scenes.hpp"
-#include "igneous/Window.hpp"
+#include "igneous/scenes/SceneManager.hpp"
+#include "igneous/rendering/Window.hpp"
 #include "interspace/game/Game.hpp"
+#include "interspace/network/NetworkPackets.hpp"
 #include "interspace/network/Serializer.hpp"
 #include "SDL3/SDL_log.h"
 
@@ -104,7 +105,7 @@ namespace Interspace
 
     void CreateFactionMenu::OnFactionAccepted(const std::vector<uint8_t>& data)
     {
-        Engine::Scenes::RemoveScene("faction_creation_menu");
+        SetActive(false);
         awaitingResponse = false;
     }
 

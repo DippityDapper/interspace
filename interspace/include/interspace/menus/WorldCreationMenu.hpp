@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "igneous/Camera.hpp"
-#include "igneous/Scene.hpp"
+#include "igneous/engine/Camera.hpp"
+#include "igneous/scenes/Scene.hpp"
 
 namespace Interspace
 {

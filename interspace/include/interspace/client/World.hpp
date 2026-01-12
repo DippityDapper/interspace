@@ -38,7 +38,7 @@ namespace Interspace::Client
         void Init();
         void Update(float delta);
         void Render();
-        void HandleEvents(SDL_Event& event);
+        void HandleEvents(Engine::InputLayer& layer);
         void Clean();
 
         void GenerateChunks();

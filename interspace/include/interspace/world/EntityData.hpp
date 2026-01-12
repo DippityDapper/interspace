@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-#include "igneous/Vec2.hpp"
+#include "igneous/engine/Vec2.hpp"
 
 namespace Interspace
 {

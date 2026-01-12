@@ -3,7 +3,6 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/network/Serializer.hpp"
 #include "interspace/server/World.hpp"
-#include "SDL3/SDL_log.h"
 
 namespace Interspace::Server
 {

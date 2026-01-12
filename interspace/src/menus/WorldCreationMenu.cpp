@@ -4,12 +4,11 @@
 #include <filesystem>
 #include <random>
 
-#include "SDL3/SDL.h"
 #include "imgui.h"
-#include "igneous/Database.hpp"
+#include "igneous/engine/Database.hpp"
 
-#include "igneous/Scenes.hpp"
-#include "igneous/Window.hpp"
+#include "igneous/scenes/SceneManager.hpp"
+#include "igneous/rendering/Window.hpp"
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/game/Game.hpp"
 #include "interspace/game/Sounds.hpp"
@@ -45,13 +44,13 @@ namespace Interspace
         {
             Sounds::PlaySound("button_1", 1.0f);
             if (CreateWorld())
-                Engine::Scenes::LoadScene(prevMenu);
+                 root->LoadScene(prevMenu);
         }
 
         if (ImGui::Button("Back"))
         {
             Sounds::PlaySound("button_back", 1.0f);
-            Engine::Scenes::LoadScene(prevMenu);
+             root->LoadScene(prevMenu);
         }
 
         if (!message.empty())
@@ -76,7 +75,7 @@ namespace Interspace
         if (seedStr.empty())
         {
             std::mt19937 gen(std::random_device{}());
-            std::uniform_int_distribution<> seedDist(0, UINT32_MAX);
+            std::uniform_int_distribution<uint32_t> seedDist(0, UINT32_MAX);
             seed = seedDist(gen);
         }
         else

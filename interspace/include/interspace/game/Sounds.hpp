@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "igneous/AudioStream.hpp"
+#include "igneous/resources/AudioStream.hpp"
 
 #ifdef PlaySound
 #undef PlaySound

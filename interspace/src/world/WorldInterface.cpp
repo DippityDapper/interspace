@@ -24,12 +24,10 @@ namespace Interspace
             clientWorld->Render();
     }
 
-    void WorldInterface::HandleEvents(SDL_Event& event)
+    void WorldInterface::HandleEvents(Engine::InputLayer& layer)
     {
-        if (serverWorld)
-            serverWorld->HandleEvents(event);
         if (clientWorld)
-            clientWorld->HandleEvents(event);
+            clientWorld->HandleEvents(layer);
     }
 
     void WorldInterface::Clean()

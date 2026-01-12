@@ -3,8 +3,6 @@
 #include <string>
 #include <cstdint>
 
-#include "igneous/Vec2.hpp"
-
 namespace Interspace
 {
     struct TileData

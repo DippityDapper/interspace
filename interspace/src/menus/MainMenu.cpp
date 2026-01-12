@@ -1,11 +1,11 @@
 #include "interspace/menus/MainMenu.hpp"
 
 #include "imgui.h"
-#include "igneous/CFGParser.hpp"
+#include "igneous/engine/CFGParser.hpp"
 
-#include "igneous/Scenes.hpp"
-#include "igneous/Window.hpp"
-#include "igneous/Engine.hpp"
+#include "igneous/scenes/SceneManager.hpp"
+#include "igneous/rendering/Window.hpp"
+#include "igneous/engine/Engine.hpp"
 #include "interspace/game/Sounds.hpp"
 
 #include "interspace/menus/JoinMenu.hpp"
@@ -17,6 +17,14 @@ namespace Interspace
 {
     void MainMenu::Init()
     {
+        CreateSubmenuScenes();
+    }
+
+    void MainMenu::OnActiveChanged(bool value)
+    {
+        if (!value)
+            return;
+
         Engine::CFGParser::LoadConfig("game_config.cfg", "game_config");
         try
         {
@@ -29,8 +37,6 @@ namespace Interspace
         }
 
         strcpy(usernameLineEdit, username.c_str());
-
-        CreateSubmenuScenes();
     }
 
     void MainMenu::Render()
@@ -96,7 +102,7 @@ namespace Interspace
 
             if (!username.empty())
             {
-                Engine::Scenes::LoadScene("worlds_menu_singleplayer");
+                root->LoadScene("worlds_menu_singleplayer");
                 errorMessage = "";
             }
             else
@@ -113,7 +119,7 @@ namespace Interspace
 
             if (!username.empty())
             {
-                Engine::Scenes::LoadScene("multiplayer_menu");
+                root->LoadScene("multiplayer_menu");
                 errorMessage = "";
             }
             else
@@ -138,31 +144,29 @@ namespace Interspace
 
     void MainMenu::CreateSubmenuScenes()
     {
-        if (!Engine::Scenes::SceneExists("worlds_menu_singleplayer"))
+        if (!singleplayerWorldMenu)
         {
-            WorldsMenu* worldMenuSinglePlayerScene = new WorldsMenu();
-            worldMenuSinglePlayerScene->isHostingMenu = false;
-            worldMenuSinglePlayerScene->prevMenu = "main_menu";
-            Engine::Scenes::CreateScene(worldMenuSinglePlayerScene, "worlds_menu_singleplayer");
+            singleplayerWorldMenu = root->AddScene<WorldsMenu>("worlds_menu_singleplayer", false);
+            singleplayerWorldMenu->isHostingMenu = false;
+            singleplayerWorldMenu->prevMenu = "main_menu";
         }
-        if (!Engine::Scenes::SceneExists("multiplayer_menu"))
+        if (!multiplayerMenu)
         {
-            Engine::Scenes::CreateScene(new MultiplayerMenu(), "multiplayer_menu");
+            multiplayerMenu = root->AddScene<MultiplayerMenu>("multiplayer_menu", false);
         }
-        if (!Engine::Scenes::SceneExists("world_creation_menu"))
+        if (!worldCreationMenu)
         {
-            Engine::Scenes::CreateScene(new WorldCreationMenu(), "world_creation_menu");
+            worldCreationMenu = root->AddScene<WorldCreationMenu>("world_creation_menu", false);
         }
-        if (!Engine::Scenes::SceneExists("worlds_menu_multiplayer"))
+        if (!multiplayerWorldMenu)
         {
-            WorldsMenu* worldMenuMultiplayerScene = new WorldsMenu();
-            worldMenuMultiplayerScene->isHostingMenu = true;
-            worldMenuMultiplayerScene->prevMenu = "multiplayer_menu";
-            Engine::Scenes::CreateScene(worldMenuMultiplayerScene, "worlds_menu_multiplayer");
+            multiplayerWorldMenu = root->AddScene<WorldsMenu>("worlds_menu_multiplayer", false);
+            multiplayerWorldMenu->isHostingMenu = true;
+            multiplayerWorldMenu->prevMenu = "multiplayer_menu";
         }
-        if (!Engine::Scenes::SceneExists("join_menu"))
+        if (!joinMenu)
         {
-            Engine::Scenes::CreateScene(new JoinMenu(), "join_menu");
+            joinMenu = root->AddScene<JoinMenu>("join_menu", false);
         }
     }
 }

@@ -2,8 +2,8 @@
 
 #include "imgui.h"
 
-#include "igneous/Scenes.hpp"
-#include "igneous/Window.hpp"
+#include "igneous/scenes/SceneManager.hpp"
+#include "igneous/rendering/Window.hpp"
 #include "interspace/game/Sounds.hpp"
 
 namespace Interspace
@@ -42,7 +42,7 @@ namespace Interspace
         if (ImGui::Button("Host", buttonSize))
         {
             Sounds::PlaySound("button_1", 1.0f);
-            Engine::Scenes::LoadScene("worlds_menu_multiplayer");
+            root->LoadScene("worlds_menu_multiplayer");
         }
 
         availableWidth = ImGui::GetContentRegionAvail().x / 2.0f;
@@ -52,7 +52,7 @@ namespace Interspace
         if (ImGui::Button("Join", buttonSize))
         {
             Sounds::PlaySound("button_1", 1.0f);
-            Engine::Scenes::LoadScene("join_menu");
+            root->LoadScene("join_menu");
         }
 
         const float backButtonWidth = 64.0f;
@@ -70,7 +70,7 @@ namespace Interspace
         if (ImGui::Button("Back", backButtonSize))
         {
             Sounds::PlaySound("button_back", 1.0f);
-            Engine::Scenes::LoadScene("main_menu");
+            root->LoadScene("main_menu");
         }
 
         ImGui::End();

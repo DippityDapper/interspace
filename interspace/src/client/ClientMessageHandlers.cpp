@@ -1,7 +1,6 @@
 #include "interspace/client/Client.hpp"
 
 #include "interspace/game/Game.hpp"
-#include "interspace/network/NetworkPackets.hpp"
 #include "interspace/network/Serializer.hpp"
 
 namespace Interspace::Client

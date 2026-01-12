@@ -1,9 +1,9 @@
 #include "interspace/game/Game.hpp"
 
-#include "igneous/ResourceLoader.hpp"
+#include "igneous/resources/ResourceManager.hpp"
 #include "SDL3/SDL_events.h"
 
-#include "igneous/Scenes.hpp"
+#include "igneous/scenes/SceneManager.hpp"
 #include "interspace/game/Sounds.hpp"
 
 #include "interspace/menus/MainMenu.hpp"
@@ -16,16 +16,16 @@ namespace Interspace
 {
     void Game::Init()
     {
+        singleton = true;
         DBHelper::InitDatabase();
         TileRegistry::Init();
-        Engine::ResourceLoader::SetScaleMode(SDL_SCALEMODE_PIXELART);
+        Engine::ResourceManager::SetScaleMode(SDL_SCALEMODE_PIXELART);
 
         Sounds::AddSound("button_1", "assets/sounds/buttons/button_1.mp3", 0);
         Sounds::AddSound("button_back", "assets/sounds/buttons/button_back.mp3", 0);
 
-        if (!Engine::Scenes::SceneExists("main_menu"))
-            Engine::Scenes::CreateScene(new MainMenu(), "main_menu");
-        Engine::Scenes::LoadScene("main_menu");
+        if (!mainMenu)
+            mainMenu = root->AddScene<MainMenu>("main_menu", true);
     }
 
     void Game::Update(float delta)
@@ -45,10 +45,10 @@ namespace Interspace
             world->Render();
     }
 
-    void Game::HandleEvents(SDL_Event& event)
+    void Game::HandleEvents(Engine::InputLayer& layer)
     {
         if (world)
-            world->HandleEvents(event);
+            world->HandleEvents(layer);
     }
 
     void Game::Clean()

@@ -1,6 +1,6 @@
 #include "interspace/game/Sounds.hpp"
 
-#include "igneous/ResourceLoader.hpp"
+#include "igneous/resources/ResourceManager.hpp"
 
 namespace Interspace
 {
@@ -8,7 +8,7 @@ namespace Interspace
     {
         if (sounds.contains(name))
             return;
-        auto sound = Engine::ResourceLoader::LoadSound(filePath, props);
+        auto sound = Engine::ResourceManager::LoadSound(filePath, props);
 
         if (!sound)
             return;

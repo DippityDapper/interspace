@@ -1,10 +1,10 @@
 #include "interspace/menus/JoinMenu.hpp"
 
 #include "imgui.h"
-#include "igneous/CFGParser.hpp"
+#include "igneous/engine/CFGParser.hpp"
 
-#include "igneous/Scenes.hpp"
-#include "igneous/Window.hpp"
+#include "igneous/scenes/SceneManager.hpp"
+#include "igneous/rendering/Window.hpp"
 
 #include "interspace/game/Game.hpp"
 #include "interspace/game/Sounds.hpp"
@@ -37,7 +37,7 @@ namespace Interspace
         if (ImGui::Button("Back"))
         {
             Sounds::PlaySound("button_back", 1.0f);
-            Engine::Scenes::LoadScene("multiplayer_menu");
+             root->LoadScene("multiplayer_menu");
         }
         ImGui::SameLine();
 
@@ -53,7 +53,7 @@ namespace Interspace
         {
             Sounds::PlaySound("button_1", 1.0f);
             if (JoinWorld())
-                Engine::Scenes::RemoveAllScenes();
+                 root->UnloadAllScenes();
         }
 
         ImGui::End();

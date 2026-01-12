@@ -4,12 +4,12 @@
 #include <filesystem>
 
 #include "imgui.h"
-#include "igneous/CFGParser.hpp"
-#include "igneous/Database.hpp"
+#include "igneous/engine/CFGParser.hpp"
+#include "igneous/engine/Database.hpp"
 
-#include "igneous/Scenes.hpp"
-#include "igneous/Vec2.hpp"
-#include "igneous/Window.hpp"
+#include "igneous/scenes/SceneManager.hpp"
+#include "igneous/engine/Vec2.hpp"
+#include "igneous/rendering/Window.hpp"
 #include "interspace/game/Game.hpp"
 #include "interspace/game/Sounds.hpp"
 
@@ -20,6 +20,13 @@ namespace Interspace
 {
     void WorldsMenu::Init()
     {
+    }
+
+    void WorldsMenu::OnActiveChanged(bool value)
+    {
+        if (!value)
+            return;
+
         worlds.clear();
 
         for (auto rows : Engine::Database::Query(DBHelper::db.get(), "SELECT * FROM world;"))
@@ -29,8 +36,11 @@ namespace Interspace
         }
     }
 
-    void WorldsMenu::Render()
+    void WorldsMenu::UI(Engine::InputLayer& layer)
     {
+        if (!layer.Is("ui"))
+            return;
+
         Engine::Vec2<int> viewport = Engine::Window::viewport;
 
         const float windowWidth = 384.0f;
@@ -104,13 +114,13 @@ namespace Interspace
                     if (Game::HostWorld(worldName, 33333, 32, true))
                     {
                         if (Game::JoinWorld(username, "127.0.0.1", 33333))
-                            Engine::Scenes::RemoveAllScenes();
+                            root->UnloadAllScenes();
                     }
                 }
                 else
                 {
                     if (Game::LoadWorld(worldName, username))
-                        Engine::Scenes::RemoveAllScenes();
+                         root->UnloadAllScenes();
                 }
             }
 
@@ -140,7 +150,7 @@ namespace Interspace
         if (ImGui::Button("Back", buttonSize))
         {
             Sounds::PlaySound("button_back", 1.0f);
-            Engine::Scenes::LoadScene(prevMenu);
+            root->LoadScene(prevMenu);
         }
 
         ImGui::SameLine();
@@ -155,14 +165,14 @@ namespace Interspace
         if (ImGui::Button("Create World", createButtonSize))
         {
             Sounds::PlaySound("button_1", 1.0f);
-            WorldCreationMenu* worldCreationMenu = dynamic_cast<WorldCreationMenu*>(Engine::Scenes::GetScene("world_creation_menu"));
+            WorldCreationMenu* worldCreationMenu = dynamic_cast<WorldCreationMenu*>(root->GetScene("world_creation_menu"));
 
             if (isHostingMenu)
                 worldCreationMenu->prevMenu = "worlds_menu_multiplayer";
             else
                 worldCreationMenu->prevMenu = "worlds_menu_singleplayer";
 
-            Engine::Scenes::LoadScene("world_creation_menu");
+            root->LoadScene("world_creation_menu");
         }
 
         ImGui::End();

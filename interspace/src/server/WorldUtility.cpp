@@ -1,7 +1,7 @@
 #include <random>
 #include <ranges>
 
-#include "igneous/Database.hpp"
+#include "igneous/engine/Database.hpp"
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/game/Game.hpp"
 #include "interspace/server/Tiles.hpp"
@@ -127,10 +127,10 @@ namespace Interspace::Server
 
         if (faction->colonists.empty())
         {
-            std::uniform_int_distribution<> posXDist(0, worldData->worldSizeX * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
+            std::uniform_int_distribution posXDist(0, worldData->worldSizeX * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
             posX = (float)posXDist(gen);
 
-            std::uniform_int_distribution<> posYDist(0, worldData->worldSizeY * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
+            std::uniform_int_distribution posYDist(0, worldData->worldSizeY * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
             posY = (float)posYDist(gen);
         }
         else
@@ -175,7 +175,7 @@ namespace Interspace::Server
         int colonistId = 0;
         do
         {
-            std::uniform_int_distribution<> colonistIdDist(1, UINT16_MAX);
+            std::uniform_int_distribution<uint16_t> colonistIdDist(1, UINT16_MAX);
             colonistId = colonistIdDist(gen);
         } while (DBHelper::ColonistExists(worldName, colonistId));
 

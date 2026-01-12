@@ -5,7 +5,7 @@
 
 #include "enet/enet.h"
 
-#include "igneous/ThreadSafeQueue.hpp"
+#include "igneous/engine/ThreadSafeQueue.hpp"
 
 #include "interspace/network/NetInterface.hpp"
 

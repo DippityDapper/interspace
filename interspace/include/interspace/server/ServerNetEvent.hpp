@@ -5,7 +5,7 @@
 
 #include "enet/enet.h"
 
-#include "igneous/Event.hpp"
+#include "igneous/engine/Event.hpp"
 
 namespace Interspace::Server
 {

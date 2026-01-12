@@ -1,6 +1,6 @@
 #pragma once
 
-#include "igneous/Sprite.hpp"
+#include "igneous/resources/Sprite.hpp"
 #include "interspace/world/TileData.hpp"
 
 namespace Interspace::Client

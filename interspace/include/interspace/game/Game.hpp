@@ -2,9 +2,10 @@
 
 #include <memory>
 
-#include "igneous/Scene.hpp"
+#include "igneous/scenes/Scene.hpp"
 
 #include "interspace/client/Client.hpp"
+#include "interspace/menus/MainMenu.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/world/WorldInterface.hpp"
 
@@ -21,11 +22,13 @@ namespace Interspace
         static inline std::unique_ptr<NetInterface> serverNetInterface = nullptr;
         static inline std::unique_ptr<NetInterface> clientNetInterface = nullptr;
 
+        static inline MainMenu* mainMenu = nullptr;
+
     private:
         void Init() override;
         void Update(float delta) override;
         void Render() override;
-        void HandleEvents(SDL_Event& event) override;
+        void HandleEvents(Engine::InputLayer& layer) override;
         void Clean() override;
 
     public:

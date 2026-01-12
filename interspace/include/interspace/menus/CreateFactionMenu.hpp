@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "igneous/Scene.hpp"
+#include "igneous/scenes/Scene.hpp"
 #include "interspace/client/ClientNetEvent.hpp"
 
 namespace Interspace::Client

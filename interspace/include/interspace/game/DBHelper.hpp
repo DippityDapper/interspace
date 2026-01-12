@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "igneous/Vec2.hpp"
+#include "igneous/engine/Vec2.hpp"
 #include "SQLiteCpp/Database.h"
 
 namespace Interspace

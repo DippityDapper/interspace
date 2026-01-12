@@ -1,7 +1,7 @@
 #include "interspace/client/Chunk.hpp"
 
-#include "igneous/Renderer.hpp"
-#include "igneous/ResourceLoader.hpp"
+#include "igneous/rendering/Renderer.hpp"
+#include "igneous/resources/ResourceManager.hpp"
 #include "interspace/game/Game.hpp"
 #include "interspace/world/WorldData.hpp"
 
@@ -14,7 +14,7 @@ namespace Interspace::Client
         data.position = pos;
         position = (Engine::Vec2<float>)pos * worldData->CHUNK_SIZE * worldData->TILE_SIZE;
 
-        tileAtlas = Engine::ResourceLoader::CreateTexture(
+        tileAtlas = Engine::ResourceManager::CreateTexture(
             SDL_PIXELFORMAT_RGBA8888,
             SDL_TEXTUREACCESS_TARGET,
             worldData->CHUNK_SIZE * worldData->TILE_SIZE,

@@ -5,7 +5,6 @@
 #include <vector>
 #include <memory>
 
-#include "interspace/network/NetworkPackets.hpp"
 #include "interspace/client/ClientNetEvent.hpp"
 #include "interspace/network/NetInterface.hpp"
 

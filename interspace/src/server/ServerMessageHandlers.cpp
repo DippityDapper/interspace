@@ -1,10 +1,11 @@
 #include <random>
 
-#include "igneous/Database.hpp"
+#include "igneous/engine/Database.hpp"
 #include "interspace/game/Game.hpp"
 #include "SDL3/SDL_log.h"
 #include "interspace/network/Serializer.hpp"
 #include "interspace/game/DBHelper.hpp"
+#include "interspace/network/NetworkPackets.hpp"
 
 namespace Interspace::Server
 {

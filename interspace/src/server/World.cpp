@@ -4,8 +4,8 @@
 
 #include "SDL3/SDL_log.h"
 
-#include "igneous/CFGParser.hpp"
-#include "igneous/Database.hpp"
+#include "igneous/engine/CFGParser.hpp"
+#include "igneous/engine/Database.hpp"
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/game/Game.hpp"
 #include "interspace/server/Tiles.hpp"
@@ -73,10 +73,6 @@ namespace Interspace::Server
     }
 
     void World::Render()
-    {
-    }
-
-    void World::HandleEvents(SDL_Event& event)
     {
     }
 

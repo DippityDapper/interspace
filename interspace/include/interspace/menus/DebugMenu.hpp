@@ -1,6 +1,6 @@
 #pragma once
 
-#include "igneous/Scene.hpp"
+#include "igneous/scenes/Scene.hpp"
 
 namespace Interspace
 {

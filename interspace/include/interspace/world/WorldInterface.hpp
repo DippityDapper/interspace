@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "interspace/client/World.hpp"
 #include "interspace/server/World.hpp"
@@ -35,7 +34,7 @@ namespace Interspace
         void Init();
         void Update(float delta);
         void Render();
-        void HandleEvents(SDL_Event& event);
+        void HandleEvents(Engine::InputLayer& layer);
         void Clean();
 
         void SetServer(Server::Server* _server, const std::string& worldName);

@@ -2,9 +2,12 @@
 
 #include <ranges>
 
-#include "igneous/Camera.hpp"
+#include "imgui_internal.h"
+#include "igneous/engine/Camera.hpp"
+#include "igneous/input/Input.hpp"
 #include "interspace/client/Tiles.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
+#include "interspace/network/NetworkPackets.hpp"
 #include "interspace/network/Serializer.hpp"
 #include "SDL3/SDL_log.h"
 
@@ -49,11 +52,11 @@ namespace Interspace::Client
         }
     }
 
-    void World::HandleEvents(SDL_Event& event)
+    void World::HandleEvents(Engine::InputLayer& layer)
     {
-        if (event.type == SDL_EVENT_KEY_DOWN)
+        if (layer.Is("gameplay"))
         {
-            if (event.key.key == SDLK_ESCAPE)
+            if (Engine::Input::IsKeyJustPressed(SDLK_ESCAPE))
             {
                 if (!disconnectRequested && client)
                 {
@@ -66,10 +69,29 @@ namespace Interspace::Client
                     disconnectRequested = true;
                 }
             }
-        }
-        if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-        {
-            if (event.button.button == SDL_BUTTON_LEFT)
+            if (Engine::Input::IsKeyJustPressed(SDLK_Q))
+            {
+                Faction* myFaction = nullptr;
+                for (const auto& faction : factions | std::views::values)
+                {
+                    if (faction->data.ownerId == client->clientId)
+                    {
+                        myFaction = faction.get();
+                        break;
+                    }
+                }
+                if (myFaction)
+                {
+                    std::string colonistName{"Dwayne"};
+                    std::vector<uint8_t> data{CREATE_COLONIST_REQUEST};
+
+                    Serializer serializer(data);
+                    serializer << myFaction->data.id << colonistName;
+
+                    client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
+                }
+            }
+            if (Engine::Input::IsButtonJustPressed(SDL_BUTTON_LEFT))
             {
                 Faction* colonistFaction = nullptr;
                 Colonist* selectedColonist = nullptr;
@@ -131,7 +153,7 @@ namespace Interspace::Client
                     client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
                 }
             }
-            if (event.button.button == SDL_BUTTON_RIGHT)
+            if (Engine::Input::IsButtonJustPressed(SDL_BUTTON_RIGHT))
             {
                 for (const auto& faction : factions | std::views::values)
                 {
@@ -155,31 +177,6 @@ namespace Interspace::Client
 
                         client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
                     }
-                }
-            }
-        }
-        if (event.type == SDL_EVENT_KEY_DOWN)
-        {
-            if (event.key.key == SDLK_Q)
-            {
-                Faction* myFaction = nullptr;
-                for (const auto& faction : factions | std::views::values)
-                {
-                    if (faction->data.ownerId == client->clientId)
-                    {
-                        myFaction = faction.get();
-                        break;
-                    }
-                }
-                if (myFaction)
-                {
-                    std::string colonistName{"Dwayne"};
-                    std::vector<uint8_t> data{CREATE_COLONIST_REQUEST};
-
-                    Serializer serializer(data);
-                    serializer << myFaction->data.id << colonistName;
-
-                    client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
                 }
             }
         }

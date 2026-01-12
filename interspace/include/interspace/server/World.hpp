@@ -2,6 +2,8 @@
 
 #include <queue>
 
+#include "igneous/input/InputEvent.hpp"
+#include "igneous/input/InputLayer.hpp"
 #include "SDL3/SDL_events.h"
 
 #include "interspace/server/Server.hpp"
@@ -45,7 +47,6 @@ namespace Interspace::Server
         void Init();
         void Update(float delta);
         void Render();
-        void HandleEvents(SDL_Event& event);
         void Clean();
 
     public:

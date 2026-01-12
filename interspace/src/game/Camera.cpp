@@ -4,8 +4,9 @@
 
 #include "SDL3/SDL.h"
 
-#include "igneous/Input.hpp"
-#include "igneous/Window.hpp"
+#include "igneous/input/Input.hpp"
+#include "igneous/rendering/Window.hpp"
+#include "interspace/game/Game.hpp"
 #include "interspace/world/WorldInterface.hpp"
 
 namespace Interspace
@@ -26,29 +27,17 @@ namespace Interspace
 
     void Camera::Update(float delta)
     {
-        float mSpeed = moveSpeed * 32 / zoom;
-
-        if (Input::IsKeyDown(SDLK_LSHIFT))
-            mSpeed *= 2;
-
-        mSpeed *= delta;
-
-        if (Input::IsKeyDown(SDLK_W))
-            targetPosition.y -= mSpeed;
-        if (Input::IsKeyDown(SDLK_S))
-            targetPosition.y += mSpeed;
-        if (Input::IsKeyDown(SDLK_A))
-            targetPosition.x -= mSpeed;
-        if (Input::IsKeyDown(SDLK_D))
-            targetPosition.x += mSpeed;
-
         float tPos = std::min(delta * panSpeed, 1.0f);
         float tZoom = std::min(delta * zoomSpeed, 1.0f);
+
+        Engine::Vec2<float> velocityNorm = velocity.Normalized();
+        targetPosition.y += velocityNorm.y * (moveSpeed * Client::World::worldData->TILE_SIZE / zoom) * moveSpeedMultiplier * delta;
+        targetPosition.x += velocityNorm.x * (moveSpeed * Client::World::worldData->TILE_SIZE / zoom) * moveSpeedMultiplier * delta;
 
         if (targetPosition != position)
         {
             position = position + (targetPosition - position) * tPos;
-            if (position.DistanceTo(targetPosition) < 0.1f)
+            if (position.DistanceTo(targetPosition) <= 2.0f)
                 position = targetPosition;
 
             if (limitBounds)
@@ -65,19 +54,38 @@ namespace Interspace
         }
     }
 
-    void Interspace::Camera::HandleEvents(SDL_Event &event)
+    void Camera::HandleEvents(Engine::InputLayer& layer)
     {
-        if (event.type == SDL_EVENT_MOUSE_MOTION && Input::IsMouseButtonDown(SDL_BUTTON_MIDDLE))
+        if (layer.Is("gameplay"))
         {
-            targetPosition.x -= event.motion.xrel / zoom;
-            targetPosition.y -= event.motion.yrel / zoom;
-            targetPosition = ClampToBounds(targetPosition);
-        }
-        if (event.type == SDL_EVENT_MOUSE_WHEEL)
-        {
-            if (event.wheel.y > 0)
+            if (Engine::Input::IsKeyJustPressed(SDLK_LSHIFT))
+                moveSpeedMultiplier = 2;
+            if (Engine::Input::IsKeyJustReleased(SDLK_LSHIFT))
+                moveSpeedMultiplier = 1;
+
+            velocity.x = 0;
+            velocity.y = 0;
+            if (Engine::Input::IsKeyDown(SDLK_W))
+                velocity.y -= 1;
+            if (Engine::Input::IsKeyDown(SDLK_S))
+                velocity.y += 1;
+            if (Engine::Input::IsKeyDown(SDLK_A))
+                velocity.x -= 1;
+            if (Engine::Input::IsKeyDown(SDLK_D))
+                velocity.x += 1;
+
+            if (Engine::Input::IsMouseButtonDown(SDL_BUTTON_MIDDLE))
+            {
+                Engine::Vec2<float> mouseVel = Engine::Input::GetMouseVelocity();
+                targetPosition.x -= mouseVel.x / zoom;
+                targetPosition.y -= mouseVel.y / zoom;
+                targetPosition = ClampToBounds(targetPosition);
+            }
+
+            Engine::Vec2<float> mouseWheelVel = Engine::Input::GetMouseWheelVelocity();
+            if (mouseWheelVel.y > 0)
                 targetZoom *= 1.1f;
-            else if (event.wheel.y < 0)
+            else if (mouseWheelVel.y < 0)
                 targetZoom *= 0.9f;
 
             if (targetZoom < minZoom)
@@ -90,24 +98,25 @@ namespace Interspace
                 targetZoom = ClampToBounds(targetZoom);
                 targetPosition = ClampToBounds(targetPosition, targetZoom);
             }
-        }
-        if (event.type == SDL_EVENT_WINDOW_RESIZED)
-        {
-            Engine::Vec2<int> newViewport = Engine::Window::viewport;
 
-            float newViewportW = newViewport.x;
+            if (Engine::Input::IsWindowResized())
+            {
+                Engine::Vec2<int> newViewport = Engine::Window::viewport;
 
-            float oldZoom = targetZoom;
-            float oldViewportW = oldViewport.x;
+                float newViewportW = newViewport.x;
 
-            float oldVisibleWorldW = oldViewportW / oldZoom;
+                float oldZoom = targetZoom;
+                float oldViewportW = oldViewport.x;
 
-            float newZoom = newViewportW / oldVisibleWorldW;
+                float oldVisibleWorldW = oldViewportW / oldZoom;
 
-            newZoom = std::clamp(newZoom, minZoom, maxZoom);
+                float newZoom = newViewportW / oldVisibleWorldW;
 
-            targetZoom = newZoom;
-            oldViewport = newViewport;
+                newZoom = std::clamp(newZoom, minZoom, maxZoom);
+
+                targetZoom = newZoom;
+                oldViewport = newViewport;
+            }
         }
     }
 }
