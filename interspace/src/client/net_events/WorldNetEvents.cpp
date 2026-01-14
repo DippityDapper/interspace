@@ -2,14 +2,14 @@
 
 #include "interspace/client/Tiles.hpp"
 #include "interspace/client/World.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../../igneous/include/igneous/networking/Serializer.hpp"
 #include "SDL3/SDL_log.h"
 
 namespace Interspace::Client
 {
     void World::OnWorldDataReceived(const std::vector<uint8_t>& data)
     {
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer
             >> worldData->worldSizeX
             >> worldData->worldSizeY
@@ -46,7 +46,7 @@ namespace Interspace::Client
         uint16_t chunkX = 0;
         uint16_t chunkY = 0;
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> chunkX >> chunkY;
 
         Engine::Vec2<uint16_t> chunkPos{chunkX, chunkY};

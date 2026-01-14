@@ -13,14 +13,17 @@ namespace Interspace
 {
     class Game: public Engine::Scene
     {
+    private:
+        static inline bool pendingDisconnect = false;
+
     public:
         static inline std::unique_ptr<Server::Server> server = nullptr;
         static inline std::unique_ptr<Client::Client> client = nullptr;
 
         static inline std::unique_ptr<WorldInterface> world = nullptr;
 
-        static inline std::unique_ptr<NetInterface> serverNetInterface = nullptr;
-        static inline std::unique_ptr<NetInterface> clientNetInterface = nullptr;
+        static inline std::unique_ptr<Engine::NetworkInterface> serverNetInterface = nullptr;
+        static inline std::unique_ptr<Engine::NetworkInterface> clientNetInterface = nullptr;
 
         static inline MainMenu* mainMenu = nullptr;
 

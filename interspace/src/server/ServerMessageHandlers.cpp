@@ -3,7 +3,7 @@
 #include "igneous/engine/Database.hpp"
 #include "interspace/game/Game.hpp"
 #include "SDL3/SDL_log.h"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../igneous/include/igneous/networking/Serializer.hpp"
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/network/NetworkPackets.hpp"
 
@@ -12,7 +12,7 @@ namespace Interspace::Server
     void Server::HandleConnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from)
     {
         std::string username{};
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> username;
 
         if (!DBHelper::PlayerExistsByName(username))
@@ -32,13 +32,13 @@ namespace Interspace::Server
         uint32_t newId = DBHelper::GetPlayerIdByName(username);
 
         std::vector<uint8_t> response{CONNECTION_ACCEPTED};
-        Serializer responseSerializer(response);
+        Engine::Serializer responseSerializer(response);
         responseSerializer << newId;
 
         netInterface->SendToClient(from, response, ENET_PACKET_FLAG_RELIABLE);
 
         std::vector<uint8_t> newClientData{CLIENT_CONNECTED};
-        Serializer broadcastSerializer(newClientData);
+        Engine::Serializer broadcastSerializer(newClientData);
 
         broadcastSerializer
             << newId
@@ -53,7 +53,7 @@ namespace Interspace::Server
             uint32_t peerId = peer.first;
             std::string peerUsername = idToUsernameLookup[peerId];
 
-            Serializer peerSerializer(peerData);
+            Engine::Serializer peerSerializer(peerData);
             peerSerializer
                 << peerId
                 << peerUsername;
@@ -71,7 +71,7 @@ namespace Interspace::Server
     void Server::HandleDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from)
     {
         uint32_t clientId = 0;
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> clientId;
 
         if (peers.contains(clientId))
@@ -84,7 +84,7 @@ namespace Interspace::Server
             netInterface->SendToClient(from, acknowledgment, ENET_PACKET_FLAG_RELIABLE);
 
             std::vector<uint8_t> notifyAllData{CLIENT_DISCONNECTED};
-            Serializer notifySerializer(notifyAllData);
+            Engine::Serializer notifySerializer(notifyAllData);
             notifySerializer << clientId;
 
             for (const auto& client : peers)
@@ -120,7 +120,7 @@ namespace Interspace::Server
         idToUsernameLookup.erase(clientId);
 
         std::vector<uint8_t> notifyAllData{CLIENT_DISCONNECTED};
-        Serializer notifySerializer(notifyAllData);
+        Engine::Serializer notifySerializer(notifyAllData);
         notifySerializer << clientId;
 
         for (const auto& client : peers)

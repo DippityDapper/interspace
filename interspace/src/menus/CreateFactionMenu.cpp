@@ -5,7 +5,7 @@
 #include "igneous/rendering/Window.hpp"
 #include "interspace/game/Game.hpp"
 #include "interspace/network/NetworkPackets.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../igneous/include/igneous/networking/Serializer.hpp"
 #include "SDL3/SDL_log.h"
 
 namespace Interspace
@@ -91,7 +91,7 @@ namespace Interspace
         }
 
         std::vector<uint8_t> data{CREATE_FACTION_REQUEST};
-        Serializer serializer(data);
+        Engine::Serializer serializer(data);
 
         serializer
             << client->clientId
@@ -111,7 +111,7 @@ namespace Interspace
 
     void CreateFactionMenu::OnFactionDenied(const std::vector<uint8_t>& data)
     {
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> errorMessage;
 
         awaitingResponse = false;

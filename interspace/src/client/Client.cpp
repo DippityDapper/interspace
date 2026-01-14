@@ -1,29 +1,53 @@
 #include "interspace/client/Client.hpp"
 
+#include "igneous/networking/NetworkManager.hpp"
 #include "interspace/game/Game.hpp"
 #include "interspace/network/NetworkPackets.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "igneous/networking/Serializer.hpp"
 
 namespace Interspace::Client
 {
-    Client::Client(NetInterface* _netInterface, const std::string& _username)
+    Client::Client(Engine::NetworkInterface* _netInterface, const std::string& _username)
     {
         RegisterMessageHandlers();
 
         netInterface = _netInterface;
-        netInterface->clientMessageHandler = [this](const std::vector<uint8_t>& data)
-        {
-            this->HandleMessage(data);
-        };
+        Engine::NetworkManager::BindMessageHandler(netInterface, this, &Client::OnMessageReceived);
 
         username = _username;
 
         std::vector<uint8_t> msg{CONNECTION_REQUEST};
 
-        Serializer serializer(msg);
+        Engine::Serializer serializer(msg);
         serializer << username;
 
         netInterface->SendToServer(msg, ENET_PACKET_FLAG_RELIABLE);
+    }
+
+    void Client::OnMessageReceived(const Engine::NetworkMessage &message)
+    {
+        switch (message.type)
+        {
+            case Engine::NetworkEventType::Message:
+            {
+                HandleMessage(message.data);
+                break;
+            }
+            case Engine::NetworkEventType::ClientConnected:
+            {
+                EmitEvent(CONNECTION_REQUEST, message.data);
+                break;
+            }
+            case Engine::NetworkEventType::ClientDisconnected:
+            {
+                break;
+            }
+            case Engine::NetworkEventType::ServerDisconnected:
+            {
+                EmitEvent(DISCONNECTION_ACKNOWLEDGED, message.data);
+                break;
+            }
+        }
     }
 
     void Client::RegisterMessageHandlers()
@@ -55,7 +79,7 @@ namespace Interspace::Client
         return true;
     }
 
-    void Client::HandleMessage(std::vector<uint8_t> data)
+    void Client::HandleMessage(const std::vector<uint8_t>& data)
     {
         if (!netInterface)
             return;

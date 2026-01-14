@@ -8,7 +8,7 @@
 #include "enet/enet.h"
 
 #include "interspace/server/ServerNetEvent.hpp"
-#include "interspace/network/NetInterface.hpp"
+#include "igneous/networking/NetworkInterface.hpp"
 
 namespace Interspace::Server
 {
@@ -22,10 +22,13 @@ namespace Interspace::Server
         std::unordered_map<uint32_t, std::string> idToUsernameLookup{};
 
     public:
-        NetInterface* netInterface = nullptr;
+        Engine::NetworkInterface* netInterface = nullptr;
+
+    private:
+        void OnMessageReceived(const Engine::NetworkMessage& message);
 
     public:
-        explicit Server(NetInterface* _netInterface);
+        explicit Server(Engine::NetworkInterface* _netInterface);
         void HandleMessage(const std::vector<uint8_t>& data, ENetPeer* from);
 
         void RegisterMessageHandlers();

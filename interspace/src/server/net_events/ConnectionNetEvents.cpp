@@ -1,4 +1,4 @@
-#include "interspace/network/Serializer.hpp"
+#include "../../../../../igneous/include/igneous/networking/Serializer.hpp"
 #include "interspace/server/World.hpp"
 
 namespace Interspace::Server
@@ -7,7 +7,7 @@ namespace Interspace::Server
     {
         uint32_t clientId = 0;
         std::string username{};
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> clientId >> username;
 
         SendWorldData(from);
@@ -21,7 +21,7 @@ namespace Interspace::Server
     {
         uint32_t clientId = 0;
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> clientId;
 
         BroadcastColonistDeselectAllData(clientId);

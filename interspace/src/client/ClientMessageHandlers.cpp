@@ -1,20 +1,20 @@
 #include "interspace/client/Client.hpp"
 
 #include "interspace/game/Game.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../igneous/include/igneous/networking/Serializer.hpp"
 
 namespace Interspace::Client
 {
     void Client::HandleConnectionAccepted(const std::vector<uint8_t>& data)
     {
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> clientId;
     }
 
     void Client::HandleClientDisconnected(const std::vector<uint8_t>& data)
     {
         uint32_t peerId = 0;
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> peerId;
 
         std::string peerUsername = peers[peerId];
@@ -28,7 +28,7 @@ namespace Interspace::Client
         uint32_t peerId = 0;
         std::string peerUsername{};
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer
             >> peerId
             >> peerUsername;

@@ -2,19 +2,45 @@
 
 #include <string>
 
+#include "igneous/networking/NetworkManager.hpp"
 #include "interspace/network/NetworkPackets.hpp"
+#include "SDL3/SDL_log.h"
 
 namespace Interspace::Server
 {
-    Server::Server(NetInterface* _netInterface)
+    Server::Server(Engine::NetworkInterface* _netInterface)
     {
         RegisterMessageHandlers();
 
         netInterface = _netInterface;
-        netInterface->serverMessageHandler = [this](const std::vector<uint8_t>& data, ENetPeer* peer)
+        Engine::NetworkManager::BindMessageHandler(netInterface, this, &Server::OnMessageReceived);
+    }
+
+    void Server::OnMessageReceived(const Engine::NetworkMessage &message)
+    {
+        switch (message.type)
         {
-            this->HandleMessage(data, peer);
-        };
+            case Engine::NetworkEventType::Message:
+            {
+                HandleMessage(message.data, message.peer);
+                break;
+            }
+            case Engine::NetworkEventType::ClientConnected:
+            {
+
+                EmitEvent(CONNECTION_REQUEST_, message.data, message.peer);
+                break;
+            }
+            case Engine::NetworkEventType::ClientDisconnected:
+            {
+                EmitEvent(DISCONNECTION_REQUEST_, message.data, message.peer);
+                break;
+            }
+            case Engine::NetworkEventType::ServerDisconnected:
+            {
+                break;
+            }
+        }
     }
 
     void Server::RegisterMessageHandlers()

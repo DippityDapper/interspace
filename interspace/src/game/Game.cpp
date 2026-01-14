@@ -1,14 +1,14 @@
 #include "interspace/game/Game.hpp"
 
+#include "igneous/networking/LocalNetwork.hpp"
+#include "igneous/networking/NetworkManager.hpp"
+#include "igneous/networking/RemoteNetwork.hpp"
 #include "igneous/resources/ResourceManager.hpp"
-#include "SDL3/SDL_events.h"
 
 #include "igneous/scenes/SceneManager.hpp"
 #include "interspace/game/Sounds.hpp"
 
 #include "interspace/menus/MainMenu.hpp"
-#include "interspace/network/MultiplayerInterface.hpp"
-#include "interspace/network/SingleplayerInterface.hpp"
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/world/TileRegistry.hpp"
 
@@ -30,6 +30,17 @@ namespace Interspace
 
     void Game::Update(float delta)
     {
+        if (pendingDisconnect)
+        {
+            pendingDisconnect = false;
+            world->Clean();
+            world = nullptr;
+            client = nullptr;
+            server = nullptr;
+            clientNetInterface = nullptr;
+            serverNetInterface = nullptr;
+        }
+
         if (serverNetInterface)
             serverNetInterface->Poll();
         if (clientNetInterface)
@@ -59,7 +70,7 @@ namespace Interspace
 
     bool Game::HostWorld(const std::string& worldName, int port, int peerCount, bool localOnly)
     {
-        serverNetInterface = std::make_unique<MultiplayerInterface>(port, peerCount, localOnly);
+        serverNetInterface = Engine::NetworkManager::CreateServer(port, peerCount, localOnly);
         server = std::make_unique<Server::Server>(serverNetInterface.get());
 
         if (!server->netInterface->Connected())
@@ -76,7 +87,7 @@ namespace Interspace
 
     bool Game::JoinWorld(const std::string& username, const std::string& ip, int port)
     {
-        clientNetInterface = std::make_unique<MultiplayerInterface>(port, ip);
+        clientNetInterface = Engine::NetworkManager::CreateClient(port, ip);
         client = std::make_unique<Client::Client>(clientNetInterface.get(), username);
 
         if (!client->netInterface->Connected())
@@ -93,9 +104,10 @@ namespace Interspace
 
     bool Game::LoadWorld(const std::string& worldName, const std::string& username)
     {
-        serverNetInterface = std::make_unique<SingleplayerInterface>();
+        Engine::NetworkManager::CreateLocalNetwork(serverNetInterface, clientNetInterface);
+
         server = std::make_unique<Server::Server>(serverNetInterface.get());
-        client = std::make_unique<Client::Client>(serverNetInterface.get(), username);
+        client = std::make_unique<Client::Client>(clientNetInterface.get(), username);
 
         if (!client->netInterface->Connected())
             return false;
@@ -112,11 +124,6 @@ namespace Interspace
 
     void Game::Disconnect()
     {
-        world->Clean();
-        world = nullptr;
-        client = nullptr;
-        server = nullptr;
-        clientNetInterface = nullptr;
-        serverNetInterface = nullptr;
+        pendingDisconnect = true;
     }
 }

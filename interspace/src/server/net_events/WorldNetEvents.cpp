@@ -2,7 +2,7 @@
 
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/network/NetworkPackets.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../../igneous/include/igneous/networking/Serializer.hpp"
 #include "interspace/server/World.hpp"
 
 namespace Interspace::Server
@@ -10,7 +10,7 @@ namespace Interspace::Server
     void World::SendWorldData(ENetPeer* to)
     {
         std::vector<uint8_t> data{WORLD_DATA_PACKET};
-        Serializer serializer(data);
+        Engine::Serializer serializer(data);
 
         serializer
             << worldData->worldSizeX
@@ -28,7 +28,7 @@ namespace Interspace::Server
                 continue;
 
             std::vector<uint8_t> chunkData{CHUNK_GENERATED_PACKET};
-            Serializer serializer(chunkData);
+            Engine::Serializer serializer(chunkData);
 
             serializer
                 << chunk->data.position.x
@@ -55,7 +55,7 @@ namespace Interspace::Server
             return;;
 
         std::vector<uint8_t> chunkData{CHUNK_GENERATED_PACKET};
-        Serializer serializer(chunkData);
+        Engine::Serializer serializer(chunkData);
 
         serializer
             << chunk->data.position.x

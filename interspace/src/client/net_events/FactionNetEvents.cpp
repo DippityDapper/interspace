@@ -2,13 +2,13 @@
 #include "igneous/scenes/SceneManager.hpp"
 #include "interspace/client/World.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../../igneous/include/igneous/networking/Serializer.hpp"
 
 namespace Interspace::Client
 {
     void World::OnFactionDataReceived(const std::vector<uint8_t>& data)
     {
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
 
         uint32_t factionCount = 0;
         deserializer >> factionCount;

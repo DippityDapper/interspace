@@ -1,7 +1,7 @@
 #include <ranges>
 
 #include "interspace/network/NetworkPackets.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../../igneous/include/igneous/networking/Serializer.hpp"
 #include "interspace/server/World.hpp"
 
 namespace Interspace::Server
@@ -13,7 +13,7 @@ namespace Interspace::Server
         float colonistPositionX = 0;
         float colonistPositionY = 0;
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer
             >> factionId
             >> colonistId
@@ -39,7 +39,7 @@ namespace Interspace::Server
         uint16_t colonistId = 0;
         uint32_t clientId = 0;
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer
             >> factionId
             >> colonistId
@@ -57,7 +57,7 @@ namespace Interspace::Server
 
         std::vector<uint8_t> broadcastData{COLONIST_SELECTED_PACKET};
 
-        Serializer serializer(broadcastData);
+        Engine::Serializer serializer(broadcastData);
         serializer
             << factionId
             << colonistId
@@ -71,7 +71,7 @@ namespace Interspace::Server
     {
         uint32_t clientId = 0;
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> clientId;
 
         BroadcastColonistDeselectAllData(clientId);
@@ -83,7 +83,7 @@ namespace Interspace::Server
         uint16_t colonistId = 0;
         uint32_t clientId = 0;
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer
             >> factionId
             >> colonistId
@@ -101,7 +101,7 @@ namespace Interspace::Server
 
         std::vector<uint8_t> broadcastData{COLONIST_DESELECTED_PACKET};
 
-        Serializer serializer(broadcastData);
+        Engine::Serializer serializer(broadcastData);
         serializer
             << factionId
             << colonistId
@@ -116,7 +116,7 @@ namespace Interspace::Server
         uint16_t factionId = 0;
         std::string colonistName{};
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> factionId >> colonistName;
 
         if (!factions.contains(factionId))
@@ -134,7 +134,7 @@ namespace Interspace::Server
             for (const auto& colonist : faction->colonists | std::views::values)
             {
                 std::vector<uint8_t> data{COLONIST_POSITION_PACKET};
-                Serializer serializer(data);
+                Engine::Serializer serializer(data);
 
                 serializer
                     << faction->data.id
@@ -159,7 +159,7 @@ namespace Interspace::Server
     {
         std::vector<std::tuple<uint16_t, uint16_t>> selected{};
         std::vector<uint8_t> broadcastData{COLONIST_DESELECTED_ALL_PACKET};
-        Serializer serializer(broadcastData);
+        Engine::Serializer serializer(broadcastData);
 
         for (const auto& faction : factions | std::views::values)
         {

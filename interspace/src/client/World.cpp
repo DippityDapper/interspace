@@ -8,7 +8,7 @@
 #include "interspace/client/Tiles.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
 #include "interspace/network/NetworkPackets.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../igneous/include/igneous/networking/Serializer.hpp"
 #include "SDL3/SDL_log.h"
 
 namespace Interspace::Client
@@ -61,7 +61,7 @@ namespace Interspace::Client
                 if (!disconnectRequested && client)
                 {
                     std::vector<uint8_t> request{DISCONNECTION_REQUEST};
-                    Serializer serializer(request);
+                    Engine::Serializer serializer(request);
 
                     serializer << client->clientId;
 
@@ -85,7 +85,7 @@ namespace Interspace::Client
                     std::string colonistName{"Dwayne"};
                     std::vector<uint8_t> data{CREATE_COLONIST_REQUEST};
 
-                    Serializer serializer(data);
+                    Engine::Serializer serializer(data);
                     serializer << myFaction->data.id << colonistName;
 
                     client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
@@ -123,7 +123,7 @@ namespace Interspace::Client
                     {
                         std::vector<uint8_t> data{COLONIST_SELECT_REQUEST};
 
-                        Serializer serializer(data);
+                        Engine::Serializer serializer(data);
                         serializer
                             << colonistFaction->data.id
                             << selectedColonist->entityData.id
@@ -135,7 +135,7 @@ namespace Interspace::Client
                     {
                         std::vector<uint8_t> data{COLONIST_DESELECT_REQUEST};
 
-                        Serializer serializer(data);
+                        Engine::Serializer serializer(data);
                         serializer
                             << colonistFaction->data.id
                             << selectedColonist->entityData.id
@@ -148,7 +148,7 @@ namespace Interspace::Client
                 {
                     std::vector<uint8_t> data{COLONIST_DESELECT_ALL_REQUEST};
 
-                    Serializer serializer(data);
+                    Engine::Serializer serializer(data);
                     serializer << client->clientId;
                     client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
                 }
@@ -168,7 +168,7 @@ namespace Interspace::Client
                         float posX = mousePosition.x;
                         float posY = mousePosition.y;
 
-                        Serializer serializer(data);
+                        Engine::Serializer serializer(data);
                         serializer
                             << faction->data.id
                             << colonist->entityData.id
@@ -196,9 +196,11 @@ namespace Interspace::Client
             std::vector<uint8_t>& data = chunkDataQueue.front();
 
             uint16_t chunkX = 0;
+
+
             uint16_t chunkY = 0;
 
-            Deserializer deserializer(data);
+            Engine::Deserializer deserializer(data);
             deserializer >> chunkX >> chunkY;
 
             Engine::Vec2<uint16_t> chunkPos{chunkX, chunkY};

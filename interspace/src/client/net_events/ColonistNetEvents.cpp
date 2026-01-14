@@ -1,11 +1,11 @@
 #include "interspace/client/World.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../../igneous/include/igneous/networking/Serializer.hpp"
 
 namespace Interspace::Client
 {
     void World::OnColonistPositionDataReceived(const std::vector<uint8_t>& data)
     {
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
 
         uint16_t factionId = 0;
         uint16_t colonistId = 0;
@@ -37,7 +37,7 @@ namespace Interspace::Client
         uint16_t colonistId = 0;
         uint32_t clientId = 0;
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer
             >> factionId
             >> colonistId
@@ -63,7 +63,7 @@ namespace Interspace::Client
 
     void World::OnColonistDeselectedAllDataReceived(const std::vector<uint8_t>& data)
     {
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         uint16_t selectedCount = 0;
         deserializer >> selectedCount;
         for (int i = 0; i < selectedCount; i++)
@@ -93,7 +93,7 @@ namespace Interspace::Client
         uint16_t colonistId = 0;
         uint32_t clientId = 0;
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer
             >> factionId
             >> colonistId

@@ -1,7 +1,7 @@
 #include <ranges>
 
 #include "interspace/network/NetworkPackets.hpp"
-#include "interspace/network/Serializer.hpp"
+#include "../../../../../igneous/include/igneous/networking/Serializer.hpp"
 #include "interspace/server/World.hpp"
 
 namespace Interspace::Server
@@ -11,7 +11,7 @@ namespace Interspace::Server
         uint32_t playerId = 0;
         std::string factionName{};
 
-        Deserializer deserializer(data);
+        Engine::Deserializer deserializer(data);
         deserializer >> playerId >> factionName;
 
         uint16_t factionId = AddFaction(factionName, playerId);
@@ -20,7 +20,7 @@ namespace Interspace::Server
             std::vector<uint8_t> deniedData{CREATE_FACTION_DENIED};
 
             std::string errorMessage{"Faction already exists."};
-            Serializer serializer(deniedData);
+            Engine::Serializer serializer(deniedData);
             serializer << errorMessage;
 
             server->netInterface->SendToClient(from, deniedData, ENET_PACKET_FLAG_RELIABLE);
@@ -38,7 +38,7 @@ namespace Interspace::Server
     void World::SendFactionData(ENetPeer* to)
     {
         std::vector<uint8_t> data{FACTION_DATA_PACKET};
-        Serializer serializer(data);
+        Engine::Serializer serializer(data);
 
         int32_t factionsCount = factions.size();
         serializer << factionsCount;
@@ -81,7 +81,7 @@ namespace Interspace::Server
     void World::BroadcastFactionData(uint16_t factionId)
     {
         std::vector<uint8_t> data{FACTION_DATA_PACKET};
-        Serializer serializer(data);
+        Engine::Serializer serializer(data);
 
         if (!factions.contains(factionId))
             return;

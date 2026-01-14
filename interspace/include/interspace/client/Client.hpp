@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "interspace/client/ClientNetEvent.hpp"
-#include "interspace/network/NetInterface.hpp"
+#include "igneous/networking/NetworkInterface.hpp"
 
 namespace Interspace::Client
 {
@@ -19,14 +19,17 @@ namespace Interspace::Client
         std::unordered_map<uint32_t, std::string> peers{};
 
     public:
-        NetInterface* netInterface = nullptr;
+        Engine::NetworkInterface* netInterface = nullptr;
 
         std::string username;
         uint32_t clientId = 0;
 
+    private:
+        void OnMessageReceived(const Engine::NetworkMessage& message);
+
     public:
-        Client(NetInterface* _netInterface, const std::string& _username);
-        void HandleMessage(std::vector<uint8_t>);
+        Client(Engine::NetworkInterface* _netInterface, const std::string& _username);
+        void HandleMessage(const std::vector<uint8_t>& data);
 
         void RegisterMessageHandlers();
         void RegisterMessageHandler(uint8_t messageType, void(Client::* callback)(const std::vector<uint8_t>& data));

@@ -39,4 +39,4 @@ namespace Interspace
         void OnFactionAccepted(const std::vector<uint8_t>& data);
         void OnFactionDenied(const std::vector<uint8_t>& data);
     };
-} // Interspace
+}

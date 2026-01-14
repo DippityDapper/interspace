@@ -6,8 +6,6 @@
 #include "interspace/client/World.hpp"
 #include "interspace/server/World.hpp"
 
-#include "SDL3/SDL_events.h"
-
 namespace Interspace
 {
     namespace Client
