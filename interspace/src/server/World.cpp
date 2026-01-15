@@ -4,22 +4,22 @@
 
 #include "SDL3/SDL_log.h"
 
-#include "igneous/engine/CFGParser.hpp"
 #include "igneous/engine/Database.hpp"
 #include "interspace/game/DBHelper.hpp"
-#include "interspace/game/Game.hpp"
 #include "interspace/server/Tiles.hpp"
 
 namespace Interspace::Server
 {
-    World::World(Server* _server, const std::string& _worldName)
+    void World::Init()
+    {
+
+    }
+
+    void World::InitWorld(Server* _server, const std::string& _worldName)
     {
         server = _server;
         worldName = _worldName;
-    }
 
-    void World::Init()
-    {
         Tiles::Init();
         DBHelper::UpdateWorldLastPlayed(worldName);
 

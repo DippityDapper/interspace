@@ -8,6 +8,6 @@ namespace Interspace
     {
     public:
         void Init() override;
-        void Render() override;
+        void UI(Engine::InputLayer& layer) override;
     };
 }

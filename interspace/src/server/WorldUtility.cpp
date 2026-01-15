@@ -3,7 +3,6 @@
 
 #include "igneous/engine/Database.hpp"
 #include "interspace/game/DBHelper.hpp"
-#include "interspace/game/Game.hpp"
 #include "interspace/server/Tiles.hpp"
 #include "interspace/server/World.hpp"
 #include "SDL3/SDL_log.h"

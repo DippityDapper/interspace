@@ -1,7 +1,7 @@
 #include "interspace/menus/DebugMenu.hpp"
 
+#include "igneous/input/InputLayer.hpp"
 #include "imgui.h"
-#include "interspace/game/Game.hpp"
 
 namespace Interspace
 {
@@ -9,7 +9,8 @@ namespace Interspace
     {
     }
 
-    void DebugMenu::Render()
+
+    void DebugMenu::UI(Engine::InputLayer& layer)
     {
         ImGui::Begin("debug menu");
 

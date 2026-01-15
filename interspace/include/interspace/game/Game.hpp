@@ -5,9 +5,10 @@
 #include "igneous/scenes/Scene.hpp"
 
 #include "interspace/client/Client.hpp"
+#include "interspace/client/World.hpp"
 #include "interspace/menus/MainMenu.hpp"
 #include "interspace/server/Server.hpp"
-#include "interspace/world/WorldInterface.hpp"
+#include "interspace/server/World.hpp"
 
 namespace Interspace
 {
@@ -20,7 +21,8 @@ namespace Interspace
         static inline std::unique_ptr<Server::Server> server = nullptr;
         static inline std::unique_ptr<Client::Client> client = nullptr;
 
-        static inline std::unique_ptr<WorldInterface> world = nullptr;
+        static inline Server::World* serverWorld = nullptr;
+        static inline Client::World* clientWorld = nullptr;
 
         static inline std::unique_ptr<Engine::NetworkInterface> serverNetInterface = nullptr;
         static inline std::unique_ptr<Engine::NetworkInterface> clientNetInterface = nullptr;

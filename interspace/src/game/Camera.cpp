@@ -2,12 +2,10 @@
 
 #include <algorithm>
 
-#include "SDL3/SDL.h"
-
 #include "igneous/input/Input.hpp"
 #include "igneous/rendering/Window.hpp"
-#include "interspace/game/Game.hpp"
-#include "interspace/world/WorldInterface.hpp"
+
+#include "interspace/client/World.hpp"
 
 namespace Interspace
 {

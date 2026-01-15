@@ -3,7 +3,7 @@
 #include <map>
 #include <queue>
 
-#include "SDL3/SDL_events.h"
+#include "igneous/scenes/Scene.hpp"
 
 #include "interspace/client/Client.hpp"
 #include "interspace/world/WorldData.hpp"
@@ -13,9 +13,9 @@
 
 namespace Interspace::Client
 {
-    class World
+    class World : public Engine::Scene
     {
-    private:
+      private:
         Client* client = nullptr;
         bool disconnectRequested = false;
 
@@ -25,25 +25,26 @@ namespace Interspace::Client
         float chunkGenerationClock = 0.05f;
         float chunkGenerationTimer = 0.0f;
 
-    public:
+      public:
         static inline std::unique_ptr<WorldData> worldData{};
 
         std::map<Engine::Vec2<uint16_t>, std::unique_ptr<Chunk>> chunks{};
         std::queue<std::vector<uint8_t>> chunkDataQueue{};
         std::map<uint8_t, std::unique_ptr<Faction>> factions{};
 
-    public:
-        explicit World(Client* _client);
-
-        void Init();
-        void Update(float delta);
-        void Render();
-        void HandleEvents(Engine::InputLayer& layer);
-        void Clean();
+      public:
+        void Init() override;
+        void Update(float delta) override;
+        void Render() override;
+        void HandleEvents(Engine::InputLayer& layer) override;
+        void Clean() override;
 
         void GenerateChunks();
 
-    private:
+      public:
+        void InitWorld(Client* _client);
+
+      private:
         void RegisterNetEvents();
 
         void OnDisconnectAcknowledged(const std::vector<uint8_t>& data);

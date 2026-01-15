@@ -1,15 +1,15 @@
 #include "interspace/game/Game.hpp"
 
-#include "igneous/networking/LocalNetwork.hpp"
-#include "igneous/networking/NetworkManager.hpp"
-#include "igneous/networking/RemoteNetwork.hpp"
 #include "igneous/resources/ResourceManager.hpp"
+#include "igneous/networking/NetworkManager.hpp"
 
 #include "igneous/scenes/SceneManager.hpp"
+#include "igneous/scenes/SceneRoot.hpp"
 #include "interspace/game/Sounds.hpp"
 
 #include "interspace/menus/MainMenu.hpp"
 #include "interspace/game/DBHelper.hpp"
+#include "interspace/server/World.hpp"
 #include "interspace/world/TileRegistry.hpp"
 
 namespace Interspace
@@ -33,8 +33,10 @@ namespace Interspace
         if (pendingDisconnect)
         {
             pendingDisconnect = false;
-            world->Clean();
-            world = nullptr;
+            root->RemoveScene("client_world");
+            clientWorld = nullptr;
+            root->RemoveScene("server_world");
+            serverWorld = nullptr;
             client = nullptr;
             server = nullptr;
             clientNetInterface = nullptr;
@@ -45,27 +47,18 @@ namespace Interspace
             serverNetInterface->Poll();
         if (clientNetInterface)
             clientNetInterface->Poll();
-
-        if (world)
-            world->Update(delta);
     }
 
     void Game::Render()
     {
-        if (world)
-            world->Render();
     }
 
     void Game::HandleEvents(Engine::InputLayer& layer)
     {
-        if (world)
-            world->HandleEvents(layer);
     }
 
     void Game::Clean()
     {
-        if (world)
-            world->Clean();
     }
 
     bool Game::HostWorld(const std::string& worldName, int port, int peerCount, bool localOnly)
@@ -76,12 +69,12 @@ namespace Interspace
         if (!server->netInterface->Connected())
             return false;
 
-        if (!world)
-            world = std::make_unique<WorldInterface>();
+        if (!serverWorld)
+        {
+            serverWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Server::World>("server_world", true, false);
+        }
 
-        world->SetServer(server.get(), worldName);
-        world->Init();
-
+        serverWorld->InitWorld(server.get(), worldName);
         return true;
     }
 
@@ -93,11 +86,12 @@ namespace Interspace
         if (!client->netInterface->Connected())
             return false;
 
-        if (!world)
-            world = std::make_unique<WorldInterface>();
+        if (!clientWorld)
+        {
+            clientWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Client::World>("client_world", true, false);
+        }
 
-        world->SetClient(client.get());
-        world->Init();
+        clientWorld->InitWorld(client.get());
 
         return true;
     }
@@ -112,12 +106,18 @@ namespace Interspace
         if (!client->netInterface->Connected())
             return false;
 
-        if (!world)
-            world = std::make_unique<WorldInterface>();
+        if (!serverWorld)
+        {
+            serverWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Server::World>("server_world", true, false);
+        }
 
-        world->SetServer(server.get(), worldName);
-        world->SetClient(client.get());
-        world->Init();
+        if (!clientWorld)
+        {
+            clientWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Client::World>("client_world", true, false);
+        }
+        
+        serverWorld->InitWorld(server.get(), worldName);
+        clientWorld->InitWorld(client.get());
 
         return true;
     }

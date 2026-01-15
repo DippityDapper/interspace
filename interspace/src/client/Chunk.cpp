@@ -9,7 +9,7 @@ namespace Interspace::Client
 {
     Chunk::Chunk(const Engine::Vec2<uint16_t>& pos)
     {
-        WorldData* worldData = Game::world->clientWorld->worldData.get();
+        WorldData* worldData = Game::clientWorld->worldData.get();
 
         data.position = pos;
         position = (Engine::Vec2<float>)pos * worldData->CHUNK_SIZE * worldData->TILE_SIZE;
@@ -38,7 +38,7 @@ namespace Interspace::Client
 
     void Chunk::UpdateTile(const Engine::Vec2<uint8_t>& tilePos, Tile* tile)
     {
-        WorldData* worldData = Game::world->clientWorld->worldData.get();
+        WorldData* worldData = Game::clientWorld->worldData.get();
         Engine::Vec2<float> tileLocalPos{(float)tilePos.x * worldData->TILE_SIZE, (float)tilePos.y * worldData->TILE_SIZE};
 
         Engine::Renderer::BufferAdd(tileLocalPos, tile->sprite.get());
@@ -48,7 +48,7 @@ namespace Interspace::Client
     {
         for (const auto& newTile : newTiles)
         {
-            WorldData* worldData = Game::world->clientWorld->worldData.get();
+            WorldData* worldData = Game::clientWorld->worldData.get();
             Tile* tile = newTile.second;
             Engine::Vec2<uint8_t> tilePos = newTile.first;
             Engine::Vec2<float> tileLocalPos{(float)tilePos.x * worldData->TILE_SIZE, (float)tilePos.y * worldData->TILE_SIZE};

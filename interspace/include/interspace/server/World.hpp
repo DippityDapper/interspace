@@ -2,19 +2,15 @@
 
 #include <queue>
 
-#include "igneous/input/InputEvent.hpp"
-#include "igneous/input/InputLayer.hpp"
-#include "SDL3/SDL_events.h"
-
+#include "igneous/scenes/Scene.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/world/WorldData.hpp"
 #include "interspace/server/Chunk.hpp"
 #include "interspace/server/Faction.hpp"
-#include "SQLiteCpp/Database.h"
 
 namespace Interspace::Server
 {
-    class World
+    class World : public Engine::Scene
     {
     private:
         Server* server = nullptr;
@@ -42,14 +38,13 @@ namespace Interspace::Server
         uint16_t nextEntityId = 1;
 
     public:
-        World(Server* _server, const std::string& _worldName);
-
-        void Init();
-        void Update(float delta);
-        void Render();
-        void Clean();
+        void Init() override;
+        void Update(float delta) override;
+        void Render() override;
+        void Clean() override;
 
     public:
+        void InitWorld(Server* _server, const std::string& _worldName);
         void InitFactions();
 
         uint16_t AddFaction(const std::string& factionName, uint32_t ownerId);

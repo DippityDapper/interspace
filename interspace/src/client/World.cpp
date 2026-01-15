@@ -2,24 +2,25 @@
 
 #include <ranges>
 
-#include "imgui_internal.h"
-#include "igneous/engine/Camera.hpp"
+#include "SDL3/SDL_log.h"
+
 #include "igneous/input/Input.hpp"
+#include "igneous/networking/Serializer.hpp"
+
 #include "interspace/client/Tiles.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
 #include "interspace/network/NetworkPackets.hpp"
-#include "../../../../igneous/include/igneous/networking/Serializer.hpp"
-#include "SDL3/SDL_log.h"
 
 namespace Interspace::Client
 {
-    World::World(Client* _client)
-    {
-        client = _client;
-    }
-
     void World::Init()
     {
+    }
+
+    void World::InitWorld(Client* _client)
+    {
+        client = _client;
+
         worldData = std::make_unique<WorldData>();
         RegisterNetEvents();
         Tiles::Init();
@@ -124,10 +125,8 @@ namespace Interspace::Client
                         std::vector<uint8_t> data{COLONIST_SELECT_REQUEST};
 
                         Engine::Serializer serializer(data);
-                        serializer
-                            << colonistFaction->data.id
-                            << selectedColonist->entityData.id
-                            << client->clientId;
+                        serializer << colonistFaction->data.id
+                                   << selectedColonist->entityData.id << client->clientId;
 
                         client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
                     }
@@ -136,10 +135,8 @@ namespace Interspace::Client
                         std::vector<uint8_t> data{COLONIST_DESELECT_REQUEST};
 
                         Engine::Serializer serializer(data);
-                        serializer
-                            << colonistFaction->data.id
-                            << selectedColonist->entityData.id
-                            << client->clientId;
+                        serializer << colonistFaction->data.id
+                                   << selectedColonist->entityData.id << client->clientId;
 
                         client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
                     }
@@ -169,11 +166,8 @@ namespace Interspace::Client
                         float posY = mousePosition.y;
 
                         Engine::Serializer serializer(data);
-                        serializer
-                            << faction->data.id
-                            << colonist->entityData.id
-                            << posX
-                            << posY;
+                        serializer << faction->data.id << colonist->entityData.id << posX
+                                   << posY;
 
                         client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
                     }
@@ -197,7 +191,6 @@ namespace Interspace::Client
 
             uint16_t chunkX = 0;
 
-
             uint16_t chunkY = 0;
 
             Engine::Deserializer deserializer(data);
@@ -210,7 +203,8 @@ namespace Interspace::Client
             Chunk* chunk = chunks[chunkPos].get();
 
             chunk->BeginTileUpdate();
-            for (uint16_t w = chunk->tiles.size(); w < worldData->CHUNK_SIZE * worldData->CHUNK_SIZE; w++)
+            for (uint16_t w = chunk->tiles.size();
+                 w < worldData->CHUNK_SIZE * worldData->CHUNK_SIZE; w++)
             {
                 uint8_t tileX = w % worldData->CHUNK_SIZE;
                 uint8_t tileY = w / worldData->CHUNK_SIZE;
@@ -231,7 +225,8 @@ namespace Interspace::Client
             if (chunk->tiles.size() >= worldData->CHUNK_SIZE * worldData->CHUNK_SIZE)
             {
                 chunkDataQueue.pop();
-                SDL_Log("[Client] Chunk finished at (%u, %u).", chunk->data.position.x, chunk->data.position.y);
+                SDL_Log("[Client] Chunk finished at (%u, %u).", chunk->data.position.x,
+                        chunk->data.position.y);
             }
 
             maxChunkIndex++;
