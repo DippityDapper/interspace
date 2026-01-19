@@ -6,7 +6,7 @@ namespace Interspace
 {
     class MultiplayerMenu : public Engine::Scene
     {
-    public:
+      public:
         void Init() override;
         void Render() override;
     };

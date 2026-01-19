@@ -38,14 +38,7 @@ namespace Interspace::Client
 
         std::string idStr = entityData.name + std::to_string(entityData.id);
         ImGui::Begin(
-            idStr.c_str(), nullptr,
-            ImGuiWindowFlags_NoBackground |
-            ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_NoInputs |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoDecoration |
-            ImGuiWindowFlags_AlwaysAutoResize
-        );
+                idStr.c_str(), nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
 
         ImGui::SetWindowFontScale(scale);
 

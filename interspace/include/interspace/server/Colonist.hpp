@@ -7,7 +7,7 @@ namespace Interspace::Server
 {
     class Colonist
     {
-    public:
+      public:
         EntityData entityData{};
         ColonistData colonistData{};
     };

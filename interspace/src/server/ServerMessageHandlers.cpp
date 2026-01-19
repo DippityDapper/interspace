@@ -41,10 +41,10 @@ namespace Interspace::Server
         Engine::Serializer broadcastSerializer(newClientData);
 
         broadcastSerializer
-            << newId
-            << username;
+                << newId
+                << username;
 
-        for (const auto& peer : peers)
+        for (const auto& peer: peers)
         {
             netInterface->SendToClient(peer.second, newClientData, ENET_PACKET_FLAG_RELIABLE);
 
@@ -55,8 +55,8 @@ namespace Interspace::Server
 
             Engine::Serializer peerSerializer(peerData);
             peerSerializer
-                << peerId
-                << peerUsername;
+                    << peerId
+                    << peerUsername;
 
             netInterface->SendToClient(from, peerData, ENET_PACKET_FLAG_RELIABLE);
         }
@@ -87,7 +87,7 @@ namespace Interspace::Server
             Engine::Serializer notifySerializer(notifyAllData);
             notifySerializer << clientId;
 
-            for (const auto& client : peers)
+            for (const auto& client: peers)
                 netInterface->SendToClient(client.second, notifyAllData, ENET_PACKET_FLAG_RELIABLE);
 
             SDL_Log("[Server] Client Disconnected: %s [%u]", username.c_str(), clientId);
@@ -97,13 +97,12 @@ namespace Interspace::Server
 
     void Server::HandleUnRequestedConnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from)
     {
-
     }
 
     void Server::HandleUnRequestedDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from)
     {
         uint32_t clientId = 0;
-        for (const auto& client : peers)
+        for (const auto& client: peers)
         {
             if (from == client.second)
             {
@@ -123,7 +122,7 @@ namespace Interspace::Server
         Engine::Serializer notifySerializer(notifyAllData);
         notifySerializer << clientId;
 
-        for (const auto& client : peers)
+        for (const auto& client: peers)
             netInterface->SendToClient(client.second, notifyAllData, ENET_PACKET_FLAG_RELIABLE);
 
         SDL_Log("[Server] Client Disconnected: %u", clientId);

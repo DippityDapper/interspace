@@ -28,7 +28,7 @@ namespace Interspace::Client
 
     void World::Update(float delta)
     {
-        for (const auto& faction : factions | std::views::values)
+        for (const auto& faction: factions | std::views::values)
         {
             faction->Update(delta);
         }
@@ -44,9 +44,9 @@ namespace Interspace::Client
 
     void World::Render()
     {
-        for (const auto& faction : factions | std::views::values)
+        for (const auto& faction: factions | std::views::values)
         {
-            for (const auto& colonist : faction->colonists | std::views::values)
+            for (const auto& colonist: faction->colonists | std::views::values)
             {
                 colonist->RenderName(faction->data.name);
             }
@@ -73,7 +73,7 @@ namespace Interspace::Client
             if (Engine::Input::IsKeyJustPressed(SDLK_Q))
             {
                 Faction* myFaction = nullptr;
-                for (const auto& faction : factions | std::views::values)
+                for (const auto& faction: factions | std::views::values)
                 {
                     if (faction->data.ownerId == client->clientId)
                     {
@@ -97,12 +97,12 @@ namespace Interspace::Client
                 Faction* colonistFaction = nullptr;
                 Colonist* selectedColonist = nullptr;
                 bool hasSelectedColonist = false;
-                for (const auto& faction : factions | std::views::values)
+                for (const auto& faction: factions | std::views::values)
                 {
                     if (!faction->data.members.contains(client->clientId))
                         continue;
 
-                    for (const auto& colonist : faction->colonists | std::views::values)
+                    for (const auto& colonist: faction->colonists | std::views::values)
                     {
                         if (colonist->sprite->IsMouseWithin())
                         {
@@ -152,9 +152,9 @@ namespace Interspace::Client
             }
             if (Engine::Input::IsButtonJustPressed(SDL_BUTTON_RIGHT))
             {
-                for (const auto& faction : factions | std::views::values)
+                for (const auto& faction: factions | std::views::values)
                 {
-                    for (const auto& colonist : faction->colonists | std::views::values)
+                    for (const auto& colonist: faction->colonists | std::views::values)
                     {
                         if (colonist->colonistData.selectedBy != client->clientId)
                             continue;
@@ -204,7 +204,8 @@ namespace Interspace::Client
 
             chunk->BeginTileUpdate();
             for (uint16_t w = chunk->tiles.size();
-                 w < worldData->CHUNK_SIZE * worldData->CHUNK_SIZE; w++)
+                 w < worldData->CHUNK_SIZE * worldData->CHUNK_SIZE;
+                 w++)
             {
                 uint8_t tileX = w % worldData->CHUNK_SIZE;
                 uint8_t tileY = w / worldData->CHUNK_SIZE;
@@ -225,8 +226,7 @@ namespace Interspace::Client
             if (chunk->tiles.size() >= worldData->CHUNK_SIZE * worldData->CHUNK_SIZE)
             {
                 chunkDataQueue.pop();
-                SDL_Log("[Client] Chunk finished at (%u, %u).", chunk->data.position.x,
-                        chunk->data.position.y);
+                SDL_Log("[Client] Chunk finished at (%u, %u).", chunk->data.position.x, chunk->data.position.y);
             }
 
             maxChunkIndex++;

@@ -5,4 +5,5 @@ build
 interspace.code-workspace
 scripts
 .vscode
-.clang--format
+.clangd
+.clang-format

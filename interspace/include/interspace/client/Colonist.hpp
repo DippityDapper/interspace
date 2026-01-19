@@ -11,13 +11,13 @@ namespace Interspace::Client
 {
     class Colonist
     {
-    public:
+      public:
         EntityData entityData{};
         ColonistData colonistData{};
 
         std::unique_ptr<Engine::Sprite> sprite = nullptr;
 
-    public:
+      public:
         Colonist();
 
         void Update(float delta);

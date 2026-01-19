@@ -21,15 +21,9 @@ namespace Interspace
 
     void WorldCreationMenu::Render()
     {
-        ImGui::SetNextWindowPos({Engine::Window::viewport.x/2.0f,Engine::Window::viewport.y/2.0f}, 0, {0.5f,0.5f});
+        ImGui::SetNextWindowPos({Engine::Window::viewport.x / 2.0f, Engine::Window::viewport.y / 2.0f}, 0, {0.5f, 0.5f});
 
-        ImGui::Begin
-        ("World Creation", nullptr,
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoMove
-         );
+        ImGui::Begin("World Creation", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
 
         ImGui::InputText("World Name", worldNameLineEdit, sizeof(worldNameLineEdit));
         ImGui::InputText("World Seed", worldSeedLineEdit, sizeof(worldSeedLineEdit));
@@ -44,13 +38,13 @@ namespace Interspace
         {
             Sounds::PlaySound("button_1", 1.0f);
             if (CreateWorld())
-                 root->LoadScene(prevMenu);
+                root->LoadScene(prevMenu);
         }
 
         if (ImGui::Button("Back"))
         {
             Sounds::PlaySound("button_back", 1.0f);
-             root->LoadScene(prevMenu);
+            root->LoadScene(prevMenu);
         }
 
         if (!message.empty())

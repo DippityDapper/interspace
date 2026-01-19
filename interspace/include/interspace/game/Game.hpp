@@ -12,12 +12,12 @@
 
 namespace Interspace
 {
-    class Game: public Engine::Scene
+    class Game : public Engine::Scene
     {
-    private:
+      private:
         static inline bool pendingDisconnect = false;
 
-    public:
+      public:
         static inline std::unique_ptr<Server::Server> server = nullptr;
         static inline std::unique_ptr<Client::Client> client = nullptr;
 
@@ -29,14 +29,14 @@ namespace Interspace
 
         static inline MainMenu* mainMenu = nullptr;
 
-    private:
+      private:
         void Init() override;
         void Update(float delta) override;
         void Render() override;
         void HandleEvents(Engine::InputLayer& layer) override;
         void Clean() override;
 
-    public:
+      public:
         static bool HostWorld(const std::string& worldName, int port, int peerCount, bool localOnly);
         static bool JoinWorld(const std::string& username, const std::string& ip, int port);
         static bool LoadWorld(const std::string& worldName, const std::string& username);

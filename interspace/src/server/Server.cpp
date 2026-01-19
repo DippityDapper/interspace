@@ -16,30 +16,29 @@ namespace Interspace::Server
         Engine::NetworkManager::BindMessageHandler(netInterface, this, &Server::OnMessageReceived);
     }
 
-    void Server::OnMessageReceived(const Engine::NetworkMessage &message)
+    void Server::OnMessageReceived(const Engine::NetworkMessage& message)
     {
         switch (message.type)
         {
-            case Engine::NetworkEventType::Message:
-            {
-                HandleMessage(message.data, message.peer);
-                break;
-            }
-            case Engine::NetworkEventType::ClientConnected:
-            {
-
-                EmitEvent(CONNECTION_REQUEST_, message.data, message.peer);
-                break;
-            }
-            case Engine::NetworkEventType::ClientDisconnected:
-            {
-                EmitEvent(DISCONNECTION_REQUEST_, message.data, message.peer);
-                break;
-            }
-            case Engine::NetworkEventType::ServerDisconnected:
-            {
-                break;
-            }
+        case Engine::NetworkEventType::Message:
+        {
+            HandleMessage(message.data, message.peer);
+            break;
+        }
+        case Engine::NetworkEventType::ClientConnected:
+        {
+            EmitEvent(CONNECTION_REQUEST_, message.data, message.peer);
+            break;
+        }
+        case Engine::NetworkEventType::ClientDisconnected:
+        {
+            EmitEvent(DISCONNECTION_REQUEST_, message.data, message.peer);
+            break;
+        }
+        case Engine::NetworkEventType::ServerDisconnected:
+        {
+            break;
+        }
         }
     }
 
@@ -51,12 +50,13 @@ namespace Interspace::Server
         RegisterMessageHandler(DISCONNECTION_REQUEST_, &Server::HandleUnRequestedDisconnectionRequest);
     }
 
-    void Server::RegisterMessageHandler(uint8_t messageType, void(Server::* callback)(const std::vector<uint8_t>& data, ENetPeer* from))
+    void Server::RegisterMessageHandler(uint8_t messageType, void (Server::*callback)(const std::vector<uint8_t>& data, ENetPeer* from))
     {
         if (messageHandler.contains(messageType))
             return;
         messageHandler.emplace(messageType, std::make_unique<ServerNetEvent>());
-        messageHandler[messageType].get()->Connect([this, callback](const std::vector<uint8_t>& data, ENetPeer* from){(this->*callback)(data, from);});
+        messageHandler[messageType].get()->Connect([this, callback](const std::vector<uint8_t>& data, ENetPeer* from)
+                                                   { (this->*callback)(data, from); });
     }
 
     void Server::CreateNetEvent(uint8_t messageType)
@@ -89,7 +89,7 @@ namespace Interspace::Server
 
     uint32_t Server::GetUserId(const std::string& username)
     {
-        for (const auto& user : idToUsernameLookup)
+        for (const auto& user: idToUsernameLookup)
         {
             if (user.second == username)
                 return user.first;
@@ -125,7 +125,7 @@ namespace Interspace::Server
     std::unordered_map<uint32_t, ENetPeer*> Server::GetPeers()
     {
         std::unordered_map<uint32_t, ENetPeer*> result{};
-        for (auto& peer : peers)
+        for (auto& peer: peers)
             result.emplace(peer.first, peer.second);
         return result;
     }

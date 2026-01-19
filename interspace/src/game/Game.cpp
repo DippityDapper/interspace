@@ -1,5 +1,7 @@
 #include "interspace/game/Game.hpp"
 
+#include "SDL3/SDL_log.h"
+#include "igneous/engine/Vec3.hpp"
 #include "igneous/resources/ResourceManager.hpp"
 #include "igneous/networking/NetworkManager.hpp"
 
@@ -69,6 +71,8 @@ namespace Interspace
         if (!server->netInterface->Connected())
             return false;
 
+        Engine::SceneManager::GetSceneRoot()->UnloadAllScenes();
+
         if (!serverWorld)
         {
             serverWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Server::World>("server_world", true, false);
@@ -85,6 +89,8 @@ namespace Interspace
 
         if (!client->netInterface->Connected())
             return false;
+
+        Engine::SceneManager::GetSceneRoot()->UnloadAllScenes();
 
         if (!clientWorld)
         {
@@ -106,6 +112,8 @@ namespace Interspace
         if (!client->netInterface->Connected())
             return false;
 
+        Engine::SceneManager::GetSceneRoot()->UnloadAllScenes();
+
         if (!serverWorld)
         {
             serverWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Server::World>("server_world", true, false);
@@ -115,7 +123,7 @@ namespace Interspace
         {
             clientWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Client::World>("client_world", true, false);
         }
-        
+
         serverWorld->InitWorld(server.get(), worldName);
         clientWorld->InitWorld(client.get());
 

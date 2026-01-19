@@ -6,7 +6,7 @@ namespace Interspace::Client
 {
     class Entity
     {
-    public:
+      public:
         EntityData entityData{};
     };
 }

@@ -29,7 +29,7 @@ namespace Interspace
 
         worlds.clear();
 
-        for (auto rows : Engine::Database::Query(DBHelper::db.get(), "SELECT * FROM world;"))
+        for (auto rows: Engine::Database::Query(DBHelper::db.get(), "SELECT * FROM world;"))
         {
             std::string worldName{rows["worldId"]};
             worlds.push_back(worldName);
@@ -61,13 +61,7 @@ namespace Interspace
         ImGui::SetNextWindowPos({viewport.x * 0.5f, viewport.y * 0.5f}, 0, {0.5f, 0.5f});
 
         ImGui::Begin(
-            "Worlds", nullptr,
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_AlwaysAutoResize
-        );
+                "Worlds", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
         float footerHeight = buttonHeight + ImGui::GetStyle().ItemSpacing.y * 2;
         float childHeight = ImGui::GetContentRegionAvail().y - footerHeight;
@@ -76,13 +70,12 @@ namespace Interspace
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(containerPadding, containerPadding));
 
         ImGui::BeginChild(
-            "worlds_container",
-            ImVec2(0, childHeight),
-            ImGuiChildFlags_None,
-            ImGuiWindowFlags_AlwaysUseWindowPadding
-        );
+                "worlds_container",
+                ImVec2(0, childHeight),
+                ImGuiChildFlags_None,
+                ImGuiWindowFlags_AlwaysUseWindowPadding);
 
-        for (const auto& worldName : worlds)
+        for (const auto& worldName: worlds)
         {
             ImGui::PushID(worldName.c_str());
             ImGui::PushStyleColor(ImGuiCol_ChildBg, entryBgColor);
@@ -90,11 +83,10 @@ namespace Interspace
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(entryPadding, entryPadding));
 
             ImGui::BeginChild(
-                "world_entry",
-                ImVec2(0, 0),
-                ImGuiChildFlags_AutoResizeY,
-                ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoScrollbar
-            );
+                    "world_entry",
+                    ImVec2(0, 0),
+                    ImGuiChildFlags_AutoResizeY,
+                    ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoScrollbar);
 
             ImGui::Text("%s", worldName.c_str());
             ImGui::SameLine();
@@ -113,14 +105,12 @@ namespace Interspace
                 {
                     if (Game::HostWorld(worldName, 33333, 32, true))
                     {
-                        if (Game::JoinWorld(username, "127.0.0.1", 33333))
-                            root->UnloadAllScenes();
+                        Game::JoinWorld(username, "127.0.0.1", 33333);
                     }
                 }
                 else
                 {
-                    if (Game::LoadWorld(worldName, username))
-                         root->UnloadAllScenes();
+                    Game::LoadWorld(worldName, username);
                 }
             }
 

@@ -10,10 +10,10 @@ namespace Interspace
 {
     class DBHelper
     {
-    public:
+      public:
         static inline std::unique_ptr<SQLite::Database> db = nullptr;
 
-    public:
+      public:
         static void InitDatabase();
 
         // ============================================================

@@ -14,7 +14,7 @@ namespace Interspace::Server
         SQLite::Database* db = DBHelper::db.get();
 
         auto factionsQuery = Engine::Database::Query(db, "SELECT * FROM faction WHERE worldId = '" + worldName + "'");
-        for (auto factionQuery : factionsQuery)
+        for (auto factionQuery: factionsQuery)
         {
             uint16_t factionId = std::stoul(factionQuery["factionId"]);
             std::string factionName{factionQuery["factionName"]};
@@ -30,7 +30,7 @@ namespace Interspace::Server
             faction->data.ownerId = ownerId;
 
             auto factionMembersQuery = Engine::Database::Query(db, "SELECT playerId FROM factionMember WHERE factionId = " + std::to_string(factionId));
-            for (auto factionMemberQuery : factionMembersQuery)
+            for (auto factionMemberQuery: factionMembersQuery)
             {
                 uint32_t playerId = std::stoul(factionMemberQuery["playerId"]);
                 std::string playerName = server->GetUsername(playerId);
@@ -38,9 +38,9 @@ namespace Interspace::Server
             }
 
             auto colonistsQuery = Engine::Database::Query(db,
-                "SELECT colonistId, colonistName FROM colonist WHERE factionId = " +
-                std::to_string(factionId) + " AND worldId = '" + worldName + "'");
-            for (auto colonistQuery : colonistsQuery)
+                                                          "SELECT colonistId, colonistName FROM colonist WHERE factionId = " +
+                                                                  std::to_string(factionId) + " AND worldId = '" + worldName + "'");
+            for (auto colonistQuery: colonistsQuery)
             {
                 uint16_t colonistId = std::stoul(colonistQuery["colonistId"]);
                 std::string colonistName = colonistQuery["colonistName"];
@@ -127,15 +127,15 @@ namespace Interspace::Server
         if (faction->colonists.empty())
         {
             std::uniform_int_distribution posXDist(0, worldData->worldSizeX * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
-            posX = (float)posXDist(gen);
+            posX = (float) posXDist(gen);
 
             std::uniform_int_distribution posYDist(0, worldData->worldSizeY * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
-            posY = (float)posYDist(gen);
+            posY = (float) posYDist(gen);
         }
         else
         {
             Colonist* selectedColonist = nullptr;
-            for (const auto& colonist : faction->colonists | std::views::values)
+            for (const auto& colonist: faction->colonists | std::views::values)
             {
                 selectedColonist = colonist.get();
                 break;
@@ -164,10 +164,10 @@ namespace Interspace::Server
                 maxY = std::clamp(maxY, minWorldY, maxWorldY);
 
                 std::uniform_int_distribution<> posXDist(minX, maxX);
-                posX = (float)posXDist(gen);
+                posX = (float) posXDist(gen);
 
                 std::uniform_int_distribution<> posYDist(minY, maxY);
-                posY = (float)posYDist(gen);
+                posY = (float) posYDist(gen);
             }
         }
 
@@ -245,7 +245,7 @@ namespace Interspace::Server
 
             bool isOnlyFactionless = true;
             bool isInFactionless = false;
-            for (auto factionId : playerFactionsIds)
+            for (auto factionId: playerFactionsIds)
             {
                 if (factionId != factionlessId)
                 {
@@ -261,11 +261,11 @@ namespace Interspace::Server
 
             if (!isOnlyFactionless && isInFactionless)
             {
-                    LeaveFaction(factionlessId, playerId);
-                    playerFactionsIds = DBHelper::GetPlayerFactionIds(worldName, playerId);
+                LeaveFaction(factionlessId, playerId);
+                playerFactionsIds = DBHelper::GetPlayerFactionIds(worldName, playerId);
             }
 
-            for (auto factionId : playerFactionsIds)
+            for (auto factionId: playerFactionsIds)
             {
                 JoinFaction(factionId, playerId);
             }
@@ -302,9 +302,9 @@ namespace Interspace::Server
 
     void World::BeginChunkGeneration()
     {
-        for (const auto& faction : factions | std::views::values)
+        for (const auto& faction: factions | std::views::values)
         {
-            for (const auto& colonist : faction->colonists | std::views::values)
+            for (const auto& colonist: faction->colonists | std::views::values)
             {
                 Engine::Vec2<float> colonistTilePos = colonist->entityData.position / worldData->CHUNK_SIZE;
                 uint32_t colonistTileSight = colonist->entityData.sight;
@@ -319,10 +319,10 @@ namespace Interspace::Server
                 int32_t chunkMaxX = sightMaxX / worldData->TILE_SIZE;
                 int32_t chunkMaxY = sightMaxY / worldData->TILE_SIZE;
 
-                chunkMinX = std::clamp(chunkMinX, 0, (int32_t)worldData->worldSizeX);
-                chunkMinY = std::clamp(chunkMinY, 0, (int32_t)worldData->worldSizeY);
-                chunkMaxX = std::clamp(chunkMaxX, 0, (int32_t)worldData->worldSizeX);
-                chunkMaxY = std::clamp(chunkMaxY, 0, (int32_t)worldData->worldSizeY);
+                chunkMinX = std::clamp(chunkMinX, 0, (int32_t) worldData->worldSizeX);
+                chunkMinY = std::clamp(chunkMinY, 0, (int32_t) worldData->worldSizeY);
+                chunkMaxX = std::clamp(chunkMaxX, 0, (int32_t) worldData->worldSizeX);
+                chunkMaxY = std::clamp(chunkMaxY, 0, (int32_t) worldData->worldSizeY);
 
                 for (uint16_t chunkX = chunkMinX; chunkX <= chunkMaxX; chunkX++)
                 {

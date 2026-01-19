@@ -7,11 +7,11 @@ namespace Interspace::Client
 {
     class Faction
     {
-    public:
+      public:
         FactionData data{};
         std::map<uint16_t, std::unique_ptr<Colonist>> colonists{};
 
-    public:
+      public:
         void Update(float delta);
 
         Colonist* GetColonist(uint16_t colonistId);

@@ -12,11 +12,7 @@ namespace Interspace::Client
         float colonistPositionX{};
         float colonistPositionY{};
 
-        deserializer
-            >> factionId
-            >> colonistId
-            >> colonistPositionX
-            >> colonistPositionY;
+        deserializer >> factionId >> colonistId >> colonistPositionX >> colonistPositionY;
 
         if (!factions.contains(factionId))
             return;
@@ -38,10 +34,7 @@ namespace Interspace::Client
         uint32_t clientId = 0;
 
         Engine::Deserializer deserializer(data);
-        deserializer
-            >> factionId
-            >> colonistId
-            >> clientId;
+        deserializer >> factionId >> colonistId >> clientId;
 
         if (!factions.contains(factionId))
             return;
@@ -70,9 +63,7 @@ namespace Interspace::Client
         {
             uint16_t factionId = 0;
             uint16_t colonistId = 0;
-            deserializer
-                >> factionId
-                >> colonistId;
+            deserializer >> factionId >> colonistId;
 
             if (!factions.contains(factionId))
                 continue;
@@ -94,10 +85,7 @@ namespace Interspace::Client
         uint32_t clientId = 0;
 
         Engine::Deserializer deserializer(data);
-        deserializer
-            >> factionId
-            >> colonistId
-            >> clientId;
+        deserializer >> factionId >> colonistId >> clientId;
 
         if (!factions.contains(factionId))
             return;

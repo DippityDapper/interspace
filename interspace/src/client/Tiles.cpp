@@ -35,12 +35,12 @@ namespace Interspace::Client
 
             Engine::Vec2<float> dummyPosition{};
             tile->sprite = std::make_unique<Engine::Sprite>(
-                dummyPosition,
-                tileTexturePath,
-                tileAtlasWidth,
-                tileAtlasHeight,
-                tileAtlasX,
-                tileAtlasY);
+                    dummyPosition,
+                    tileTexturePath,
+                    tileAtlasWidth,
+                    tileAtlasHeight,
+                    tileAtlasX,
+                    tileAtlasY);
 
             tile->sprite->render = false;
             tile->sprite->centered = false;

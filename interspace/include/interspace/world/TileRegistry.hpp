@@ -4,7 +4,7 @@ namespace Interspace
 {
     class TileRegistry
     {
-    public:
+      public:
         static void Init();
     };
 }

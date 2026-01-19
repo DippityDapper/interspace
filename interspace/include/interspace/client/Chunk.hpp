@@ -10,7 +10,7 @@ namespace Interspace::Client
 {
     class Chunk
     {
-    public:
+      public:
         ChunkData data{};
 
         Engine::Vec2<float> position{};
@@ -19,7 +19,7 @@ namespace Interspace::Client
         std::shared_ptr<SDL_Texture> tileAtlas = nullptr;
         std::unique_ptr<Engine::Sprite> sprite = nullptr;
 
-    public:
+      public:
         explicit Chunk(const Engine::Vec2<uint16_t>& pos);
 
         void BeginTileUpdate();

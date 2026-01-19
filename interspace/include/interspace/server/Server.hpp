@@ -14,25 +14,25 @@ namespace Interspace::Server
 {
     class Server
     {
-    private:
+      private:
         std::unordered_map<uint8_t, std::unique_ptr<ServerNetEvent>> messageHandler{};
         std::unordered_map<uint8_t, std::unique_ptr<ServerNetEvent>> netEvents;
 
         std::unordered_map<uint32_t, ENetPeer*> peers{};
         std::unordered_map<uint32_t, std::string> idToUsernameLookup{};
 
-    public:
+      public:
         Engine::NetworkInterface* netInterface = nullptr;
 
-    private:
+      private:
         void OnMessageReceived(const Engine::NetworkMessage& message);
 
-    public:
+      public:
         explicit Server(Engine::NetworkInterface* _netInterface);
         void HandleMessage(const std::vector<uint8_t>& data, ENetPeer* from);
 
         void RegisterMessageHandlers();
-        void RegisterMessageHandler(uint8_t messageType, void(Server::* callback)(const std::vector<uint8_t>& data, ENetPeer* from));
+        void RegisterMessageHandler(uint8_t messageType, void (Server::*callback)(const std::vector<uint8_t>& data, ENetPeer* from));
 
         void CreateNetEvent(uint8_t messageType);
         bool EmitEvent(uint8_t messageType, const std::vector<uint8_t>& data, _ENetPeer* from);
@@ -49,9 +49,9 @@ namespace Interspace::Server
         bool PeerExists(uint32_t peerId);
         std::unordered_map<uint32_t, ENetPeer*> GetPeers();
 
-    public:
-        template <typename T>
-        ServerNetEvent::Connection ConnectToEvent(uint8_t messageType, T* instance, void(T::* callback)(const std::vector<uint8_t>& data, _ENetPeer* from))
+      public:
+        template<typename T>
+        ServerNetEvent::Connection ConnectToEvent(uint8_t messageType, T* instance, void (T::*callback)(const std::vector<uint8_t>& data, _ENetPeer* from))
         {
             if (!netEvents.contains(messageType))
                 CreateNetEvent(messageType);
@@ -59,8 +59,8 @@ namespace Interspace::Server
             return netEvent->Connect(instance, callback);
         }
 
-        template <typename T>
-        ServerNetEvent::Connection ConnectToEvent(uint8_t messageType, std::weak_ptr<T> instance, void(T::* callback)(const std::vector<uint8_t>& data, _ENetPeer* from))
+        template<typename T>
+        ServerNetEvent::Connection ConnectToEvent(uint8_t messageType, std::weak_ptr<T> instance, void (T::*callback)(const std::vector<uint8_t>& data, _ENetPeer* from))
         {
             if (!netEvents.contains(messageType))
                 CreateNetEvent(messageType);
@@ -68,7 +68,7 @@ namespace Interspace::Server
             return netEvent->Connect(instance, callback);
         }
 
-        template <typename Callable>
+        template<typename Callable>
         ServerNetEvent::Connection ConnectToEvent(uint8_t messageType, Callable&& func)
         {
             if (!netEvents.contains(messageType))

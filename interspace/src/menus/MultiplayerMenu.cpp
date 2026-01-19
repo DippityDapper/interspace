@@ -23,13 +23,7 @@ namespace Interspace
         ImGui::SetNextWindowPos({viewport.x * 0.5f, viewport.y * 0.5f}, 0, {0.5f, 0.5f});
 
         ImGui::Begin(
-            "Multiplayer", nullptr,
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_AlwaysAutoResize
-        );
+                "Multiplayer", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
         const float buttonWidth = 80.0f;
         const float buttonHeight = 32.0f;

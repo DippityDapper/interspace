@@ -7,11 +7,11 @@ namespace Interspace::Server
 {
     class Faction
     {
-    public:
+      public:
         FactionData data{};
         std::map<uint16_t, std::unique_ptr<Colonist>> colonists{};
 
-    public:
+      public:
         void AddColonist(const std::string& colonistName, uint16_t colonistId, Engine::Vec2<float> colonistPosition);
         Colonist* GetColonist(uint16_t colonistId);
     };

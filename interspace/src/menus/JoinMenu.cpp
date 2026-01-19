@@ -19,25 +19,19 @@ namespace Interspace
     {
         Engine::Vec2<int> viewport = Engine::Window::viewport;
 
-        const float windowWidth = viewport.x/2.0f;
-        const float windowHeight = viewport.y/2.0f;
+        const float windowWidth = viewport.x / 2.0f;
+        const float windowHeight = viewport.y / 2.0f;
 
-        ImGui::SetNextWindowPos({windowWidth, windowHeight}, 0, {0.5f,0.5f});
+        ImGui::SetNextWindowPos({windowWidth, windowHeight}, 0, {0.5f, 0.5f});
 
-        ImGui::Begin("Join World", nullptr,
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_AlwaysAutoResize
-        );
+        ImGui::Begin("Join World", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
         ImGui::InputText("ip Address", ipLineEdit, sizeof(ipLineEdit));
 
         if (ImGui::Button("Back"))
         {
             Sounds::PlaySound("button_back", 1.0f);
-             root->LoadScene("multiplayer_menu");
+            root->LoadScene("multiplayer_menu");
         }
         ImGui::SameLine();
 
@@ -52,8 +46,7 @@ namespace Interspace
         if (ImGui::Button("Join", joinButtonSize))
         {
             Sounds::PlaySound("button_1", 1.0f);
-            if (JoinWorld())
-                 root->UnloadAllScenes();
+            JoinWorld();
         }
 
         ImGui::End();

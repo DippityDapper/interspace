@@ -12,14 +12,13 @@ namespace Interspace::Client
         WorldData* worldData = Game::clientWorld->worldData.get();
 
         data.position = pos;
-        position = (Engine::Vec2<float>)pos * worldData->CHUNK_SIZE * worldData->TILE_SIZE;
+        position = (Engine::Vec2<float>) pos * worldData->CHUNK_SIZE * worldData->TILE_SIZE;
 
         tileAtlas = Engine::ResourceManager::CreateTexture(
-            SDL_PIXELFORMAT_RGBA8888,
-            SDL_TEXTUREACCESS_TARGET,
-            worldData->CHUNK_SIZE * worldData->TILE_SIZE,
-            worldData->CHUNK_SIZE * worldData->TILE_SIZE
-        );
+                SDL_PIXELFORMAT_RGBA8888,
+                SDL_TEXTUREACCESS_TARGET,
+                worldData->CHUNK_SIZE * worldData->TILE_SIZE,
+                worldData->CHUNK_SIZE * worldData->TILE_SIZE);
 
         sprite = std::make_unique<Engine::Sprite>(position, tileAtlas);
         sprite->centered = false;
@@ -39,19 +38,19 @@ namespace Interspace::Client
     void Chunk::UpdateTile(const Engine::Vec2<uint8_t>& tilePos, Tile* tile)
     {
         WorldData* worldData = Game::clientWorld->worldData.get();
-        Engine::Vec2<float> tileLocalPos{(float)tilePos.x * worldData->TILE_SIZE, (float)tilePos.y * worldData->TILE_SIZE};
+        Engine::Vec2<float> tileLocalPos{(float) tilePos.x * worldData->TILE_SIZE, (float) tilePos.y * worldData->TILE_SIZE};
 
         Engine::Renderer::BufferAdd(tileLocalPos, tile->sprite.get());
     }
 
     void Chunk::UpdateTiles(std::map<Engine::Vec2<uint8_t>, Tile*>& newTiles)
     {
-        for (const auto& newTile : newTiles)
+        for (const auto& newTile: newTiles)
         {
             WorldData* worldData = Game::clientWorld->worldData.get();
             Tile* tile = newTile.second;
             Engine::Vec2<uint8_t> tilePos = newTile.first;
-            Engine::Vec2<float> tileLocalPos{(float)tilePos.x * worldData->TILE_SIZE, (float)tilePos.y * worldData->TILE_SIZE};
+            Engine::Vec2<float> tileLocalPos{(float) tilePos.x * worldData->TILE_SIZE, (float) tilePos.y * worldData->TILE_SIZE};
 
             Engine::Renderer::BufferAdd(tileLocalPos, tile->sprite.get());
             Engine::Renderer::BufferAdd(sprite->position, sprite.get(), nullptr);

@@ -9,20 +9,20 @@ namespace Interspace
 {
     class WorldCreationMenu : public Engine::Scene
     {
-    private:
+      private:
         std::unique_ptr<Engine::Camera> camera = nullptr;
         char worldNameLineEdit[16] = "";
         char worldSeedLineEdit[32] = "";
         int worldSize = 0;
         std::string message;
 
-    public:
+      public:
         std::string prevMenu = "worlds_menu_singleplayer";
 
-    private:
+      private:
         bool CreateWorld();
 
-    private:
+      private:
         void Init() override;
         void Render() override;
     };

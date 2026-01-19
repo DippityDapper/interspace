@@ -46,18 +46,11 @@ namespace Interspace
 
         ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight));
         ImGui::SetNextWindowPos(
-            {Engine::Window::viewport.x/2.0f, Engine::Window::viewport.y/2.0f},
-            0,
-            {0.5f, 0.5f}
-        );
+                {Engine::Window::viewport.x / 2.0f, Engine::Window::viewport.y / 2.0f},
+                0,
+                {0.5f, 0.5f});
 
-        ImGui::Begin
-        ("Main Menu", nullptr,
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoMove
-        );
+        ImGui::Begin("Main Menu", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
 
         float usernameEditWidth = 144.0f;
         float buttonWidth = 96.0f;

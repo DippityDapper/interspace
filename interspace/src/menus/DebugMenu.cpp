@@ -9,14 +9,12 @@ namespace Interspace
     {
     }
 
-
     void DebugMenu::UI(Engine::InputLayer& layer)
     {
         ImGui::Begin("debug menu");
 
         if (ImGui::Button("Spawn Colonist"))
         {
-            
         }
 
         ImGui::End();

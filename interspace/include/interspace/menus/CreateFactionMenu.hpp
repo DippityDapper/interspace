@@ -14,7 +14,7 @@ namespace Interspace
 {
     class CreateFactionMenu : public Engine::Scene
     {
-    private:
+      private:
         Client::Client* client = nullptr;
 
         Client::ClientNetEvent::Connection acceptedNetEvent{};
@@ -28,7 +28,7 @@ namespace Interspace
         std::string errorMessage{};
         bool awaitingResponse = false;
 
-    private:
+      private:
         void Init() override;
         void Update(float delta) override;
         void Render() override;

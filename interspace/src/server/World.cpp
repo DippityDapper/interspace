@@ -12,7 +12,6 @@ namespace Interspace::Server
 {
     void World::Init()
     {
-
     }
 
     void World::InitWorld(Server* _server, const std::string& _worldName)
@@ -68,7 +67,6 @@ namespace Interspace::Server
         else
         {
             chunkGenerationTimer -= chunkGenerationClock;
-
         }
     }
 
@@ -88,14 +86,14 @@ namespace Interspace::Server
         try
         {
             SQLite::Statement stmt(*db,
-                "UPDATE colonist SET colonistX = ?, colonistY = ? "
-                "WHERE colonistId = ? AND worldId = ?");
+                                   "UPDATE colonist SET colonistX = ?, colonistY = ? "
+                                   "WHERE colonistId = ? AND worldId = ?");
 
             db->exec("BEGIN TRANSACTION");
 
-            for (const auto& faction : factions | std::views::values)
+            for (const auto& faction: factions | std::views::values)
             {
-                for (const auto& colonist : faction->colonists | std::views::values)
+                for (const auto& colonist: faction->colonists | std::views::values)
                 {
                     stmt.bind(1, colonist->entityData.position.x);
                     stmt.bind(2, colonist->entityData.position.y);
@@ -113,7 +111,8 @@ namespace Interspace::Server
         {
             db->exec("ROLLBACK");
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                "AutoSave failed: %s", e.what());
+                         "AutoSave failed: %s",
+                         e.what());
         }
     }
 }

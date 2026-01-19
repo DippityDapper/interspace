@@ -38,15 +38,9 @@ namespace Interspace
 
     void CreateFactionMenu::Render()
     {
-        ImGui::SetNextWindowPos({Engine::Window::viewport.x/2.0f,Engine::Window::viewport.y/2.0f}, 0, {0.5f,0.5f});
+        ImGui::SetNextWindowPos({Engine::Window::viewport.x / 2.0f, Engine::Window::viewport.y / 2.0f}, 0, {0.5f, 0.5f});
 
-        ImGui::Begin
-        ("Create Faction", nullptr,
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoMove
-        );
+        ImGui::Begin("Create Faction", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove);
 
         ImGui::BeginDisabled(awaitingResponse);
 
@@ -94,8 +88,8 @@ namespace Interspace
         Engine::Serializer serializer(data);
 
         serializer
-            << client->clientId
-            << factionName;
+                << client->clientId
+                << factionName;
 
         errorMessage = "";
         client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);

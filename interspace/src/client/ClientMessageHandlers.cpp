@@ -29,9 +29,7 @@ namespace Interspace::Client
         std::string peerUsername{};
 
         Engine::Deserializer deserializer(data);
-        deserializer
-            >> peerId
-            >> peerUsername;
+        deserializer >> peerId >> peerUsername;
 
         peers[peerId] = peerUsername;
     }

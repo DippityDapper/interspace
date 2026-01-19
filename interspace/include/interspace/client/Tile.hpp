@@ -7,7 +7,7 @@ namespace Interspace::Client
 {
     class Tile
     {
-    public:
+      public:
         TileData data{};
 
         std::unique_ptr<Engine::Sprite> sprite = nullptr;

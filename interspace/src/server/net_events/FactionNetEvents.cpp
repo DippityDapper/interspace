@@ -43,17 +43,17 @@ namespace Interspace::Server
         int32_t factionsCount = factions.size();
         serializer << factionsCount;
 
-        for (const auto& faction : factions | std::views::values)
+        for (const auto& faction: factions | std::views::values)
         {
             uint32_t membersCount = faction->data.members.size();
 
             serializer
-                << faction->data.id
-                << faction->data.name
-                << faction->data.ownerId
-                << membersCount;
+                    << faction->data.id
+                    << faction->data.name
+                    << faction->data.ownerId
+                    << membersCount;
 
-            for (const auto& memberId : faction->data.members | std::views::keys)
+            for (const auto& memberId: faction->data.members | std::views::keys)
             {
                 serializer << memberId;
             }
@@ -61,17 +61,17 @@ namespace Interspace::Server
             uint32_t colonistCount = faction->colonists.size();
             serializer << colonistCount;
 
-            for (const auto& kvp : faction->colonists)
+            for (const auto& kvp: faction->colonists)
             {
                 uint16_t colonistId = kvp.first;
                 Colonist* colonist = kvp.second.get();
 
                 serializer
-                    << colonistId
-                    << colonist->entityData.name
-                    << colonist->entityData.position.x
-                    << colonist->entityData.position.y
-                    << colonist->colonistData.selectedBy;
+                        << colonistId
+                        << colonist->entityData.name
+                        << colonist->entityData.position.x
+                        << colonist->entityData.position.y
+                        << colonist->colonistData.selectedBy;
             }
         }
 
@@ -94,12 +94,12 @@ namespace Interspace::Server
         uint32_t membersCount = faction->data.members.size();
 
         serializer
-            << faction->data.id
-            << faction->data.name
-            << faction->data.ownerId
-            << membersCount;
+                << faction->data.id
+                << faction->data.name
+                << faction->data.ownerId
+                << membersCount;
 
-        for (const auto& memberId : faction->data.members | std::views::keys)
+        for (const auto& memberId: faction->data.members | std::views::keys)
         {
             serializer << memberId;
         }
@@ -107,20 +107,20 @@ namespace Interspace::Server
         uint32_t colonistCount = faction->colonists.size();
         serializer << colonistCount;
 
-        for (const auto& kvp : faction->colonists)
+        for (const auto& kvp: faction->colonists)
         {
             uint16_t colonistId = kvp.first;
             Colonist* colonist = kvp.second.get();
 
             serializer
-                << colonistId
-                << colonist->entityData.name
-                << colonist->entityData.position.x
-                << colonist->entityData.position.y
-                << colonist->colonistData.selectedBy;
+                    << colonistId
+                    << colonist->entityData.name
+                    << colonist->entityData.position.x
+                    << colonist->entityData.position.y
+                    << colonist->colonistData.selectedBy;
         }
 
-        for (const auto& peer : server->GetPeers() | std::views::values)
+        for (const auto& peer: server->GetPeers() | std::views::values)
             server->netInterface->SendToClient(peer, data, ENET_PACKET_FLAG_RELIABLE);
     }
 }

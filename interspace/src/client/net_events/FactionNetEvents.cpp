@@ -24,9 +24,7 @@ namespace Interspace::Client
             Faction* faction = factions[factionId].get();
             faction->data.id = factionId;
 
-            deserializer
-                >> faction->data.name
-                >> faction->data.ownerId;
+            deserializer >> faction->data.name >> faction->data.ownerId;
 
             uint32_t membersCount = 0;
             deserializer >> membersCount;
@@ -56,11 +54,7 @@ namespace Interspace::Client
                 Colonist* colonist = faction->colonists[colonistId].get();
                 colonist->entityData.id = colonistId;
 
-                deserializer
-                    >> colonist->entityData.name
-                    >> colonist->entityData.position.x
-                    >> colonist->entityData.position.y
-                    >> colonist->colonistData.selectedBy;
+                deserializer >> colonist->entityData.name >> colonist->entityData.position.x >> colonist->entityData.position.y >> colonist->colonistData.selectedBy;
 
                 if (colonist->colonistData.selectedBy == client->clientId)
                     colonist->sprite->SetTexture("assets/colonists/colonist_green_spritesheet.png");

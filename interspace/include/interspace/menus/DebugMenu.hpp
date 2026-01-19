@@ -6,7 +6,7 @@ namespace Interspace
 {
     class DebugMenu : Engine::Scene
     {
-    public:
+      public:
         void Init() override;
         void UI(Engine::InputLayer& layer) override;
     };

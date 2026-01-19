@@ -6,7 +6,7 @@ namespace Interspace::Server
 {
     class Entity
     {
-    public:
+      public:
         EntityData entityData{};
     };
 }

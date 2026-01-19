@@ -24,29 +24,29 @@ namespace Interspace::Client
         netInterface->SendToServer(msg, ENET_PACKET_FLAG_RELIABLE);
     }
 
-    void Client::OnMessageReceived(const Engine::NetworkMessage &message)
+    void Client::OnMessageReceived(const Engine::NetworkMessage& message)
     {
         switch (message.type)
         {
-            case Engine::NetworkEventType::Message:
-            {
-                HandleMessage(message.data);
-                break;
-            }
-            case Engine::NetworkEventType::ClientConnected:
-            {
-                EmitEvent(CONNECTION_REQUEST, message.data);
-                break;
-            }
-            case Engine::NetworkEventType::ClientDisconnected:
-            {
-                break;
-            }
-            case Engine::NetworkEventType::ServerDisconnected:
-            {
-                EmitEvent(DISCONNECTION_ACKNOWLEDGED, message.data);
-                break;
-            }
+        case Engine::NetworkEventType::Message:
+        {
+            HandleMessage(message.data);
+            break;
+        }
+        case Engine::NetworkEventType::ClientConnected:
+        {
+            EmitEvent(CONNECTION_REQUEST, message.data);
+            break;
+        }
+        case Engine::NetworkEventType::ClientDisconnected:
+        {
+            break;
+        }
+        case Engine::NetworkEventType::ServerDisconnected:
+        {
+            EmitEvent(DISCONNECTION_ACKNOWLEDGED, message.data);
+            break;
+        }
         }
     }
 
@@ -57,12 +57,13 @@ namespace Interspace::Client
         RegisterMessageHandler(CLIENT_CONNECTED, &Client::HandlePeerConnected);
     }
 
-    void Client::RegisterMessageHandler(uint8_t messageType, void(Client::* callback)(const std::vector<uint8_t>&))
+    void Client::RegisterMessageHandler(uint8_t messageType, void (Client::*callback)(const std::vector<uint8_t>&))
     {
         if (messageHandler.contains(messageType))
             return;
         messageHandler.emplace(messageType, std::make_unique<ClientNetEvent>());
-        messageHandler[messageType].get()->Connect([this, callback](const std::vector<uint8_t>& data){(this->*callback)(data);});
+        messageHandler[messageType].get()->Connect([this, callback](const std::vector<uint8_t>& data)
+                                                   { (this->*callback)(data); });
     }
 
     void Client::CreateNetEvent(uint8_t messageType)

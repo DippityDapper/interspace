@@ -5,7 +5,7 @@ namespace Interspace::Server
 {
     class Tile
     {
-    public:
+      public:
         TileData data{};
     };
 }

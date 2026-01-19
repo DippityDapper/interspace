@@ -8,19 +8,19 @@ namespace Interspace
 {
     class WorldsMenu : public Engine::Scene
     {
-    private:
+      private:
         std::vector<std::string> worlds{};
 
-    public:
+      public:
         bool isHostingMenu = false;
         std::string prevMenu = "";
 
-    private:
+      private:
         void Init() override;
         void OnActiveChanged(bool value) override;
-        void UI(Engine::InputLayer &layer) override;
+        void UI(Engine::InputLayer& layer) override;
 
-    public:
+      public:
         bool DeleteWorld(const std::string& worldName);
     };
 }

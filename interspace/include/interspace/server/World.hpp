@@ -12,7 +12,7 @@ namespace Interspace::Server
 {
     class World : public Engine::Scene
     {
-    private:
+      private:
         Server* server = nullptr;
 
         uint32_t seed = 0;
@@ -27,7 +27,7 @@ namespace Interspace::Server
         float chunkGenerationClock = 1.0f;
         float chunkGenerationTimer = 0.0f;
 
-    public:
+      public:
         static inline std::unique_ptr<WorldData> worldData{};
 
         std::map<Engine::Vec2<uint16_t>, std::unique_ptr<Chunk>> chunks{};
@@ -37,13 +37,13 @@ namespace Interspace::Server
         uint16_t nextFactionId = 1;
         uint16_t nextEntityId = 1;
 
-    public:
+      public:
         void Init() override;
         void Update(float delta) override;
         void Render() override;
         void Clean() override;
 
-    public:
+      public:
         void InitWorld(Server* _server, const std::string& _worldName);
         void InitFactions();
 
@@ -60,10 +60,10 @@ namespace Interspace::Server
         void BeginChunkGeneration();
         void GenerateChunks();
 
-    private:
+      private:
         void AutoSave();
 
-    private:
+      private:
         void RegisterNetEvents();
 
         void OnClientConnected(const std::vector<uint8_t>& data, ENetPeer* from);

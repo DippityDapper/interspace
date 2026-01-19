@@ -13,10 +13,10 @@ namespace Interspace
 {
     class Sounds
     {
-    private:
+      private:
         static inline std::map<std::string, std::shared_ptr<Engine::AudioStream>> sounds{};
 
-    public:
+      public:
         static void AddSound(const std::string& name, const std::string& filePath, SDL_PropertiesID props);
         static void PlaySound(const std::string& name, float gain);
     };

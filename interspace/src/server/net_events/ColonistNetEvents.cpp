@@ -14,11 +14,7 @@ namespace Interspace::Server
         float colonistPositionY = 0;
 
         Engine::Deserializer deserializer(data);
-        deserializer
-            >> factionId
-            >> colonistId
-            >> colonistPositionX
-            >> colonistPositionY;
+        deserializer >> factionId >> colonistId >> colonistPositionX >> colonistPositionY;
 
         if (!factions.contains(factionId))
             return;
@@ -40,10 +36,7 @@ namespace Interspace::Server
         uint32_t clientId = 0;
 
         Engine::Deserializer deserializer(data);
-        deserializer
-            >> factionId
-            >> colonistId
-            >> clientId;
+        deserializer >> factionId >> colonistId >> clientId;
 
         if (!factions.contains(factionId))
             return;
@@ -59,11 +52,11 @@ namespace Interspace::Server
 
         Engine::Serializer serializer(broadcastData);
         serializer
-            << factionId
-            << colonistId
-            << clientId;
+                << factionId
+                << colonistId
+                << clientId;
 
-        for (const auto& peer : server->GetPeers() | std::views::values)
+        for (const auto& peer: server->GetPeers() | std::views::values)
             server->netInterface->SendToClient(peer, broadcastData, ENET_PACKET_FLAG_RELIABLE);
     }
 
@@ -84,10 +77,7 @@ namespace Interspace::Server
         uint32_t clientId = 0;
 
         Engine::Deserializer deserializer(data);
-        deserializer
-            >> factionId
-            >> colonistId
-            >> clientId;
+        deserializer >> factionId >> colonistId >> clientId;
 
         if (!factions.contains(factionId))
             return;
@@ -103,11 +93,11 @@ namespace Interspace::Server
 
         Engine::Serializer serializer(broadcastData);
         serializer
-            << factionId
-            << colonistId
-            << clientId;
+                << factionId
+                << colonistId
+                << clientId;
 
-        for (const auto& peer : server->GetPeers() | std::views::values)
+        for (const auto& peer: server->GetPeers() | std::views::values)
             server->netInterface->SendToClient(peer, broadcastData, ENET_PACKET_FLAG_RELIABLE);
     }
 
@@ -129,26 +119,26 @@ namespace Interspace::Server
     {
         std::vector<std::vector<uint8_t>> sendQueue;
 
-        for (const auto& faction : factions | std::views::values)
+        for (const auto& faction: factions | std::views::values)
         {
-            for (const auto& colonist : faction->colonists | std::views::values)
+            for (const auto& colonist: faction->colonists | std::views::values)
             {
                 std::vector<uint8_t> data{COLONIST_POSITION_PACKET};
                 Engine::Serializer serializer(data);
 
                 serializer
-                    << faction->data.id
-                    << colonist->entityData.id
-                    << colonist->entityData.position.x
-                    << colonist->entityData.position.y;
+                        << faction->data.id
+                        << colonist->entityData.id
+                        << colonist->entityData.position.x
+                        << colonist->entityData.position.y;
 
                 sendQueue.push_back(data);
             }
         }
 
-        for (const auto& peer : server->GetPeers() | std::views::values)
+        for (const auto& peer: server->GetPeers() | std::views::values)
         {
-            for (const auto& positionData : sendQueue)
+            for (const auto& positionData: sendQueue)
             {
                 server->netInterface->SendToClient(peer, positionData, 0);
             }
@@ -161,9 +151,9 @@ namespace Interspace::Server
         std::vector<uint8_t> broadcastData{COLONIST_DESELECTED_ALL_PACKET};
         Engine::Serializer serializer(broadcastData);
 
-        for (const auto& faction : factions | std::views::values)
+        for (const auto& faction: factions | std::views::values)
         {
-            for (const auto& colonist : faction->colonists | std::views::values)
+            for (const auto& colonist: faction->colonists | std::views::values)
             {
                 if (colonist->colonistData.selectedBy == clientId)
                 {
@@ -178,14 +168,14 @@ namespace Interspace::Server
             return;
 
         serializer << selectedCount;
-        for (const auto& [factionId, colonistId] : selected)
+        for (const auto& [factionId, colonistId]: selected)
         {
             serializer
-                << factionId
-                << colonistId;
+                    << factionId
+                    << colonistId;
         }
 
-        for (const auto& peer : server->GetPeers() | std::views::values)
+        for (const auto& peer: server->GetPeers() | std::views::values)
             server->netInterface->SendToClient(peer, broadcastData, ENET_PACKET_FLAG_RELIABLE);
     }
 }

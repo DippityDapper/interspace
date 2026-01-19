@@ -8,21 +8,21 @@
 
 namespace Interspace
 {
-    class MainMenu: public Engine::Scene
+    class MainMenu : public Engine::Scene
     {
-    private:
+      private:
         char usernameLineEdit[16] = "";
         std::string username{};
         std::string errorMessage{};
 
-    public:
+      public:
         WorldsMenu* singleplayerWorldMenu = nullptr;
         WorldsMenu* multiplayerWorldMenu = nullptr;
         MultiplayerMenu* multiplayerMenu = nullptr;
         WorldCreationMenu* worldCreationMenu = nullptr;
         JoinMenu* joinMenu = nullptr;
 
-    private:
+      private:
         void Init() override;
         void OnActiveChanged(bool value) override;
         void Render() override;
