@@ -1,7 +1,9 @@
 #pragma once
 
-#include <queue>
+#include "Player.hpp"
+#include "SQLiteCpp/Database.h"
 
+#include "interspace/server/WorldGenerator.hpp"
 #include "igneous/scenes/Scene.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/world/WorldData.hpp"
@@ -15,32 +17,31 @@ namespace Interspace::Server
       private:
         Server* server = nullptr;
 
-        uint32_t seed = 0;
-        std::string worldName{};
-
         float serverClock = 0.05f;
         float serverTimer = 0.0f;
 
         float autosaveClock = 5.0f;
         float autosaveTimer = 0.0f;
 
-        float chunkGenerationClock = 1.0f;
+        float chunkGenerationClock = 0.05f;
         float chunkGenerationTimer = 0.0f;
 
       public:
-        static inline std::unique_ptr<WorldData> worldData{};
+        static inline std::string worldName{};
 
-        std::map<Engine::Vec2<uint16_t>, std::unique_ptr<Chunk>> chunks{};
-        std::queue<Chunk*> chunkQueue{};
+        static inline std::unique_ptr<WorldData> worldData{};
+        std::unique_ptr<WorldGenerator> worldGenerator = nullptr;
+
+        std::unordered_map<uint32_t, std::unique_ptr<Player>> players{};
         std::unordered_map<uint16_t, std::unique_ptr<Faction>> factions{};
 
         uint16_t nextFactionId = 1;
-        uint16_t nextEntityId = 1;
+        uint32_t nextEntityId = 1;
 
       public:
         void Init() override;
         void Update(float delta) override;
-        void Render() override;
+        void UI() override;
         void Clean() override;
 
       public:
@@ -48,7 +49,7 @@ namespace Interspace::Server
         void InitFactions();
 
         uint16_t AddFaction(const std::string& factionName, uint32_t ownerId);
-        uint16_t AddColonistToFaction(uint16_t factionId, const std::string& colonistName);
+        uint32_t AddColonistToFaction(uint16_t factionId, const std::string& colonistName);
 
         bool DeleteFaction(uint16_t factionId);
 
@@ -57,13 +58,14 @@ namespace Interspace::Server
 
         bool LeaveFaction(uint16_t factionId, uint32_t playerId);
 
-        void BeginChunkGeneration();
-        void GenerateChunks();
-
       private:
         void AutoSave();
+        void SendFactionCreateRequest(uint32_t clientId);
+        void AcceptFactionRequest(ENetPeer* peer);
+        void DenyFactionRequest(ENetPeer* peer);
+        void BroadcastColonistSelection(uint16_t factionId, uint32_t colonistId, uint32_t clientId);
+        void BroadcastColonistDeselection(uint16_t factionId, uint32_t colonistId, uint32_t clientId);
 
-      private:
         void RegisterNetEvents();
 
         void OnClientConnected(const std::vector<uint8_t>& data, ENetPeer* from);
@@ -76,14 +78,17 @@ namespace Interspace::Server
         void OnCreateColonistRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from);
 
         void BroadcastColonistPositionData();
-        void BroadcastColonistDeselectAllData(uint32_t clientId);
+        void BroadcastColonistDeselectAllPacket(uint32_t clientId);
 
         void SendWorldData(ENetPeer* to);
         void SendChunkData(ENetPeer* to, uint32_t playerId);
-        void BroadcastChunkData(Chunk* chunk);
 
         void OnCreateFactionRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from);
-        void SendFactionData(ENetPeer* to);
+        void SendFactionData(ENetPeer* to, uint32_t clientId);
         void BroadcastFactionData(uint16_t factionId);
+
+        void OnPlayerPositionReceived(const std::vector<uint8_t>& data, ENetPeer* from);
+
+        void OnChunkRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from);
     };
 }

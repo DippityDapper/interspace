@@ -7,7 +7,10 @@ namespace Interspace
 {
     void TileRegistry::Init()
     {
-        if (!DBHelper::TileDataExistsByName("grass"))
+        if (!DBHelper::initialized)
+            DBHelper::Init();
+
+        if (!DBHelper::TileDataExists("grass"))
         {
             for (int variant = 0; variant < static_cast<int>(GRASS_16) - static_cast<int>(GRASS_1) + 1; ++variant)
             {
@@ -26,7 +29,7 @@ namespace Interspace
             }
         }
 
-        if (!DBHelper::TileDataExistsByName("grass_flower"))
+        if (!DBHelper::TileDataExists("grass_flower"))
         {
             for (int variant = 0; variant < static_cast<int>(FLOWER_16) - static_cast<int>(FLOWER_1) + 1; ++variant)
             {
@@ -45,7 +48,7 @@ namespace Interspace
             }
         }
 
-        if (!DBHelper::TileDataExistsByName("grass_stone_path"))
+        if (!DBHelper::TileDataExists("grass_stone_path"))
         {
             DBHelper::InsertTileData(
                     3,

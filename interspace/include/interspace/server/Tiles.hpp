@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SQLiteCpp/Database.h"
+
 #include <cstdint>
 #include <memory>
 #include <random>
@@ -21,6 +23,6 @@ namespace Interspace::Server
         static void Init();
         static Tile* GetRandomTileBySeed(const std::string& tileName, std::mt19937& tileGen);
         static Tile* GetTileOfType(const std::string& tileName, uint32_t tileVariant);
-        Tile* GetTileOfType(uint32_t tileId, uint32_t tileVariant);
+        static Tile* GetTileOfType(uint32_t tileId, uint32_t tileVariant);
     };
 }

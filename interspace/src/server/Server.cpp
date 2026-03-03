@@ -4,7 +4,6 @@
 
 #include "igneous/networking/NetworkManager.hpp"
 #include "interspace/network/NetworkPackets.hpp"
-#include "SDL3/SDL_log.h"
 
 namespace Interspace::Server
 {
@@ -44,10 +43,10 @@ namespace Interspace::Server
 
     void Server::RegisterMessageHandlers()
     {
-        RegisterMessageHandler(CONNECTION_REQUEST, &Server::HandleConnectionRequest);
-        RegisterMessageHandler(DISCONNECTION_REQUEST, &Server::HandleDisconnectionRequest);
-        RegisterMessageHandler(CONNECTION_REQUEST_, &Server::HandleUnRequestedConnectionRequest);
-        RegisterMessageHandler(DISCONNECTION_REQUEST_, &Server::HandleUnRequestedDisconnectionRequest);
+        RegisterMessageHandler(CONNECTION_REQUEST, &Server::OnConnectionRequest);
+        RegisterMessageHandler(DISCONNECTION_REQUEST, &Server::OnDisconnectionRequest);
+        RegisterMessageHandler(CONNECTION_REQUEST_, &Server::OnUnRequestedConnectionRequest);
+        RegisterMessageHandler(DISCONNECTION_REQUEST_, &Server::OnUnRequestedDisconnectionRequest);
     }
 
     void Server::RegisterMessageHandler(uint8_t messageType, void (Server::*callback)(const std::vector<uint8_t>& data, ENetPeer* from))
@@ -93,6 +92,16 @@ namespace Interspace::Server
         {
             if (user.second == username)
                 return user.first;
+        }
+        return 0;
+    }
+
+    uint32_t Server::GetUserId(ENetPeer* user)
+    {
+        for (const auto& kvp: peers)
+        {
+            if (user == kvp.second)
+                return kvp.first;
         }
         return 0;
     }

@@ -2,7 +2,7 @@
 
 namespace Interspace::Server
 {
-    void Faction::AddColonist(const std::string& colonistName, uint16_t colonistId, Engine::Vec2<float> colonistPosition)
+    void Faction::AddColonist(const std::string& colonistName, uint32_t colonistId, Engine::Vec2<float> colonistPosition)
     {
         if (colonists.contains(colonistId))
             return;
@@ -15,7 +15,7 @@ namespace Interspace::Server
         colonist->entityData.position = colonistPosition;
     }
 
-    Colonist* Faction::GetColonist(uint16_t colonistId)
+    Colonist* Faction::GetColonist(uint32_t colonistId)
     {
         if (!colonists.contains(colonistId))
             return nullptr;

@@ -2,13 +2,10 @@
 
 #include <ranges>
 
-#include "SDL3/SDL_log.h"
-
 #include "igneous/input/Input.hpp"
 #include "igneous/networking/Serializer.hpp"
 
 #include "interspace/client/Tiles.hpp"
-#include "interspace/menus/CreateFactionMenu.hpp"
 #include "interspace/network/NetworkPackets.hpp"
 
 namespace Interspace::Client
@@ -20,6 +17,7 @@ namespace Interspace::Client
     void World::InitWorld(Client* _client)
     {
         client = _client;
+        worldGenerator = std::make_unique<WorldGenerator>();
 
         worldData = std::make_unique<WorldData>();
         RegisterNetEvents();
@@ -28,6 +26,9 @@ namespace Interspace::Client
 
     void World::Update(float delta)
     {
+        if (client->clientId <= 0)
+            return;
+
         for (const auto& faction: factions | std::views::values)
         {
             faction->Update(delta);
@@ -38,11 +39,19 @@ namespace Interspace::Client
         else
         {
             chunkGenerationTimer -= chunkGenerationClock;
-            GenerateChunks();
+            worldGenerator->Tick();
+        }
+
+        if (clientTimer < clientClock)
+            clientTimer += delta;
+        else
+        {
+            clientTimer -= clientClock;
+            SendPosition();
         }
     }
 
-    void World::Render()
+    void World::UI()
     {
         for (const auto& faction: factions | std::views::values)
         {
@@ -61,13 +70,7 @@ namespace Interspace::Client
             {
                 if (!disconnectRequested && client)
                 {
-                    std::vector<uint8_t> request{DISCONNECTION_REQUEST};
-                    Engine::Serializer serializer(request);
-
-                    serializer << client->clientId;
-
-                    client->netInterface->SendToServer(request, ENET_PACKET_FLAG_RELIABLE);
-                    disconnectRequested = true;
+                    RequestDisconnect();
                 }
             }
             if (Engine::Input::IsKeyJustPressed(SDLK_Q))
@@ -84,12 +87,7 @@ namespace Interspace::Client
                 if (myFaction)
                 {
                     std::string colonistName{"Dwayne"};
-                    std::vector<uint8_t> data{CREATE_COLONIST_REQUEST};
-
-                    Engine::Serializer serializer(data);
-                    serializer << myFaction->data.id << colonistName;
-
-                    client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
+                    RequestCreateColonist(myFaction->data.id, colonistName);
                 }
             }
             if (Engine::Input::IsButtonJustPressed(SDL_BUTTON_LEFT))
@@ -122,32 +120,16 @@ namespace Interspace::Client
                 {
                     if (selectedColonist->colonistData.selectedBy != client->clientId)
                     {
-                        std::vector<uint8_t> data{COLONIST_SELECT_REQUEST};
-
-                        Engine::Serializer serializer(data);
-                        serializer << colonistFaction->data.id
-                                   << selectedColonist->entityData.id << client->clientId;
-
-                        client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
+                        RequestColonistSelect(colonistFaction->data.id, selectedColonist->entityData.id);
                     }
                     else
                     {
-                        std::vector<uint8_t> data{COLONIST_DESELECT_REQUEST};
-
-                        Engine::Serializer serializer(data);
-                        serializer << colonistFaction->data.id
-                                   << selectedColonist->entityData.id << client->clientId;
-
-                        client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
+                        RequestColonistDeselect(colonistFaction->data.id, selectedColonist->entityData.id);
                     }
                 }
                 else if (hasSelectedColonist)
                 {
-                    std::vector<uint8_t> data{COLONIST_DESELECT_ALL_REQUEST};
-
-                    Engine::Serializer serializer(data);
-                    serializer << client->clientId;
-                    client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
+                    RequestColonistDeselectAll();
                 }
             }
             if (Engine::Input::IsButtonJustPressed(SDL_BUTTON_RIGHT))
@@ -159,17 +141,10 @@ namespace Interspace::Client
                         if (colonist->colonistData.selectedBy != client->clientId)
                             continue;
 
-                        std::vector<uint8_t> data{COLONIST_POSITION_REQUEST};
-
                         Engine::Vec2<float> mousePosition = camera->GetMouseGlobalPosition();
                         float posX = mousePosition.x;
                         float posY = mousePosition.y;
-
-                        Engine::Serializer serializer(data);
-                        serializer << faction->data.id << colonist->entityData.id << posX
-                                   << posY;
-
-                        client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
+                        RequestMoveColonist(faction->data.id, colonist->entityData.id, posX, posY);
                     }
                 }
             }
@@ -178,60 +153,5 @@ namespace Interspace::Client
 
     void World::Clean()
     {
-    }
-
-    void World::GenerateChunks()
-    {
-        uint16_t maxChunkPerCycle = 4;
-        uint16_t maxChunkIndex = 0;
-
-        for (int i = 0; i < chunkDataQueue.size(); i++)
-        {
-            std::vector<uint8_t>& data = chunkDataQueue.front();
-
-            uint16_t chunkX = 0;
-
-            uint16_t chunkY = 0;
-
-            Engine::Deserializer deserializer(data);
-            deserializer >> chunkX >> chunkY;
-
-            Engine::Vec2<uint16_t> chunkPos{chunkX, chunkY};
-            if (!chunks.contains(chunkPos))
-                return;
-
-            Chunk* chunk = chunks[chunkPos].get();
-
-            chunk->BeginTileUpdate();
-            for (uint16_t w = chunk->tiles.size();
-                 w < worldData->CHUNK_SIZE * worldData->CHUNK_SIZE;
-                 w++)
-            {
-                uint8_t tileX = w % worldData->CHUNK_SIZE;
-                uint8_t tileY = w / worldData->CHUNK_SIZE;
-
-                uint32_t tileId = 0;
-                uint32_t tileVariant = 0;
-
-                deserializer >> tileId >> tileVariant;
-
-                Engine::Vec2<uint8_t> tilePos{tileX, tileY};
-                chunk->tiles.emplace(tilePos, Tiles::GetTileOfType(tileId, tileVariant));
-                Tile* tile = chunk->tiles[tilePos];
-
-                chunk->UpdateTile(tilePos, tile);
-            }
-            chunk->EndTileUpdate();
-
-            if (chunk->tiles.size() >= worldData->CHUNK_SIZE * worldData->CHUNK_SIZE)
-            {
-                chunkDataQueue.pop();
-                SDL_Log("[Client] Chunk finished at (%u, %u).", chunk->data.position.x, chunk->data.position.y);
-            }
-
-            maxChunkIndex++;
-            if (maxChunkIndex > maxChunkPerCycle)
-                break;
-        }
     }
 }

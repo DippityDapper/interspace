@@ -26,6 +26,7 @@ namespace Interspace::Client
 
       private:
         void OnMessageReceived(const Engine::NetworkMessage& message);
+        void RequestConnection(const std::string& _username);
 
       public:
         Client(Engine::NetworkInterface* _netInterface, const std::string& _username);
@@ -37,9 +38,9 @@ namespace Interspace::Client
         void CreateNetEvent(uint8_t messageType);
         bool EmitEvent(uint8_t messageType, const std::vector<uint8_t>& data);
 
-        void HandleConnectionAccepted(const std::vector<uint8_t>& data);
-        void HandleClientDisconnected(const std::vector<uint8_t>& data);
-        void HandlePeerConnected(const std::vector<uint8_t>& data);
+        void OnConnectionAccepted(const std::vector<uint8_t>& data);
+        void OnClientDisconnected(const std::vector<uint8_t>& data);
+        void OnClientConnected(const std::vector<uint8_t>& data);
 
         std::string GetUsername(uint32_t peerId);
 

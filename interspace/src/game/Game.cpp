@@ -1,7 +1,5 @@
 #include "interspace/game/Game.hpp"
 
-#include "SDL3/SDL_log.h"
-#include "igneous/engine/Vec3.hpp"
 #include "igneous/resources/ResourceManager.hpp"
 #include "igneous/networking/NetworkManager.hpp"
 
@@ -19,7 +17,7 @@ namespace Interspace
     void Game::Init()
     {
         singleton = true;
-        DBHelper::InitDatabase();
+        DBHelper::Init();
         TileRegistry::Init();
         Engine::ResourceManager::SetScaleMode(SDL_SCALEMODE_PIXELART);
 
@@ -51,7 +49,7 @@ namespace Interspace
             clientNetInterface->Poll();
     }
 
-    void Game::Render()
+    void Game::UI()
     {
     }
 

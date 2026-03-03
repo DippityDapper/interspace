@@ -9,10 +9,10 @@ namespace Interspace::Server
     {
       public:
         FactionData data{};
-        std::map<uint16_t, std::unique_ptr<Colonist>> colonists{};
+        std::map<uint32_t, std::unique_ptr<Colonist>> colonists{};
 
       public:
-        void AddColonist(const std::string& colonistName, uint16_t colonistId, Engine::Vec2<float> colonistPosition);
-        Colonist* GetColonist(uint16_t colonistId);
+        void AddColonist(const std::string& colonistName, uint32_t colonistId, Engine::Vec2<float> colonistPosition);
+        Colonist* GetColonist(uint32_t colonistId);
     };
 }

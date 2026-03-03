@@ -10,7 +10,7 @@ namespace Interspace::Client
         }
     }
 
-    Colonist* Faction::GetColonist(uint16_t colonistId)
+    Colonist* Faction::GetColonist(uint32_t colonistId)
     {
         if (!colonists.contains(colonistId))
             return nullptr;

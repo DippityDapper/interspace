@@ -26,6 +26,11 @@ namespace Interspace::Server
 
       private:
         void OnMessageReceived(const Engine::NetworkMessage& message);
+        void AcceptConnectionRequest(_ENetPeer* to, uint32_t id);
+        void BroadcastConnectionToPeers(uint32_t id, const std::string& username);
+        void SendPeersToPeer(ENetPeer* to);
+        void AcknowledgeDisconnection(ENetPeer* to);
+        void BroadcastDisconnectionToPeers(uint32_t id);
 
       public:
         explicit Server(Engine::NetworkInterface* _netInterface);
@@ -37,12 +42,13 @@ namespace Interspace::Server
         void CreateNetEvent(uint8_t messageType);
         bool EmitEvent(uint8_t messageType, const std::vector<uint8_t>& data, _ENetPeer* from);
 
-        void HandleConnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
-        void HandleDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
-        void HandleUnRequestedConnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
-        void HandleUnRequestedDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
+        void OnConnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
+        void OnDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
+        void OnUnRequestedConnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
+        void OnUnRequestedDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
 
         uint32_t GetUserId(const std::string& username);
+        uint32_t GetUserId(ENetPeer* user);
         std::string GetUsername(uint32_t peerId);
         ENetPeer* GetPeer(uint32_t peerId);
         ENetPeer* GetPeer(const std::string& username);

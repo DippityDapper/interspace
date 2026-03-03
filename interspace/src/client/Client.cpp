@@ -15,13 +15,7 @@ namespace Interspace::Client
         Engine::NetworkManager::BindMessageHandler(netInterface, this, &Client::OnMessageReceived);
 
         username = _username;
-
-        std::vector<uint8_t> msg{CONNECTION_REQUEST};
-
-        Engine::Serializer serializer(msg);
-        serializer << username;
-
-        netInterface->SendToServer(msg, ENET_PACKET_FLAG_RELIABLE);
+        RequestConnection(username);
     }
 
     void Client::OnMessageReceived(const Engine::NetworkMessage& message)
@@ -52,9 +46,9 @@ namespace Interspace::Client
 
     void Client::RegisterMessageHandlers()
     {
-        RegisterMessageHandler(CONNECTION_ACCEPTED, &Client::HandleConnectionAccepted);
-        RegisterMessageHandler(CLIENT_DISCONNECTED, &Client::HandleClientDisconnected);
-        RegisterMessageHandler(CLIENT_CONNECTED, &Client::HandlePeerConnected);
+        RegisterMessageHandler(CONNECTION_ACCEPTED, &Client::OnConnectionAccepted);
+        RegisterMessageHandler(CLIENT_DISCONNECTED, &Client::OnClientDisconnected);
+        RegisterMessageHandler(CLIENT_CONNECTED, &Client::OnClientConnected);
     }
 
     void Client::RegisterMessageHandler(uint8_t messageType, void (Client::*callback)(const std::vector<uint8_t>&))

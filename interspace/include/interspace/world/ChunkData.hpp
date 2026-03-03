@@ -9,5 +9,7 @@ namespace Interspace
     struct ChunkData
     {
         Engine::Vec2<uint16_t> position{};
+        uint64_t lastModified = 0;
+        bool isModified = false;
     };
 }

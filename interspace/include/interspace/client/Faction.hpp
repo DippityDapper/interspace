@@ -9,11 +9,11 @@ namespace Interspace::Client
     {
       public:
         FactionData data{};
-        std::map<uint16_t, std::unique_ptr<Colonist>> colonists{};
+        std::map<uint32_t, std::unique_ptr<Colonist>> colonists{};
 
       public:
         void Update(float delta);
 
-        Colonist* GetColonist(uint16_t colonistId);
+        Colonist* GetColonist(uint32_t colonistId);
     };
 }

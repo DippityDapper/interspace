@@ -15,5 +15,8 @@ namespace Interspace::Server
         server->ConnectToEvent(CREATE_COLONIST_REQUEST, this, &World::OnCreateColonistRequestReceived);
 
         server->ConnectToEvent(CREATE_FACTION_REQUEST, this, &World::OnCreateFactionRequestReceived);
+
+        server->ConnectToEvent(PLAYER_POSITION_PACKET, this, &World::OnPlayerPositionReceived);
+        server->ConnectToEvent(CHUNK_REQUEST, this, &World::OnChunkRequestReceived);
     }
 }

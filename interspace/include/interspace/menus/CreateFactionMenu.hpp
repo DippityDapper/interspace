@@ -31,12 +31,13 @@ namespace Interspace
       private:
         void Init() override;
         void Update(float delta) override;
-        void Render() override;
+        void UI() override;
         void Clean() override;
 
         bool CreateFaction();
 
         void OnFactionAccepted(const std::vector<uint8_t>& data);
         void OnFactionDenied(const std::vector<uint8_t>& data);
+        void SendCreationRequest(const std::string& factionName);
     };
 }

@@ -32,7 +32,7 @@ namespace Interspace
       private:
         void Init() override;
         void Update(float delta) override;
-        void Render() override;
+        void UI() override;
         void HandleEvents(Engine::InputLayer& layer) override;
         void Clean() override;
 

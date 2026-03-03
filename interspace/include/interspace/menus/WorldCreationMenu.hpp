@@ -24,6 +24,6 @@ namespace Interspace
 
       private:
         void Init() override;
-        void Render() override;
+        void UI() override;
     };
 }

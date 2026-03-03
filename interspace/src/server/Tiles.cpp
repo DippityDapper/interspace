@@ -2,16 +2,16 @@
 
 #include <random>
 
-#include "interspace/game/DBHelper.hpp"
 #include "SQLiteCpp/Database.h"
+#include "interspace/game/DBHelper.hpp"
 
 namespace Interspace::Server
 {
     void Tiles::Init()
     {
-        SQLite::Database* db = DBHelper::db.get();
+        SQLite::Database* commonDb = DBHelper::commonDb.get();
 
-        SQLite::Statement statement(*db, R"(
+        SQLite::Statement statement(*commonDb, R"(
             SELECT tileId, tileVariant, tileName, walkable FROM tileData
         )");
 
@@ -36,16 +36,16 @@ namespace Interspace::Server
     {
         if (!tileNameToId.contains(tileName))
         {
-            if (!DBHelper::TileDataExistsByName(tileName))
+            if (!DBHelper::TileDataExists(tileName))
             {
                 return nullptr;
             }
-            tileNameToId.emplace(tileName, DBHelper::GetTileDataIdByName(tileName));
+            tileNameToId.emplace(tileName, DBHelper::GetTileDataId(tileName));
         }
 
         if (!tileVariantsByName.contains(tileName))
         {
-            tileVariantsByName.emplace(tileName, DBHelper::GetTileDataVariantsByName(tileName));
+            tileVariantsByName.emplace(tileName, DBHelper::GetTileDataVariants(tileName));
         }
 
         std::vector<uint32_t> tileVariants = tileVariantsByName[tileName];
@@ -69,11 +69,11 @@ namespace Interspace::Server
     {
         if (!tileNameToId.contains(tileName))
         {
-            if (!DBHelper::TileDataExistsByName(tileName))
+            if (!DBHelper::TileDataExists(tileName))
             {
                 return nullptr;
             }
-            tileNameToId.emplace(tileName, DBHelper::GetTileDataIdByName(tileName));
+            tileNameToId.emplace(tileName, DBHelper::GetTileDataId(tileName));
         }
 
         uint32_t tileId = tileNameToId[tileName];

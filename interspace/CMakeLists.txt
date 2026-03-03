@@ -26,21 +26,4 @@ add_custom_target(copy_game_files ALL
 
 add_dependencies(interspace copy_game_files)
 
-if (WIN32)
-    get_filename_component(MINGW_BIN_DIR ${CMAKE_CXX_COMPILER} DIRECTORY)
-
-    add_custom_command(
-            TARGET interspace POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3::SDL3>" "$<TARGET_FILE_DIR:interspace>"
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3_image::SDL3_image>" "$<TARGET_FILE_DIR:interspace>"
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL3_mixer::SDL3_mixer>" "$<TARGET_FILE_DIR:interspace>"
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:enet>" "$<TARGET_FILE_DIR:interspace>"
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SQLiteCpp>" "$<TARGET_FILE_DIR:interspace>"
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SQLite::SQLite3>" "$<TARGET_FILE_DIR:interspace>"
-
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${MINGW_BIN_DIR}/libwinpthread-1.dll" "$<TARGET_FILE_DIR:interspace>"
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${MINGW_BIN_DIR}/libgcc_s_seh-1.dll" "$<TARGET_FILE_DIR:interspace>"
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${MINGW_BIN_DIR}/libstdc++-6.dll" "$<TARGET_FILE_DIR:interspace>"
-            VERBATIM
-    )
-endif()
+igneous_copy_runtime_dependencies(interspace)

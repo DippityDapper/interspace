@@ -37,8 +37,7 @@ namespace Interspace::Client
         ImGui::SetNextWindowPos({screenX, screenY - yOffset}, 0, {0.5f, 1.0f});
 
         std::string idStr = entityData.name + std::to_string(entityData.id);
-        ImGui::Begin(
-                idStr.c_str(), nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin(idStr.c_str(), nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
 
         ImGui::SetWindowFontScale(scale);
 

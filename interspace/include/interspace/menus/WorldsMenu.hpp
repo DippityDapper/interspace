@@ -6,14 +6,19 @@
 
 namespace Interspace
 {
+    struct WorldEntry
+    {
+        std::string name;
+    };
+
     class WorldsMenu : public Engine::Scene
     {
       private:
-        std::vector<std::string> worlds{};
+        std::vector<WorldEntry> worlds{};
 
       public:
         bool isHostingMenu = false;
-        std::string prevMenu = "";
+        std::string prevMenu{};
 
       private:
         void Init() override;

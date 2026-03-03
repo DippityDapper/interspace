@@ -19,7 +19,7 @@ namespace Interspace
     {
     }
 
-    void WorldCreationMenu::Render()
+    void WorldCreationMenu::UI()
     {
         ImGui::SetNextWindowPos({Engine::Window::viewport.x / 2.0f, Engine::Window::viewport.y / 2.0f}, 0, {0.5f, 0.5f});
 
@@ -65,12 +65,23 @@ namespace Interspace
             return false;
         }
 
+        std::string serverWorldDirPath{"data/server/" + name};
+        if (std::filesystem::exists(serverWorldDirPath) && std::filesystem::is_directory(serverWorldDirPath))
+        {
+            message = "World name already exists.";
+            return false;
+        }
+ std::string clientWorldDirPath{"data/client/" + name};
+        if (std::filesystem::exists(clientWorldDirPath) && std::filesystem::is_directory(clientWorldDirPath))
+        {
+            message = "World name already exists.";
+            return false;
+        }
+
         uint32_t seed = 0;
         if (seedStr.empty())
         {
-            std::mt19937 gen(std::random_device{}());
-            std::uniform_int_distribution<uint32_t> seedDist(0, UINT32_MAX);
-            seed = seedDist(gen);
+            seed = SDL_rand(UINT32_MAX);
         }
         else
         {
@@ -88,12 +99,6 @@ namespace Interspace
                 message = "World seed must be a positive number.";
                 return false;
             }
-        }
-
-        if (DBHelper::WorldExists(name))
-        {
-            message = "World name already exists.";
-            return false;
         }
 
         uint16_t worldSizeX = 128;
@@ -115,11 +120,7 @@ namespace Interspace
             worldSizeY = 1024;
         }
 
-        if (!DBHelper::InsertWorld(name, seed, worldSizeX, worldSizeY, "26.1.1a"))
-        {
-            message = "Failed to create world in database.";
-            return false;
-        }
+        DBHelper::CreateWorld(name, seed, worldSizeX, worldSizeY);
 
         message = "";
 

@@ -1,104 +1,96 @@
 #pragma once
 
-#include <vector>
-#include <string>
-
+#include "SQLiteCpp/Backup.h"
 #include "igneous/engine/Vec2.hpp"
-#include "SQLiteCpp/Database.h"
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace Interspace
 {
     class DBHelper
     {
       public:
-        static inline std::unique_ptr<SQLite::Database> db = nullptr;
+        static inline std::unique_ptr<SQLite::Database> worldsDb = nullptr;
+        static inline std::unique_ptr<SQLite::Database> worldDb = nullptr;
+        static inline std::unique_ptr<SQLite::Database> serverDb = nullptr;
+        static inline std::unique_ptr<SQLite::Database> commonDb = nullptr;
+
+        static inline bool initialized = false;
+
+      private:
+        //-------------------------------
+        // CREATE TABLES
+        //-------------------------------
+
+        static void InitWorldsDatabase();
+        static void InitServerDatabase();
+        static void InitCommonDatabase();
+        static void InitWorldDatabase(SQLite::Database* db);
 
       public:
-        static void InitDatabase();
+        static void Init();
 
-        // ============================================================
-        // TABLE CREATION
-        // ============================================================
+        static void CreateWorld(const std::string& worldName, uint32_t seed, uint16_t sizeX, uint16_t sizeY);
+        static void LoadWorld(const std::string& worldName);
+        static void UnloadWorld();
 
-        static void CreateWorldTable();
-        static void CreateChunkTable();
-        static void CreateTileTable();
-        static void CreatePlayerTable();
-        static void CreateFactionTable();
-        static void CreateColonistTable();
-        static void CreateFactionMemberTable();
-        static void CreateTileDataTable();
-        static void CreateIndices();
+        static bool AddPlayerToFaction(uint16_t factionId, uint32_t playerId);
+        static bool IsPlayerInFaction(uint16_t factionId, uint32_t playerId);
+        static bool IsPlayerInAnyFaction(uint32_t playerId);
+        static bool RemovePlayerFromFaction(uint16_t factionId, uint32_t playerId);
 
-        // ============================================================
-        // EXISTS CHECKS
-        // ============================================================
-        static bool WorldExists(const std::string& worldId);
-        static bool ChunkExists(const std::string& worldId, uint16_t chunkX, uint16_t chunkY);
-        static bool TileExists(const std::string& worldId, uint16_t chunkX, uint16_t chunkY, uint8_t tileX, uint8_t tileY);
-        static bool PlayerExists(uint32_t playerId);
-        static bool PlayerExistsByName(const std::string& playerName);
-        static bool FactionExists(uint16_t factionId, const std::string& worldId);
-        static bool FactionExistsByName(const std::string& worldId, const std::string& factionName);
-        static bool ColonistExists(const std::string& worldId, uint16_t colonistId);
-        static bool ColonistExistsByName(const std::string& worldId, const std::string& colonistName);
-        static bool TileDataExistsByName(const std::string& tileName);
-        static bool TileDataExists(uint32_t tileId, uint32_t tileVariant);
+        //-------------------------------
+        // INSERT DATA
+        //-------------------------------
 
-        // ============================================================
-        // GET METHODS
-        // ============================================================
-        static uint16_t GetFactionIdByName(const std::string& worldId, const std::string& factionName);
-        static std::vector<uint32_t> GetFactionMemberIds(const std::string& worldId, uint16_t factionId);
-        static uint16_t GetPlayerFactionId(const std::string& worldId, uint32_t playerId);
-        static std::vector<uint16_t> GetPlayerFactionIds(const std::string& worldId, uint32_t playerId);
-        static uint16_t GetColonistFactionId(const std::string& worldId, uint16_t colonistId);
-        static uint16_t GetColonistByName(const std::string& worldId, const std::string& colonistName);
-        static Engine::Vec2<float> GetColonistPosition(const std::string& worldId, uint16_t colonistId);
-        static uint32_t GetPlayerIdByName(const std::string& playerName);
-        static uint32_t GetTileDataIdByName(const std::string& tileName);
-        static std::vector<uint32_t> GetTileDataVariantsByName(const std::string& tileName);
-
-        // ============================================================
-        // INSERT METHODS
-        // ============================================================
-        static bool InsertWorld(const std::string& worldId, uint32_t worldSeed, uint16_t worldSizeX, uint16_t worldSizeY, const std::string& gameVersion = "");
-        static bool InsertChunk(const std::string& worldId, uint16_t chunkX, uint16_t chunkY);
-        static bool InsertTile(const std::string& worldId, uint16_t chunkX, uint16_t chunkY, uint8_t tileX, uint8_t tileY, uint32_t tileId, uint32_t tileVariant);
-        static bool InsertPlayer(uint32_t playerId, const std::string& playerName);
-        static bool InsertFaction(uint16_t factionId, const std::string& worldId, const std::string& factionName, uint32_t factionOwner);
-        static bool InsertColonist(uint16_t colonistId, const std::string& worldId, uint16_t factionId, const std::string& colonistName, float x, float y);
         static bool InsertTileData(uint32_t tileId, uint32_t tileVariant, const std::string& tileName, bool walkable, const std::string& texturePath, uint32_t atlasW, uint32_t atlasH, uint32_t atlasX, uint32_t atlasY);
+        static bool InsertPlayer(uint32_t playerId, const std::string& playerName);
+        static bool InsertFaction(uint16_t factionId, const std::string& factionName, uint32_t factionOwner);
+        static bool InsertColonist(uint32_t colonistId, uint16_t factionId, const std::string& colonistName, float x, float y);
 
-        // ============================================================
-        // UPDATE METHODS
-        // ============================================================
-        static bool UpdateWorld(const std::string& worldId, int32_t worldSeed, int32_t worldSizeX, int32_t worldSizeY);
-        static bool UpdateWorldLastPlayed(const std::string& worldId);
-        static bool UpdateTile(const std::string& worldId, uint16_t chunkX, uint16_t chunkY, uint8_t tileX, uint8_t tileY, uint32_t tileId, uint32_t tileVariant);
-        static bool UpdatePlayerName(uint32_t playerId, const std::string& playerName);
-        static bool UpdateFactionName(uint16_t factionId, const std::string& factionName);
-        static bool UpdateFactionOwner(uint16_t factionId, uint32_t factionOwner);
-        static bool UpdateColonistPosition(const std::string& worldId, uint16_t colonistId, float x, float y);
-        static bool UpdateColonistFaction(const std::string& worldId, uint16_t colonistId, uint16_t factionId);
-        static bool UpdateColonistName(const std::string& worldId, uint16_t colonistId, const std::string& colonistName);
+        //-------------------------------
+        // DATA EXISTS
+        //-------------------------------
 
-        // ============================================================
-        // RELATIONSHIP METHODS
-        // ============================================================
-        static bool IsPlayerInFaction(const std::string& worldId, uint16_t factionId, uint32_t playerId);
-        static bool IsPlayerInAnyFaction(const std::string& worldId, uint32_t playerId);
-        static bool AddPlayerToFaction(const std::string& worldId, uint16_t factionId, uint32_t playerId);
-        static bool RemovePlayerFromFaction(const std::string& worldId, uint16_t factionId, uint32_t playerId);
+        static bool TileDataExists(const std::string& tileName);
+        static bool TileDataExists(uint32_t tileId, uint32_t tileVariant);
+        static bool PlayerExists(uint32_t playerId);
+        static bool PlayerExists(const std::string& playerName);
+        static bool FactionExists(uint16_t factionId);
+        static bool FactionExists(const std::string& factionName);
+        static bool ColonistExists(uint32_t colonistId);
+        static bool ColonistExists(const std::string& colonistName);
 
-        // ============================================================
-        // DELETE METHODS
-        // ============================================================
-        static bool DeleteWorld(const std::string& worldId);
-        static bool DeleteChunk(const std::string& worldId, uint16_t chunkX, uint16_t chunkY);
-        static bool DeleteTile(const std::string& worldId, uint16_t chunkX, uint16_t chunkY, uint8_t tileX, uint8_t tileY);
-        static bool DeletePlayer(uint32_t playerId);
+        //-------------------------------
+        // GET DATA
+        //-------------------------------
+
+        static uint32_t GetTileDataId(const std::string& tileName);
+        static std::vector<uint32_t> GetTileDataVariants(const std::string& tileName);
+        static uint32_t GetPlayerId(const std::string& playerName);
+        static uint16_t GetFactionId(const std::string& factionName);
+        static std::vector<uint32_t> GetFactionMemberIds(uint16_t factionId);
+        static uint16_t GetPlayerFactionId(uint32_t playerId);
+        static std::vector<uint16_t> GetPlayerFactionIds(uint32_t playerId);
+        static uint16_t GetColonistFactionId(uint32_t colonistId);
+        static uint32_t GetColonist(const std::string& colonistName);
+        static Engine::Vec2<float> GetColonistLastSeen(uint32_t colonistId);
+
+        //-------------------------------
+        // UPDATE DATA
+        //-------------------------------
+
+        static bool UpdateColonistLastSeen(uint32_t colonistId, float x, float y);
+
+        //-------------------------------
+        // DELETE DATA
+        //-------------------------------
+
+        static bool DeleteWorld(const std::string& worldName);
         static bool DeleteFaction(uint16_t factionId);
-        static bool DeleteColonist(const std::string& worldId, uint16_t colonistId);
+        static bool DeleteColonist(uint32_t colonistId);
     };
 }

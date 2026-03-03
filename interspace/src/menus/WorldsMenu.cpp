@@ -29,10 +29,13 @@ namespace Interspace
 
         worlds.clear();
 
-        for (auto rows: Engine::Database::Query(DBHelper::db.get(), "SELECT * FROM world;"))
+        SQLite::Statement statement{*DBHelper::worldsDb, "SELECT worldId FROM world;"};
+
+        while (statement.executeStep())
         {
-            std::string worldName{rows["worldId"]};
-            worlds.push_back(worldName);
+            std::string worldName{statement.getColumn(0).getString()};
+            worlds.push_back({worldName});
+            SDL_Log("%s", worldName.c_str());
         }
     }
 
@@ -60,8 +63,7 @@ namespace Interspace
         ImGui::SetNextWindowSize({windowWidth, windowHeight});
         ImGui::SetNextWindowPos({viewport.x * 0.5f, viewport.y * 0.5f}, 0, {0.5f, 0.5f});
 
-        ImGui::Begin(
-                "Worlds", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("Worlds", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
 
         float footerHeight = buttonHeight + ImGui::GetStyle().ItemSpacing.y * 2;
         float childHeight = ImGui::GetContentRegionAvail().y - footerHeight;
@@ -75,9 +77,9 @@ namespace Interspace
                 ImGuiChildFlags_None,
                 ImGuiWindowFlags_AlwaysUseWindowPadding);
 
-        for (const auto& worldName: worlds)
+        for (const auto& worldEntry: worlds)
         {
-            ImGui::PushID(worldName.c_str());
+            ImGui::PushID(worldEntry.name.c_str());
             ImGui::PushStyleColor(ImGuiCol_ChildBg, entryBgColor);
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, childRounding);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(entryPadding, entryPadding));
@@ -88,7 +90,7 @@ namespace Interspace
                     ImGuiChildFlags_AutoResizeY,
                     ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoScrollbar);
 
-            ImGui::Text("%s", worldName.c_str());
+            ImGui::Text("%s", worldEntry.name.c_str());
             ImGui::SameLine();
 
             float availableWidth = ImGui::GetContentRegionAvail().x;
@@ -103,14 +105,14 @@ namespace Interspace
                 std::string username = Engine::CFGParser::GetString("game_config", "username");
                 if (isHostingMenu)
                 {
-                    if (Game::HostWorld(worldName, 33333, 32, true))
+                    if (Game::HostWorld(worldEntry.name, 33333, 32, true))
                     {
                         Game::JoinWorld(username, "127.0.0.1", 33333);
                     }
                 }
                 else
                 {
-                    Game::LoadWorld(worldName, username);
+                    Game::LoadWorld(worldEntry.name, username);
                 }
             }
 
@@ -122,7 +124,7 @@ namespace Interspace
             if (ImGui::Button("Delete", buttonSize))
             {
                 Sounds::PlaySound("button_1", 1.0f);
-                DeleteWorld(worldName);
+                DeleteWorld(worldEntry.name);
             }
 
             ImGui::EndChild();
@@ -174,21 +176,12 @@ namespace Interspace
         {
             return false;
         }
-
-        SQLite::Database* db = DBHelper::db.get();
-        auto result = Engine::Database::Query(db, "SELECT * FROM world WHERE worldId = '" + worldName + "'");
-
-        if (result.empty())
-        {
-            return false;
-        }
-
-        Engine::Database::Execute(db, "DELETE FROM world WHERE worldId = '" + worldName + "'");
+        DBHelper::DeleteWorld(worldName);
 
         int worldsCount = worlds.size();
         for (int i = 0; i < worldsCount; i++)
         {
-            if (worlds[i] == worldName)
+            if (worlds[i].name == worldName)
                 worlds.erase(worlds.begin() + i);
         }
 
