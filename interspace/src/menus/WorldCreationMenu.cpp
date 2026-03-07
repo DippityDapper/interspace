@@ -19,7 +19,7 @@ namespace Interspace
     {
     }
 
-    void WorldCreationMenu::UI()
+    void WorldCreationMenu::Render()
     {
         ImGui::SetNextWindowPos({Engine::Window::viewport.x / 2.0f, Engine::Window::viewport.y / 2.0f}, 0, {0.5f, 0.5f});
 
@@ -71,7 +71,7 @@ namespace Interspace
             message = "World name already exists.";
             return false;
         }
- std::string clientWorldDirPath{"data/client/" + name};
+        std::string clientWorldDirPath{"data/client/" + name};
         if (std::filesystem::exists(clientWorldDirPath) && std::filesystem::is_directory(clientWorldDirPath))
         {
             message = "World name already exists.";
@@ -81,7 +81,9 @@ namespace Interspace
         uint32_t seed = 0;
         if (seedStr.empty())
         {
-            seed = SDL_rand(UINT32_MAX);
+            std::mt19937 gen(std::random_device{}());
+            std::uniform_int_distribution<client_id_t> seedDist(1, UINT32_MAX);
+            seed = seedDist(gen);
         }
         else
         {

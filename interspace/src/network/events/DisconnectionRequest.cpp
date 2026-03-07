@@ -4,7 +4,8 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
+#include "interspace/game/Game.hpp"
 
 #include <vector>
 
@@ -15,7 +16,7 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::RequestDisconnect()
+        void ClientWorld::RequestDisconnect()
         {
             std::vector<uint8_t> request{DISCONNECTION_REQUEST};
             Engine::Serializer serializer(request);
@@ -34,20 +35,21 @@ namespace Interspace
     {
         void Server::OnDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from)
         {
-            uint32_t clientId = 0;
+            client_id_t clientId = 0;
             Engine::Deserializer deserializer(data);
             deserializer >> clientId;
 
+            if (!Game::server->CheckPeer(clientId, from))
+                return;
+
             if (peers.contains(clientId))
             {
-                std::string username = idToUsernameLookup[clientId];
-                peers.erase(clientId);
-                idToUsernameLookup.erase(clientId);
+                DisconnectClient(clientId);
 
                 AcknowledgeDisconnection(from);
                 BroadcastDisconnectionToPeers(clientId);
 
-                SDL_Log("[Server] Client Disconnected: %s [%u]", username.c_str(), clientId);
+                SDL_Log("[Server] Client Disconnected: %s [%u]", GetUsername(clientId).c_str(), clientId);
                 EmitEvent(CLIENT_DISCONNECTED, data, from);
             }
         }
@@ -60,29 +62,13 @@ namespace Interspace
     {
         void Server::OnUnRequestedDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from)
         {
-            uint32_t clientId = 0;
-            for (const auto& client: peers)
-            {
-                if (from == client.second)
-                {
-                    clientId = client.first;
-                    break;
-                }
-            }
+            client_id_t clientId = GetClientId(from);
 
             if (clientId == 0 || !peers.contains(clientId))
                 return;
 
-            std::string username = idToUsernameLookup[clientId];
-            peers.erase(clientId);
-            idToUsernameLookup.erase(clientId);
-
-            std::vector<uint8_t> notifyAllData{CLIENT_DISCONNECTED};
-            Engine::Serializer notifySerializer(notifyAllData);
-            notifySerializer << clientId;
-
-            for (const auto& client: peers)
-                netInterface->SendToClient(client.second, notifyAllData, ENET_PACKET_FLAG_RELIABLE);
+            DisconnectClient(clientId);
+            BroadcastDisconnectionToPeers(clientId);
 
             SDL_Log("[Server] Client Disconnected: %u", clientId);
             EmitEvent(CLIENT_DISCONNECTED, data, from);

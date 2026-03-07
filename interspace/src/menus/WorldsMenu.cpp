@@ -35,7 +35,6 @@ namespace Interspace
         {
             std::string worldName{statement.getColumn(0).getString()};
             worlds.push_back({worldName});
-            SDL_Log("%s", worldName.c_str());
         }
     }
 

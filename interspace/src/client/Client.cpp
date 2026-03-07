@@ -88,10 +88,10 @@ namespace Interspace::Client
         EmitEvent(type, data);
     }
 
-    std::string Client::GetUsername(uint32_t peerId)
+    std::string Client::GetUsername(client_id_t clientId)
     {
-        if (!peers.contains(peerId))
+        if (!peers.contains(clientId))
             return "";
-        return peers[peerId];
+        return peers[clientId];
     }
 }

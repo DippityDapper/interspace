@@ -4,10 +4,11 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
 #include "interspace/game/DBHelper.hpp"
+#include "interspace/game/Game.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <ranges>
 #include <vector>
@@ -19,7 +20,7 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::SendPosition()
+        void ClientWorld::SendPosition()
         {
             std::vector<uint8_t> data{PLAYER_POSITION_PACKET};
             Engine::Serializer serializer{data};
@@ -33,13 +34,17 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::OnPlayerPositionReceived(const std::vector<uint8_t>& data, ENetPeer* from)
+        void ServerWorld::OnPlayerPositionReceived(const std::vector<uint8_t>& data, ENetPeer* from)
         {
             Engine::Deserializer deserializer(data);
 
-            uint32_t clientId = 0;
+            client_id_t clientId = 0;
             float positionX, positionY;
             deserializer >> clientId >> positionX >> positionY;
+
+            if (!Game::server->CheckPeer(clientId, from))
+                return;
+
             if (!players.contains(clientId))
                 return;
             Player* player = players[clientId].get();

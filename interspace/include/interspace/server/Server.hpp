@@ -9,32 +9,46 @@
 
 #include "interspace/server/ServerNetEvent.hpp"
 #include "igneous/networking/NetworkInterface.hpp"
+#include "interspace/game/Typedefs.hpp"
 
 namespace Interspace::Server
 {
+    struct ConnectionAttempt
+    {
+        uint64_t retryTime = 0;
+        uint8_t reconnectionAttempt = 0;
+    };
+
     class Server
     {
       private:
         std::unordered_map<uint8_t, std::unique_ptr<ServerNetEvent>> messageHandler{};
         std::unordered_map<uint8_t, std::unique_ptr<ServerNetEvent>> netEvents;
 
-        std::unordered_map<uint32_t, ENetPeer*> peers{};
-        std::unordered_map<uint32_t, std::string> idToUsernameLookup{};
+        std::unordered_map<client_id_t, ENetPeer*> peers{};
+        std::unordered_map<client_id_t, std::string> idToUsernameLookup{};
+        std::unordered_map<ENetPeer*, client_id_t> peerToIdLookup{};
+
+        uint8_t maxConnectionRetryAttempts = 3;
+        uint64_t timeoutOffsetInSeconds = 1;
+        std::unordered_map<ENetPeer*, ConnectionAttempt> connectionAttempts{};
 
       public:
         Engine::NetworkInterface* netInterface = nullptr;
 
       private:
         void OnMessageReceived(const Engine::NetworkMessage& message);
-        void AcceptConnectionRequest(_ENetPeer* to, uint32_t id);
-        void BroadcastConnectionToPeers(uint32_t id, const std::string& username);
+        void AcceptConnectionRequest(_ENetPeer* to, client_id_t clientId);
+        void BroadcastConnectionToPeers(client_id_t clientId, const std::string& username);
         void SendPeersToPeer(ENetPeer* to);
         void AcknowledgeDisconnection(ENetPeer* to);
-        void BroadcastDisconnectionToPeers(uint32_t id);
+        void BroadcastDisconnectionToPeers(client_id_t clientId);
+        void SendConnectionRetryRequest(ENetPeer* to);
 
       public:
         explicit Server(Engine::NetworkInterface* _netInterface);
         void HandleMessage(const std::vector<uint8_t>& data, ENetPeer* from);
+        void CheckConnectionAttempts();
 
         void RegisterMessageHandlers();
         void RegisterMessageHandler(uint8_t messageType, void (Server::*callback)(const std::vector<uint8_t>& data, ENetPeer* from));
@@ -47,13 +61,17 @@ namespace Interspace::Server
         void OnUnRequestedConnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
         void OnUnRequestedDisconnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from);
 
-        uint32_t GetUserId(const std::string& username);
-        uint32_t GetUserId(ENetPeer* user);
-        std::string GetUsername(uint32_t peerId);
-        ENetPeer* GetPeer(uint32_t peerId);
+        client_id_t ConnectClient(ENetPeer* peer, const std::string& username);
+        void DisconnectClient(client_id_t clientId);
+
+        client_id_t GetClientId(const std::string& username);
+        client_id_t GetClientId(ENetPeer* peer);
+        std::string GetUsername(client_id_t clientId);
+        ENetPeer* GetPeer(client_id_t clientId);
         ENetPeer* GetPeer(const std::string& username);
-        bool PeerExists(uint32_t peerId);
-        std::unordered_map<uint32_t, ENetPeer*> GetPeers();
+        bool PeerExists(client_id_t clientId);
+        std::unordered_map<client_id_t, ENetPeer*> GetPeers();
+        bool CheckPeer(client_id_t supposedClientId, ENetPeer* peer);
 
       public:
         template<typename T>

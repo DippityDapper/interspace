@@ -3,9 +3,9 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
 #include "interspace/game/Game.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <ranges>
 #include <vector>
@@ -17,12 +17,18 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void WorldGenerator::RequestChunkNatural(Chunk* chunk)
+        void ClientWorldGenerator::RequestChunkNatural(ClientChunk* chunk)
         {
             std::vector<uint8_t> data{CHUNK_REQUEST};
             Engine::Serializer serializer{data};
-            uint8_t chunkType = 1;
-            serializer << Game::client->clientId << chunk->data.position.x << chunk->data.position.y << chunk->data.lastModified << chunkType;
+
+            ChunkRequestPacket chunkRequestPacket{
+                    .x = chunk->position.x,
+                    .y = chunk->position.y,
+                    .timestamp = chunk->lastModified,
+                    .type = 1};
+
+            serializer << chunkRequestPacket;
             Game::client->netInterface->SendToServer(data, ENET_PACKET_FLAG_RELIABLE);
         }
     }
@@ -32,23 +38,19 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::OnChunkRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
+        void ServerWorld::OnChunkRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
         {
             Engine::Deserializer deserializer{data};
-            uint32_t clientId = 0;
-            uint16_t chunkPositionX = 0;
-            uint16_t chunkPositionY = 0;
-            uint64_t chunkTimestamp = 0;
-            uint8_t chunkType = 0;
-            deserializer >> clientId >> chunkPositionX >> chunkPositionY >> chunkTimestamp >> chunkType;
+            ChunkRequestPacket chunkRequestPacket{};
+            deserializer >> chunkRequestPacket;
 
-            if (clientId <= 0)
+            if (chunkRequestPacket.x > worldData->worldSizeX || chunkRequestPacket.y > worldData->worldSizeY)
                 return;
-            if (chunkPositionX > worldData->worldSizeX || chunkPositionY > worldData->worldSizeY)
+ if (Game::server->GetClientId(from) == 0)
                 return;
 
-            Engine::Vec2<uint16_t> chunkPosition{chunkPositionX, chunkPositionY};
-            worldGenerator->AddChunkRequest(clientId, chunkPosition, chunkTimestamp, chunkType);
+            client_id_t clientId = Game::server->GetClientId(from);
+            worldGenerator->AddChunkRequest(clientId, chunkRequestPacket);
         }
     }
 }

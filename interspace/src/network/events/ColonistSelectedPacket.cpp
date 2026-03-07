@@ -3,8 +3,8 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <ranges>
 #include <vector>
@@ -16,7 +16,7 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::BroadcastColonistSelection(uint16_t factionId, uint32_t colonistId, uint32_t clientId)
+        void ServerWorld::BroadcastColonistSelection(faction_id_t factionId, entity_id_t colonistId, client_id_t clientId)
         {
             std::vector<uint8_t> broadcastData{COLONIST_SELECTED_PACKET};
 
@@ -33,11 +33,11 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::OnColonistSelectedPacketReceived(const std::vector<uint8_t>& data)
+        void ClientWorld::OnColonistSelectedPacketReceived(const std::vector<uint8_t>& data)
         {
-            uint16_t factionId = 0;
-            uint32_t colonistId = 0;
-            uint32_t clientId = 0;
+            faction_id_t factionId = 0;
+            entity_id_t colonistId = 0;
+            client_id_t clientId = 0;
 
             Engine::Deserializer deserializer(data);
             deserializer >> factionId >> colonistId >> clientId;
@@ -45,12 +45,12 @@ namespace Interspace
             if (!factions.contains(factionId))
                 return;
 
-            Faction* faction = factions[factionId].get();
+            ClientFaction* faction = factions[factionId].get();
             if (!faction->colonists.contains(colonistId))
                 return;
 
-            Colonist* colonist = faction->colonists[colonistId].get();
-            colonist->colonistData.selectedBy = clientId;
+            ClientColonist* colonist = faction->colonists[colonistId].get();
+            colonist->selectedBy = clientId;
 
             if (clientId == client->clientId)
                 colonist->sprite->SetTexture("assets/colonists/colonist_green_spritesheet.png");

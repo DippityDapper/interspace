@@ -3,9 +3,9 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
-#include "interspace/server/Faction.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
+#include "interspace/server/ServerFaction.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <vector>
 
@@ -16,7 +16,7 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::RequestMoveColonist(uint16_t factionId, uint32_t colonistId, float x, float y)
+        void ClientWorld::RequestMoveColonist(faction_id_t factionId, entity_id_t colonistId, float x, float y)
         {
             std::vector<uint8_t> data{COLONIST_POSITION_REQUEST};
             Engine::Serializer serializer(data);
@@ -30,10 +30,10 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::OnColonistPositionRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
+        void ServerWorld::OnColonistPositionRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
         {
-            uint16_t factionId = 0;
-            uint32_t colonistId = 0;
+            faction_id_t factionId = 0;
+            entity_id_t colonistId = 0;
             float colonistPositionX = 0;
             float colonistPositionY = 0;
 
@@ -43,14 +43,14 @@ namespace Interspace
             if (!factions.contains(factionId))
                 return;
 
-            Faction* faction = factions[factionId].get();
-            Colonist* colonist = faction->GetColonist(colonistId);
+            ServerFaction* faction = factions[factionId].get();
+            ServerColonist* colonist = faction->GetColonist(colonistId);
 
             if (!colonist)
                 return;
 
-            colonist->entityData.position.x = colonistPositionX;
-            colonist->entityData.position.y = colonistPositionY;
+            colonist->position.x = colonistPositionX;
+            colonist->position.y = colonistPositionY;
         }
     }
 }

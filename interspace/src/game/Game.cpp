@@ -9,7 +9,7 @@
 
 #include "interspace/menus/MainMenu.hpp"
 #include "interspace/game/DBHelper.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/server/ServerWorld.hpp"
 #include "interspace/world/TileRegistry.hpp"
 
 namespace Interspace
@@ -41,6 +41,7 @@ namespace Interspace
             server = nullptr;
             clientNetInterface = nullptr;
             serverNetInterface = nullptr;
+            DBHelper::UnloadWorld();
         }
 
         if (serverNetInterface)
@@ -49,7 +50,7 @@ namespace Interspace
             clientNetInterface->Poll();
     }
 
-    void Game::UI()
+    void Game::Render()
     {
     }
 
@@ -73,7 +74,7 @@ namespace Interspace
 
         if (!serverWorld)
         {
-            serverWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Server::World>("server_world", true, false);
+            serverWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Server::ServerWorld>("server_world", true, false);
         }
 
         serverWorld->InitWorld(server.get(), worldName);
@@ -92,7 +93,7 @@ namespace Interspace
 
         if (!clientWorld)
         {
-            clientWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Client::World>("client_world", true, false);
+            clientWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Client::ClientWorld>("client_world", true, false);
         }
 
         clientWorld->InitWorld(client.get());
@@ -114,12 +115,12 @@ namespace Interspace
 
         if (!serverWorld)
         {
-            serverWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Server::World>("server_world", true, false);
+            serverWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Server::ServerWorld>("server_world", true, false);
         }
 
         if (!clientWorld)
         {
-            clientWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Client::World>("client_world", true, false);
+            clientWorld = Engine::SceneManager::GetSceneRoot()->AddScene<Client::ClientWorld>("client_world", true, false);
         }
 
         serverWorld->InitWorld(server.get(), worldName);

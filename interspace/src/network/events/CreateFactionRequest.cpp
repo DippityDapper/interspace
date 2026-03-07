@@ -4,9 +4,10 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
+#include "interspace/game/Game.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <vector>
 
@@ -28,7 +29,7 @@ namespace Interspace
 
     namespace Server
     {
-        void World::SendFactionCreateRequest(uint32_t clientId)
+        void ServerWorld::SendFactionCreateRequest(client_id_t clientId)
         {
             std::vector<uint8_t> data{CREATE_FACTION_REQUEST};
             ENetPeer* peer = server->GetPeer(clientId);
@@ -41,22 +42,25 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::OnCreateFactionRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
+        void ServerWorld::OnCreateFactionRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
         {
-            uint32_t playerId = 0;
+            client_id_t clientId = 0;
             std::string factionName{};
 
             Engine::Deserializer deserializer(data);
-            deserializer >> playerId >> factionName;
+            deserializer >> clientId >> factionName;
 
-            uint16_t factionId = AddFaction(factionName, playerId);
+            if (!Game::server->CheckPeer(clientId, from))
+                return;
+
+            faction_id_t factionId = AddFaction(factionName, clientId);
             if (factionId == 0)
             {
                 DenyFactionRequest(from);
             }
             else
             {
-                std::string playerName = server->GetUsername(playerId);
+                std::string playerName = server->GetUsername(clientId);
                 AddColonistToFaction(factionId, playerName);
                 AcceptFactionRequest(from);
             }
@@ -65,7 +69,7 @@ namespace Interspace
 
     namespace Client
     {
-        void World::OnCreateFactionRequestReceived(const std::vector<uint8_t>& data)
+        void ClientWorld::OnCreateFactionRequestReceived(const std::vector<uint8_t>& data)
         {
             Engine::SceneRoot* sceneRoot = Engine::SceneManager::GetSceneRoot();
             if (sceneRoot->SceneExists("create_faction_menu"))

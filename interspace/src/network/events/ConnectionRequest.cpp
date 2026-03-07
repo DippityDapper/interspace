@@ -39,28 +39,11 @@ namespace Interspace
             Engine::Deserializer deserializer(data);
             deserializer >> username;
 
-            if (!DBHelper::PlayerExists(username))
-            {
-                std::mt19937 gen(std::random_device{}());
-
-                int peerId = 0;
-                do
-                {
-                    std::uniform_int_distribution<> peerIdDist(1, INT32_MAX);
-                    peerId = peerIdDist(gen);
-                } while (DBHelper::PlayerExists(peerId));
-
-                DBHelper::InsertPlayer(peerId, username);
-            }
-
-            uint32_t newId = DBHelper::GetPlayerId(username);
+            client_id_t newId = ConnectClient(from, username);
 
             AcceptConnectionRequest(from, newId);
             BroadcastConnectionToPeers(newId, username);
             SendPeersToPeer(from);
-
-            peers.emplace(newId, from);
-            idToUsernameLookup.emplace(newId, username);
 
             SDL_Log("[Server] User %s [%u] connected.", username.c_str(), newId);
 
@@ -78,6 +61,18 @@ namespace Interspace
     {
         void Server::OnUnRequestedConnectionRequest(const std::vector<uint8_t>& data, ENetPeer* from)
         {
+            client_id_t clientId = GetClientId(from);
+            if (clientId != 0)
+                return;
+
+            if (connectionAttempts.contains(from))
+                return;
+
+            uint64_t currentTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+            uint64_t retryTime = currentTime + timeoutOffsetInSeconds;
+
+            ConnectionAttempt connectionAttempt{retryTime, 0};
+            connectionAttempts.emplace(from, connectionAttempt);
         }
     }
 }

@@ -1,13 +1,11 @@
 #include "interspace/game/Camera.hpp"
 
-#include <algorithm>
-
+#include "SDL3/SDL_keycode.h"
 #include "igneous/input/Input.hpp"
 #include "igneous/rendering/Window.hpp"
+#include "interspace/game/Game.hpp"
 
-#include "interspace/client/World.hpp"
-
-namespace Interspace
+namespace Interspace::Client
 {
     Camera::Camera()
     {
@@ -29,8 +27,8 @@ namespace Interspace
         float tZoom = std::min(delta * zoomSpeed, 1.0f);
 
         Engine::Vec2<float> velocityNorm = velocity.Normalized();
-        targetPosition.y += velocityNorm.y * (moveSpeed * Client::World::worldData->TILE_SIZE / zoom) * moveSpeedMultiplier * delta;
-        targetPosition.x += velocityNorm.x * (moveSpeed * Client::World::worldData->TILE_SIZE / zoom) * moveSpeedMultiplier * delta;
+        targetPosition.y += velocityNorm.y * (moveSpeed * Game::clientWorld->worldData->TILE_SIZE / zoom) * moveSpeedMultiplier * delta;
+        targetPosition.x += velocityNorm.x * (moveSpeed * Game::clientWorld->worldData->TILE_SIZE / zoom) * moveSpeedMultiplier * delta;
 
         if (targetPosition != position)
         {

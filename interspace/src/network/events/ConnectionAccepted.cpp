@@ -12,11 +12,11 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void Server::AcceptConnectionRequest(_ENetPeer* to, uint32_t id)
+        void Server::AcceptConnectionRequest(_ENetPeer* to, client_id_t clientId)
         {
             std::vector<uint8_t> response{CONNECTION_ACCEPTED};
             Engine::Serializer responseSerializer(response);
-            responseSerializer << id;
+            responseSerializer << clientId;
             netInterface->SendToClient(to, response, ENET_PACKET_FLAG_RELIABLE);
         }
     }

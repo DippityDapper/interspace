@@ -7,6 +7,7 @@
 
 #include "interspace/client/ClientNetEvent.hpp"
 #include "igneous/networking/NetworkInterface.hpp"
+#include "interspace/game/Typedefs.hpp"
 
 namespace Interspace::Client
 {
@@ -16,13 +17,13 @@ namespace Interspace::Client
         std::unordered_map<uint8_t, std::unique_ptr<ClientNetEvent>> messageHandler{};
         std::unordered_map<uint8_t, std::unique_ptr<ClientNetEvent>> netEvents{};
 
-        std::unordered_map<uint32_t, std::string> peers{};
+        std::unordered_map<client_id_t, std::string> peers{};
 
       public:
         Engine::NetworkInterface* netInterface = nullptr;
 
         std::string username;
-        uint32_t clientId = 0;
+        client_id_t clientId = 0;
 
       private:
         void OnMessageReceived(const Engine::NetworkMessage& message);
@@ -42,7 +43,7 @@ namespace Interspace::Client
         void OnClientDisconnected(const std::vector<uint8_t>& data);
         void OnClientConnected(const std::vector<uint8_t>& data);
 
-        std::string GetUsername(uint32_t peerId);
+        std::string GetUsername(client_id_t clientId);
 
       public:
         template<typename T>

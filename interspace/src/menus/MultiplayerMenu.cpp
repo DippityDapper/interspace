@@ -12,7 +12,7 @@ namespace Interspace
     {
     }
 
-    void MultiplayerMenu::UI()
+    void MultiplayerMenu::Render()
     {
         Engine::Vec2<int> viewport = Engine::Window::viewport;
 

@@ -2,6 +2,7 @@
 
 #include "SDL3/SDL_log.h"
 #include "SQLiteCpp/Statement.h"
+#include "interspace/game/Typedefs.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -174,9 +175,9 @@ namespace Interspace
         worldDb = nullptr;
     }
 
-    bool DBHelper::AddPlayerToFaction(uint16_t factionId, uint32_t playerId)
+    bool DBHelper::AddPlayerToFaction(faction_id_t factionId, client_id_t clientId)
     {
-        if (IsPlayerInFaction(factionId, playerId))
+        if (IsPlayerInFaction(factionId, clientId))
         {
             return true;
         }
@@ -187,12 +188,12 @@ namespace Interspace
         )");
 
         statement.bind(1, factionId);
-        statement.bind(2, playerId);
+        statement.bind(2, clientId);
 
         return statement.exec() > 0;
     }
 
-    bool DBHelper::IsPlayerInFaction(uint16_t factionId, uint32_t playerId)
+    bool DBHelper::IsPlayerInFaction(faction_id_t factionId, client_id_t clientId)
     {
         SQLite::Statement query(*worldDb, R"(
             SELECT 1 FROM factionMember
@@ -200,24 +201,24 @@ namespace Interspace
         )");
 
         query.bind(1, factionId);
-        query.bind(2, playerId);
+        query.bind(2, clientId);
 
         return query.executeStep();
     }
 
-    bool DBHelper::IsPlayerInAnyFaction(uint32_t playerId)
+    bool DBHelper::IsPlayerInAnyFaction(client_id_t clientId)
     {
         SQLite::Statement query(*worldDb, R"(
             SELECT factionId FROM factionMember
             WHERE playerId = ?
         )");
 
-        query.bind(1, playerId);
+        query.bind(1, clientId);
 
         return query.executeStep();
     }
 
-    bool DBHelper::RemovePlayerFromFaction(uint16_t factionId, uint32_t playerId)
+    bool DBHelper::RemovePlayerFromFaction(faction_id_t factionId, client_id_t clientId)
     {
         SQLite::Statement statement(*worldDb, R"(
             DELETE FROM factionMember
@@ -225,7 +226,7 @@ namespace Interspace
         )");
 
         statement.bind(1, factionId);
-        statement.bind(2, playerId);
+        statement.bind(2, clientId);
 
         return statement.exec() > 0;
     }
@@ -252,7 +253,7 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    bool DBHelper::InsertPlayer(uint32_t playerId, const std::string& playerName)
+    bool DBHelper::InsertPlayer(client_id_t clientId, const std::string& playerName)
     {
         if (!worldDb)
             return false;
@@ -262,13 +263,13 @@ namespace Interspace
             VALUES(?, ?)
         )");
 
-        statement.bind(1, playerId);
+        statement.bind(1, clientId);
         statement.bind(2, playerName);
 
         return statement.exec() > 0;
     }
 
-    bool DBHelper::InsertFaction(uint16_t factionId, const std::string& factionName, uint32_t factionOwner)
+    bool DBHelper::InsertFaction(faction_id_t factionId, const std::string& factionName, client_id_t factionOwner)
     {
         if (factionOwner == 0)
         {
@@ -295,7 +296,7 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    bool DBHelper::InsertColonist(uint32_t colonistId, uint16_t factionId, const std::string& colonistName, float x, float y)
+    bool DBHelper::InsertColonist(entity_id_t colonistId, faction_id_t factionId, const std::string& colonistName, float x, float y)
     {
         SQLite::Statement statement(*worldDb, R"(
             INSERT INTO colonist(colonistId, factionId, colonistName, lastSeenX, lastSeenY)
@@ -326,12 +327,12 @@ namespace Interspace
         return query.executeStep();
     }
 
-    bool DBHelper::PlayerExists(uint32_t playerId)
+    bool DBHelper::PlayerExists(client_id_t clientId)
     {
         if (!worldDb)
             return false;
         SQLite::Statement query(*worldDb, "SELECT playerId FROM player WHERE playerId = ?");
-        query.bind(1, playerId);
+        query.bind(1, clientId);
         return query.executeStep();
     }
 
@@ -345,7 +346,7 @@ namespace Interspace
         return query.executeStep();
     }
 
-    bool DBHelper::FactionExists(uint16_t factionId)
+    bool DBHelper::FactionExists(faction_id_t factionId)
     {
         SQLite::Statement query(*worldDb, "SELECT factionId FROM faction WHERE factionId = ?");
         query.bind(1, factionId);
@@ -359,7 +360,7 @@ namespace Interspace
         return query.executeStep();
     }
 
-    bool DBHelper::ColonistExists(uint32_t colonistId)
+    bool DBHelper::ColonistExists(entity_id_t colonistId)
     {
         SQLite::Statement query(*worldDb, "SELECT colonistId FROM colonist WHERE colonistId = ?");
         query.bind(1, colonistId);
@@ -398,7 +399,7 @@ namespace Interspace
         return tileVariants;
     }
 
-    uint32_t DBHelper::GetPlayerId(const std::string& playerName)
+    client_id_t DBHelper::GetclientId(const std::string& playerName)
     {
         if (!worldDb)
             return 0;
@@ -408,83 +409,83 @@ namespace Interspace
 
         if (query.executeStep())
         {
-            return static_cast<uint32_t>(query.getColumn(0).getInt());
+            return static_cast<client_id_t>(query.getColumn(0).getInt());
         }
         return 0;
     }
 
-    uint16_t DBHelper::GetFactionId(const std::string& factionName)
+    faction_id_t DBHelper::GetFactionId(const std::string& factionName)
     {
         SQLite::Statement query(*worldDb, "SELECT factionId FROM faction WHERE factionName = ?");
         query.bind(1, factionName);
 
         if (query.executeStep())
         {
-            return static_cast<uint16_t>(query.getColumn(0).getInt());
+            return static_cast<faction_id_t>(query.getColumn(0).getInt());
         }
         return 0;
     }
 
-    std::vector<uint32_t> DBHelper::GetFactionMemberIds(uint16_t factionId)
+    std::vector<client_id_t> DBHelper::GetFactionMemberIds(faction_id_t factionId)
     {
-        std::vector<uint32_t> memberIds;
+        std::vector<client_id_t> memberIds;
         SQLite::Statement query(*worldDb, "SELECT playerId FROM factionMember WHERE factionId = ?");
         query.bind(1, factionId);
 
         while (query.executeStep())
         {
-            memberIds.push_back(static_cast<uint32_t>(query.getColumn(0).getInt()));
+            memberIds.push_back(static_cast<client_id_t>(query.getColumn(0).getInt()));
         }
         return memberIds;
     }
 
-    uint16_t DBHelper::GetPlayerFactionId(uint32_t playerId)
+    faction_id_t DBHelper::GetPlayerFactionId(client_id_t clientId)
     {
         SQLite::Statement query(*worldDb, "SELECT factionId FROM factionMember WHERE playerId = ? LIMIT 1");
-        query.bind(1, playerId);
+        query.bind(1, clientId);
 
         if (query.executeStep())
         {
-            return static_cast<uint16_t>(query.getColumn(0).getInt());
+            return static_cast<faction_id_t>(query.getColumn(0).getInt());
         }
         return 0;
     }
 
-    std::vector<uint16_t> DBHelper::GetPlayerFactionIds(uint32_t playerId)
+    std::vector<faction_id_t> DBHelper::GetPlayerFactionIds(client_id_t clientId)
     {
-        std::vector<uint16_t> factionIds{};
+        std::vector<faction_id_t> factionIds{};
         SQLite::Statement query(*worldDb, "SELECT factionId FROM factionMember WHERE playerId = ?");
-        query.bind(1, playerId);
+        query.bind(1, clientId);
 
         while (query.executeStep())
         {
-            factionIds.push_back(static_cast<uint16_t>(query.getColumn(0).getInt()));
+            factionIds.push_back(static_cast<faction_id_t>(query.getColumn(0).getInt()));
         }
         return factionIds;
     }
-    uint16_t DBHelper::GetColonistFactionId(uint32_t colonistId)
+    faction_id_t DBHelper::GetColonistFactionId(entity_id_t colonistId)
     {
         SQLite::Statement query(*worldDb, "SELECT factionId FROM colonist WHERE colonistId = ?");
         query.bind(1, colonistId);
 
         if (query.executeStep())
         {
-            return static_cast<uint16_t>(query.getColumn(0).getInt());
+            return static_cast<faction_id_t>(query.getColumn(0).getInt());
         }
         return 0;
     }
-    uint32_t DBHelper::GetColonist(const std::string& colonistName)
+    entity_id_t DBHelper::GetColonist(const std::string& colonistName)
     {
         SQLite::Statement query(*worldDb, "SELECT colonistId FROM colonist WHERE colonistName = ?");
         query.bind(1, colonistName);
 
         if (query.executeStep())
         {
-            return static_cast<uint32_t>(query.getColumn(0).getInt());
+            return static_cast<entity_id_t>(query.getColumn(0).getInt());
         }
         return 0;
     }
-    Engine::Vec2<float> DBHelper::GetColonistLastSeen(uint32_t colonistId)
+    Engine::Vec2<float> DBHelper::GetColonistLastSeen(entity_id_t colonistId)
     {
         SQLite::Statement query(*worldDb, "SELECT lastSeenX, lastSeenY FROM colonist WHERE colonistId = ?");
         query.bind(1, colonistId);
@@ -497,7 +498,20 @@ namespace Interspace
         }
         return {0, 0};
     }
-    bool DBHelper::UpdateColonistLastSeen(uint32_t colonistId, float x, float y)
+
+    std::string DBHelper::GetFactionOwnerName(faction_id_t factionId)
+    {
+        SQLite::Statement query(*worldDb, "SELECT playerName FROM player p, faction f WHERE p.playerId = f.ownerId AND f.factionId = ?");
+        query.bind(1, factionId);
+
+        if (query.executeStep())
+        {
+            return query.getColumn(0).getString();
+        }
+        return "";
+    }
+
+    bool DBHelper::UpdateColonistLastSeen(entity_id_t colonistId, float x, float y)
     {
         SQLite::Statement statement(*worldDb, R"(
             UPDATE colonist SET lastSeenX = ?, lastSeenY = ?
@@ -531,14 +545,14 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    bool DBHelper::DeleteFaction(uint16_t factionId)
+    bool DBHelper::DeleteFaction(faction_id_t factionId)
     {
         SQLite::Statement statement(*worldDb, "DELETE FROM faction WHERE factionId = ?");
         statement.bind(1, factionId);
         return statement.exec() > 0;
     }
 
-    bool DBHelper::DeleteColonist(uint32_t colonistId)
+    bool DBHelper::DeleteColonist(entity_id_t colonistId)
     {
         SQLite::Statement statement(*worldDb, R"(
             DELETE FROM colonist

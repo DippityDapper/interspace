@@ -25,7 +25,7 @@ namespace Interspace
       private:
         void Init() override;
         void OnActiveChanged(bool value) override;
-        void UI() override;
+        void Render() override;
 
         void CreateSubmenuScenes();
     };

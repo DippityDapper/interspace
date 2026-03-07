@@ -3,7 +3,8 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/game/Game.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <ranges>
 #include <vector>
@@ -15,11 +16,11 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void Server::BroadcastDisconnectionToPeers(uint32_t id)
+        void Server::BroadcastDisconnectionToPeers(client_id_t clientId)
         {
             std::vector<uint8_t> notifyAllData{CLIENT_DISCONNECTED};
             Engine::Serializer notifySerializer(notifyAllData);
-            notifySerializer << id;
+            notifySerializer << clientId;
 
             for (const auto& peer: peers | std::views::values)
                 netInterface->SendToClient(peer, notifyAllData, ENET_PACKET_FLAG_RELIABLE);
@@ -33,25 +34,28 @@ namespace Interspace
     {
         void Client::OnClientDisconnected(const std::vector<uint8_t>& data)
         {
-            uint32_t peerId = 0;
+            client_id_t clientId = 0;
             Engine::Deserializer deserializer(data);
-            deserializer >> peerId;
+            deserializer >> clientId;
 
-            std::string peerUsername = peers[peerId];
+            std::string peerUsername = peers[clientId];
 
-            if (peers.contains(peerId))
-                peers.erase(peerId);
+            if (peers.contains(clientId))
+                peers.erase(clientId);
         }
     }
 
     namespace Server
     {
-        void World::OnClientDisconnected(const std::vector<uint8_t>& data, ENetPeer* from)
+        void ServerWorld::OnClientDisconnected(const std::vector<uint8_t>& data, ENetPeer* from)
         {
-            uint32_t clientId = 0;
+            client_id_t clientId = 0;
 
             Engine::Deserializer deserializer(data);
             deserializer >> clientId;
+
+            if (!Game::server->CheckPeer(clientId, from))
+                return;
 
             BroadcastColonistDeselectAllPacket(clientId);
         }

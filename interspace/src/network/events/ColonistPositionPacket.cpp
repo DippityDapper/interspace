@@ -3,8 +3,8 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <ranges>
 #include <vector>
@@ -16,7 +16,7 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::BroadcastColonistPositionData()
+        void ServerWorld::BroadcastColonistPositionData()
         {
             std::vector<std::vector<uint8_t>> sendQueue;
 
@@ -28,10 +28,10 @@ namespace Interspace
                     Engine::Serializer serializer(data);
 
                     serializer
-                            << faction->data.id
-                            << colonist->entityData.id
-                            << colonist->entityData.position.x
-                            << colonist->entityData.position.y;
+                            << faction->id
+                            << colonist->id
+                            << colonist->position.x
+                            << colonist->position.y;
 
                     sendQueue.push_back(data);
                 }
@@ -52,12 +52,12 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::OnColonistPositionDataReceived(const std::vector<uint8_t>& data)
+        void ClientWorld::OnColonistPositionDataReceived(const std::vector<uint8_t>& data)
         {
             Engine::Deserializer deserializer(data);
 
-            uint16_t factionId = 0;
-            uint32_t colonistId = 0;
+            faction_id_t factionId = 0;
+            entity_id_t colonistId = 0;
             float colonistPositionX{};
             float colonistPositionY{};
 
@@ -66,14 +66,14 @@ namespace Interspace
             if (!factions.contains(factionId))
                 return;
 
-            Faction* faction = factions[factionId].get();
-            Colonist* colonist = faction->GetColonist(colonistId);
+            ClientFaction* faction = factions[factionId].get();
+            ClientColonist* colonist = faction->GetColonist(colonistId);
 
             if (!colonist)
                 return;
 
-            colonist->entityData.position.x = colonistPositionX;
-            colonist->entityData.position.y = colonistPositionY;
+            colonist->position.x = colonistPositionX;
+            colonist->position.y = colonistPositionY;
         }
     }
 }

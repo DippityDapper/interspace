@@ -5,10 +5,10 @@
 #include "igneous/scenes/Scene.hpp"
 
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
 #include "interspace/menus/MainMenu.hpp"
 #include "interspace/server/Server.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 namespace Interspace
 {
@@ -21,8 +21,8 @@ namespace Interspace
         static inline std::unique_ptr<Server::Server> server = nullptr;
         static inline std::unique_ptr<Client::Client> client = nullptr;
 
-        static inline Server::World* serverWorld = nullptr;
-        static inline Client::World* clientWorld = nullptr;
+        static inline Server::ServerWorld* serverWorld = nullptr;
+        static inline Client::ClientWorld* clientWorld = nullptr;
 
         static inline std::unique_ptr<Engine::NetworkInterface> serverNetInterface = nullptr;
         static inline std::unique_ptr<Engine::NetworkInterface> clientNetInterface = nullptr;
@@ -32,7 +32,7 @@ namespace Interspace
       private:
         void Init() override;
         void Update(float delta) override;
-        void UI() override;
+        void Render() override;
         void HandleEvents(Engine::InputLayer& layer) override;
         void Clean() override;
 

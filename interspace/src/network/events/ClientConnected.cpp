@@ -3,8 +3,10 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/game/Game.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
+#include <ranges>
 #include <vector>
 
 namespace Interspace
@@ -14,12 +16,12 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void Server::BroadcastConnectionToPeers(uint32_t id, const std::string& username)
+        void Server::BroadcastConnectionToPeers(client_id_t clientId, const std::string& username)
         {
             std::vector<uint8_t> newClientData{CLIENT_CONNECTED};
             Engine::Serializer broadcastSerializer(newClientData);
 
-            broadcastSerializer << id << username;
+            broadcastSerializer << clientId << username;
 
             for (const auto& peer: peers)
             {
@@ -29,17 +31,14 @@ namespace Interspace
 
         void Server::SendPeersToPeer(ENetPeer* to)
         {
-            for (const auto& peer: peers)
+            for (const auto& clientId: peers | std::views::keys)
             {
                 std::vector<uint8_t> peerData{CLIENT_CONNECTED};
 
-                uint32_t peerId = peer.first;
-                std::string peerUsername = idToUsernameLookup[peerId];
+                std::string peerUsername = idToUsernameLookup[clientId];
 
                 Engine::Serializer peerSerializer(peerData);
-                peerSerializer
-                        << peerId
-                        << peerUsername;
+                peerSerializer << clientId << peerUsername;
 
                 netInterface->SendToClient(to, peerData, ENET_PACKET_FLAG_RELIABLE);
             }
@@ -53,24 +52,27 @@ namespace Interspace
     {
         void Client::OnClientConnected(const std::vector<uint8_t>& data)
         {
-            uint32_t peerId = 0;
+            client_id_t clientId = 0;
             std::string peerUsername{};
 
             Engine::Deserializer deserializer(data);
-            deserializer >> peerId >> peerUsername;
+            deserializer >> clientId >> peerUsername;
 
-            peers[peerId] = peerUsername;
+            peers[clientId] = peerUsername;
         }
     }
 
     namespace Server
     {
-        void World::OnClientConnected(const std::vector<uint8_t>& data, ENetPeer* from)
+        void ServerWorld::OnClientConnected(const std::vector<uint8_t>& data, ENetPeer* from)
         {
-            uint32_t clientId = 0;
+            client_id_t clientId = 0;
             std::string username{};
             Engine::Deserializer deserializer(data);
             deserializer >> clientId >> username;
+
+            if (!Game::server->CheckPeer(clientId, from))
+                return;
 
             players.emplace(clientId, std::make_unique<Player>());
 

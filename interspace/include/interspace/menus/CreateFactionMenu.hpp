@@ -31,7 +31,7 @@ namespace Interspace
       private:
         void Init() override;
         void Update(float delta) override;
-        void UI() override;
+        void Render() override;
         void Clean() override;
 
         bool CreateFaction();

@@ -2,7 +2,7 @@
 
 #include "igneous/engine/Camera.hpp"
 
-namespace Interspace
+namespace Interspace::Client
 {
     class Camera : public Engine::Camera
     {

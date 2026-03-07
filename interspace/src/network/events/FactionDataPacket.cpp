@@ -4,10 +4,10 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
 #include "interspace/game/DBHelper.hpp"
 #include "interspace/menus/CreateFactionMenu.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <ranges>
 #include <vector>
@@ -19,7 +19,7 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::SendFactionData(ENetPeer* to, uint32_t clientId)
+        void ServerWorld::SendFactionData(ENetPeer* to, client_id_t clientId)
         {
             std::vector<uint8_t> data{FACTION_DATA_PACKET};
             Engine::Serializer serializer(data);
@@ -29,15 +29,11 @@ namespace Interspace
 
             for (const auto& faction: factions | std::views::values)
             {
-                uint32_t membersCount = faction->data.members.size();
+                uint32_t membersCount = faction->members.size();
 
-                serializer
-                        << faction->data.id
-                        << faction->data.name
-                        << faction->data.ownerId
-                        << membersCount;
+                serializer << faction->id << faction->name << faction->ownerId << membersCount;
 
-                for (const auto& memberId: faction->data.members | std::views::keys)
+                for (const auto& memberId: faction->members | std::views::keys)
                 {
                     serializer << memberId;
                 }
@@ -47,22 +43,22 @@ namespace Interspace
 
                 for (const auto& kvp: faction->colonists)
                 {
-                    uint32_t colonistId = kvp.first;
-                    Colonist* colonist = kvp.second.get();
+                    entity_id_t colonistId = kvp.first;
+                    ServerColonist* colonist = kvp.second.get();
 
                     serializer
                             << colonistId
-                            << colonist->entityData.name
-                            << colonist->entityData.position.x
-                            << colonist->entityData.position.y
-                            << colonist->colonistData.selectedBy;
+                            << colonist->name
+                            << colonist->position.x
+                            << colonist->position.y
+                            << colonist->selectedBy;
                 }
             }
 
             server->netInterface->SendToClient(to, data, ENET_PACKET_FLAG_RELIABLE);
         }
 
-        void World::BroadcastFactionData(uint16_t factionId)
+        void ServerWorld::BroadcastFactionData(faction_id_t factionId)
         {
             std::vector<uint8_t> data{FACTION_DATA_PACKET};
             Engine::Serializer serializer(data);
@@ -73,17 +69,13 @@ namespace Interspace
             uint32_t factionsCount = 1;
             serializer << factionsCount;
 
-            Faction* faction = factions[factionId].get();
+            ServerFaction* faction = factions[factionId].get();
 
-            uint32_t membersCount = faction->data.members.size();
+            uint32_t membersCount = faction->members.size();
 
-            serializer
-                    << faction->data.id
-                    << faction->data.name
-                    << faction->data.ownerId
-                    << membersCount;
+            serializer << faction->id << faction->name << faction->ownerId << membersCount;
 
-            for (const auto& memberId: faction->data.members | std::views::keys)
+            for (const auto& memberId: faction->members | std::views::keys)
             {
                 serializer << memberId;
             }
@@ -93,15 +85,15 @@ namespace Interspace
 
             for (const auto& kvp: faction->colonists)
             {
-                uint32_t colonistId = kvp.first;
-                Colonist* colonist = kvp.second.get();
+                entity_id_t colonistId = kvp.first;
+                ServerColonist* colonist = kvp.second.get();
 
                 serializer
                         << colonistId
-                        << colonist->entityData.name
-                        << colonist->entityData.position.x
-                        << colonist->entityData.position.y
-                        << colonist->colonistData.selectedBy;
+                        << colonist->name
+                        << colonist->position.x
+                        << colonist->position.y
+                        << colonist->selectedBy;
             }
 
             for (const auto& peer: server->GetPeers() | std::views::values)
@@ -114,7 +106,7 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::OnFactionDataReceived(const std::vector<uint8_t>& data)
+        void ClientWorld::OnFactionDataReceived(const std::vector<uint8_t>& data)
         {
             Engine::Deserializer deserializer(data);
 
@@ -123,28 +115,28 @@ namespace Interspace
 
             for (uint32_t i = 0; i < factionCount; i++)
             {
-                uint16_t factionId = 0;
+                faction_id_t factionId = 0;
                 deserializer >> factionId;
 
                 if (!factions.contains(factionId))
-                    factions.emplace(factionId, std::make_unique<Faction>());
+                    factions.emplace(factionId, std::make_unique<ClientFaction>());
 
-                Faction* faction = factions[factionId].get();
-                faction->data.id = factionId;
+                ClientFaction* faction = factions[factionId].get();
+                faction->id = factionId;
 
-                deserializer >> faction->data.name >> faction->data.ownerId;
+                deserializer >> faction->name >> faction->ownerId;
 
                 uint32_t membersCount = 0;
                 deserializer >> membersCount;
 
                 for (uint32_t j = 0; j < membersCount; j++)
                 {
-                    uint32_t memberId;
+                    client_id_t memberId;
                     deserializer >> memberId;
-                    if (!faction->data.members.contains(memberId))
+                    if (!faction->members.contains(memberId))
                     {
                         std::string memberUsername = client->GetUsername(memberId);
-                        faction->data.members.emplace(memberId, memberUsername);
+                        faction->members.emplace(memberId, memberUsername);
                     }
                 }
 
@@ -153,30 +145,30 @@ namespace Interspace
 
                 for (uint32_t j = 0; j < colonistCount; j++)
                 {
-                    uint32_t colonistId = 0;
+                    entity_id_t colonistId = 0;
                     deserializer >> colonistId;
 
                     if (!faction->colonists.contains(colonistId))
-                        faction->colonists.emplace(colonistId, std::make_unique<Colonist>());
+                        faction->colonists.emplace(colonistId, std::make_unique<ClientColonist>());
 
-                    Colonist* colonist = faction->colonists[colonistId].get();
-                    colonist->entityData.id = colonistId;
+                    ClientColonist* colonist = faction->colonists[colonistId].get();
+                    colonist->id = colonistId;
 
-                    deserializer >> colonist->entityData.name >> colonist->entityData.position.x >> colonist->entityData.position.y >> colonist->colonistData.selectedBy;
+                    deserializer >> colonist->name >> colonist->position.x >> colonist->position.y >> colonist->selectedBy;
 
-                    if (colonist->colonistData.selectedBy == client->clientId)
+                    if (colonist->selectedBy == client->clientId)
                         colonist->sprite->SetTexture("assets/colonists/colonist_green_spritesheet.png");
-                    else if (colonist->colonistData.selectedBy == 0)
+                    else if (colonist->selectedBy == 0)
                         colonist->sprite->SetTexture("assets/colonists/colonist_blue_spritesheet.png");
                     else
                         colonist->sprite->SetTexture("assets/colonists/colonist_pink_spritesheet.png");
 
-                    if (faction->data.members.contains(client->clientId) && faction->colonists.size() == 1)
+                    if (faction->members.contains(client->clientId) && faction->colonists.size() == 1)
                     {
-                        camera->targetPosition.x = colonist->entityData.position.x;
-                        camera->targetPosition.y = colonist->entityData.position.y;
-                        camera->position.x = colonist->entityData.position.x;
-                        camera->position.y = colonist->entityData.position.y;
+                        camera->targetPosition.x = colonist->position.x;
+                        camera->targetPosition.y = colonist->position.y;
+                        camera->position.x = colonist->position.x;
+                        camera->position.y = colonist->position.y;
                     }
                 }
             }

@@ -15,7 +15,7 @@ namespace Interspace
     {
     }
 
-    void JoinMenu::UI()
+    void JoinMenu::Render()
     {
         Engine::Vec2<int> viewport = Engine::Window::viewport;
 

@@ -3,8 +3,8 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <vector>
 
@@ -15,7 +15,7 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::RequestCreateColonist(uint16_t factionId, const std::string& colonistName)
+        void ClientWorld::RequestCreateColonist(faction_id_t factionId, const std::string& colonistName)
         {
             std::vector<uint8_t> data{CREATE_COLONIST_REQUEST};
             Engine::Serializer serializer(data);
@@ -29,9 +29,9 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::OnCreateColonistRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
+        void ServerWorld::OnCreateColonistRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
         {
-            uint16_t factionId = 0;
+            faction_id_t factionId = 0;
             std::string colonistName{};
 
             Engine::Deserializer deserializer(data);

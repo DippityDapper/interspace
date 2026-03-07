@@ -39,7 +39,7 @@ namespace Interspace
         strcpy(usernameLineEdit, username.c_str());
     }
 
-    void MainMenu::UI()
+    void MainMenu::Render()
     {
         float windowWidth = 192.0f;
         float windowHeight = 256.0f;

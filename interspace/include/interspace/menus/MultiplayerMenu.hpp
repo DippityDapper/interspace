@@ -8,6 +8,6 @@ namespace Interspace
     {
       public:
         void Init() override;
-        void UI() override;
+        void Render() override;
     };
 }

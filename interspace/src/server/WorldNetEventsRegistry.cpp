@@ -1,22 +1,22 @@
-#include "interspace/server/World.hpp"
+#include "interspace/server/ServerWorld.hpp"
 #include "interspace/network/NetworkPackets.hpp"
 
 namespace Interspace::Server
 {
-    void World::RegisterNetEvents()
+    void ServerWorld::RegisterNetEvents()
     {
-        server->ConnectToEvent(CLIENT_CONNECTED, this, &World::OnClientConnected);
-        server->ConnectToEvent(CLIENT_DISCONNECTED, this, &World::OnClientDisconnected);
+        server->ConnectToEvent(CLIENT_CONNECTED, this, &ServerWorld::OnClientConnected);
+        server->ConnectToEvent(CLIENT_DISCONNECTED, this, &ServerWorld::OnClientDisconnected);
 
-        server->ConnectToEvent(COLONIST_POSITION_REQUEST, this, &World::OnColonistPositionRequestReceived);
-        server->ConnectToEvent(COLONIST_SELECT_REQUEST, this, &World::OnColonistSelectRequestReceived);
-        server->ConnectToEvent(COLONIST_DESELECT_ALL_REQUEST, this, &World::OnColonistDeselectAllRequestReceived);
-        server->ConnectToEvent(COLONIST_DESELECT_REQUEST, this, &World::OnColonistDeselectRequestReceived);
-        server->ConnectToEvent(CREATE_COLONIST_REQUEST, this, &World::OnCreateColonistRequestReceived);
+        server->ConnectToEvent(COLONIST_POSITION_REQUEST, this, &ServerWorld::OnColonistPositionRequestReceived);
+        server->ConnectToEvent(COLONIST_SELECT_REQUEST, this, &ServerWorld::OnColonistSelectRequestReceived);
+        server->ConnectToEvent(COLONIST_DESELECT_ALL_REQUEST, this, &ServerWorld::OnColonistDeselectAllRequestReceived);
+        server->ConnectToEvent(COLONIST_DESELECT_REQUEST, this, &ServerWorld::OnColonistDeselectRequestReceived);
+        server->ConnectToEvent(CREATE_COLONIST_REQUEST, this, &ServerWorld::OnCreateColonistRequestReceived);
 
-        server->ConnectToEvent(CREATE_FACTION_REQUEST, this, &World::OnCreateFactionRequestReceived);
+        server->ConnectToEvent(CREATE_FACTION_REQUEST, this, &ServerWorld::OnCreateFactionRequestReceived);
 
-        server->ConnectToEvent(PLAYER_POSITION_PACKET, this, &World::OnPlayerPositionReceived);
-        server->ConnectToEvent(CHUNK_REQUEST, this, &World::OnChunkRequestReceived);
+        server->ConnectToEvent(PLAYER_POSITION_PACKET, this, &ServerWorld::OnPlayerPositionReceived);
+        server->ConnectToEvent(CHUNK_REQUEST, this, &ServerWorld::OnChunkRequestReceived);
     }
 }

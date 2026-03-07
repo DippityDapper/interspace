@@ -3,8 +3,9 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
+#include "interspace/game/Game.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <ranges>
 #include <vector>
@@ -16,7 +17,7 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::RequestColonistSelect(uint16_t factionId, uint32_t colonistId)
+        void ClientWorld::RequestColonistSelect(faction_id_t factionId, entity_id_t colonistId)
         {
             std::vector<uint8_t> data{COLONIST_SELECT_REQUEST};
 
@@ -32,24 +33,27 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::OnColonistSelectRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
+        void ServerWorld::OnColonistSelectRequestReceived(const std::vector<uint8_t>& data, ENetPeer* from)
         {
-            uint16_t factionId = 0;
-            uint32_t colonistId = 0;
-            uint32_t clientId = 0;
+            faction_id_t factionId = 0;
+            entity_id_t colonistId = 0;
+            client_id_t clientId = 0;
 
             Engine::Deserializer deserializer(data);
             deserializer >> factionId >> colonistId >> clientId;
 
+            if (!Game::server->CheckPeer(clientId, from))
+                return;
+
             if (!factions.contains(factionId))
                 return;
 
-            Faction* faction = factions[factionId].get();
-            if (!faction->data.members.contains(clientId) || !faction->colonists.contains(colonistId))
+            ServerFaction* faction = factions[factionId].get();
+            if (!faction->members.contains(clientId) || !faction->colonists.contains(colonistId))
                 return;
 
-            Colonist* colonist = faction->colonists[colonistId].get();
-            colonist->colonistData.selectedBy = clientId;
+            ServerColonist* colonist = faction->colonists[colonistId].get();
+            colonist->selectedBy = clientId;
 
             BroadcastColonistSelection(factionId, colonistId, clientId);
         }

@@ -4,7 +4,7 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
+#include "interspace/client/ClientWorld.hpp"
 #include "interspace/game/Game.hpp"
 
 #include <vector>
@@ -28,7 +28,7 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::OnDisconnectAcknowledged(const std::vector<uint8_t>& data)
+        void ClientWorld::OnDisconnectAcknowledged(const std::vector<uint8_t>& data)
         {
             Game::Disconnect();
 

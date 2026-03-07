@@ -35,7 +35,7 @@ namespace Interspace
         }
     }
 
-    void CreateFactionMenu::UI()
+    void CreateFactionMenu::Render()
     {
         ImGui::SetNextWindowPos({Engine::Window::viewport.x / 2.0f, Engine::Window::viewport.y / 2.0f}, 0, {0.5f, 0.5f});
 

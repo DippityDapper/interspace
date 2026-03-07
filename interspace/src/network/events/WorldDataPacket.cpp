@@ -3,8 +3,9 @@
 #include "interspace/network/NetworkPackets.hpp"
 #include "interspace/server/Server.hpp"
 #include "interspace/client/Client.hpp"
-#include "interspace/client/World.hpp"
-#include "interspace/server/World.hpp"
+#include "interspace/client/ClientOverworldGenerator.hpp"
+#include "interspace/client/ClientWorld.hpp"
+#include "interspace/server/ServerWorld.hpp"
 
 #include <vector>
 
@@ -15,12 +16,18 @@ namespace Interspace
     //----------------------------
     namespace Server
     {
-        void World::SendWorldData(ENetPeer* to)
+        void ServerWorld::SendWorldData(ENetPeer* to)
         {
             std::vector<uint8_t> data{WORLD_DATA_PACKET};
             Engine::Serializer serializer(data);
 
-            serializer << worldData->worldSizeX << worldData->worldSizeY << worldName;
+            WorldPacket worldPacket{
+                    .x = worldData->worldSizeX,
+                    .y = worldData->worldSizeY,
+                    .name = worldName,
+                    .seed = worldGenerator->seed};
+
+            serializer << worldPacket;
             server->netInterface->SendToClient(to, data, ENET_PACKET_FLAG_RELIABLE);
         }
     }
@@ -30,19 +37,25 @@ namespace Interspace
     //----------------------------
     namespace Client
     {
-        void World::OnWorldDataReceived(const std::vector<uint8_t>& data)
+        void ClientWorld::OnWorldDataReceived(const std::vector<uint8_t>& data)
         {
             Engine::Deserializer deserializer(data);
-            deserializer >> worldData->worldSizeX >> worldData->worldSizeY >> worldName;
+            WorldPacket worldPacket{};
+            deserializer >> worldPacket;
+
+            worldData->worldSizeX = worldPacket.x;
+            worldData->worldSizeY = worldPacket.y;
+            name = worldPacket.name;
+            worldGenerator = std::make_unique<ClientOverworldGenerator>(worldPacket.seed);
 
             std::mt19937 gen(std::random_device{}());
 
             float posX = 0;
-            std::uniform_int_distribution<> posXDist(0, worldData->worldSizeX * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
+            std::uniform_int_distribution<uint32_t> posXDist(0, worldData->worldSizeX * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
             posX = (float) posXDist(gen);
 
             float posY = 0;
-            std::uniform_int_distribution<> posYDist(0, worldData->worldSizeY * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
+            std::uniform_int_distribution<uint32_t> posYDist(0, worldData->worldSizeY * worldData->CHUNK_SIZE * worldData->TILE_SIZE);
             posY = (float) posYDist(gen);
 
             camera = std::make_unique<Camera>(posX, posY, 1.0f);

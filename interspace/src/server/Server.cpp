@@ -1,9 +1,14 @@
 #include "interspace/server/Server.hpp"
 
+#include "SDL3/SDL_log.h"
+
 #include <string>
 
 #include "igneous/networking/NetworkManager.hpp"
+#include "interspace/game/DBHelper.hpp"
 #include "interspace/network/NetworkPackets.hpp"
+
+#include <random>
 
 namespace Interspace::Server
 {
@@ -86,56 +91,136 @@ namespace Interspace::Server
         EmitEvent(type, data, from);
     }
 
-    uint32_t Server::GetUserId(const std::string& username)
+    void Server::CheckConnectionAttempts()
     {
-        for (const auto& user: idToUsernameLookup)
+        if (connectionAttempts.empty())
+            return;
+
+        auto it = connectionAttempts.begin();
+        for (; it != connectionAttempts.end(); ++it)
         {
-            if (user.second == username)
-                return user.first;
+            ConnectionAttempt connectionAttempt = it->second;
+
+            uint64_t currentTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+            if (currentTime < connectionAttempt.retryTime)
+                continue;
+
+            connectionAttempt.reconnectionAttempt++;
+            if (connectionAttempt.reconnectionAttempt >= maxConnectionRetryAttempts)
+            {
+                AcknowledgeDisconnection(it->first);
+                connectionAttempts.erase(it->first);
+                continue;
+            }
+            connectionAttempt.retryTime = currentTime + timeoutOffsetInSeconds;
+            SendConnectionRetryRequest(it->first);
+        }
+    }
+
+    void Server::SendConnectionRetryRequest(ENetPeer* to)
+    {
+    }
+
+    client_id_t Server::ConnectClient(ENetPeer* peer, const std::string& username)
+    {
+        if (!DBHelper::PlayerExists(username))
+        {
+            std::mt19937 gen(std::random_device{}());
+
+            client_id_t clientId = 0;
+            do
+            {
+                std::uniform_int_distribution<client_id_t> peerIdDist(1, std::numeric_limits<client_id_t>::max());
+                clientId = peerIdDist(gen);
+            } while (DBHelper::PlayerExists(clientId));
+
+            DBHelper::InsertPlayer(clientId, username);
+        }
+
+        client_id_t newId = DBHelper::GetclientId(username);
+
+        if (!peers.contains(newId))
+            peers.emplace(newId, peer);
+        if (!idToUsernameLookup.contains(newId))
+            idToUsernameLookup.emplace(newId, username);
+        if (!peerToIdLookup.contains(peer))
+            peerToIdLookup.emplace(peer, newId);
+
+        if (connectionAttempts.contains(peer))
+            connectionAttempts.erase(peer);
+
+        return newId;
+    }
+
+    void Server::DisconnectClient(client_id_t clientId)
+    {
+        ENetPeer* peer = GetPeer(clientId);
+
+        if (peers.contains(clientId))
+            peers.erase(clientId);
+        if (idToUsernameLookup.contains(clientId))
+            idToUsernameLookup.erase(clientId);
+        if (peer && peerToIdLookup.contains(peer))
+            peerToIdLookup.erase(peer);
+        if (connectionAttempts.contains(peer))
+            connectionAttempts.erase(peer);
+    }
+
+    client_id_t Server::GetClientId(const std::string& username)
+    {
+        for (const auto& client: idToUsernameLookup)
+        {
+            if (client.second == username)
+                return client.first;
         }
         return 0;
     }
 
-    uint32_t Server::GetUserId(ENetPeer* user)
+    client_id_t Server::GetClientId(ENetPeer* peer)
     {
-        for (const auto& kvp: peers)
-        {
-            if (user == kvp.second)
-                return kvp.first;
-        }
+        if (peerToIdLookup.contains(peer))
+            return peerToIdLookup[peer];
         return 0;
     }
 
-    std::string Server::GetUsername(uint32_t peerId)
+    std::string Server::GetUsername(client_id_t clientId)
     {
-        if (!idToUsernameLookup.contains(peerId))
+        if (!idToUsernameLookup.contains(clientId))
             return "";
-        return idToUsernameLookup[peerId];
+        return idToUsernameLookup[clientId];
     }
 
-    ENetPeer* Server::GetPeer(uint32_t peerId)
+    ENetPeer* Server::GetPeer(client_id_t clientId)
     {
-        if (!peers.contains(peerId))
+        if (!peers.contains(clientId))
             return nullptr;
-        return peers[peerId];
+        return peers[clientId];
     }
 
     ENetPeer* Server::GetPeer(const std::string& username)
     {
-        uint32_t peerId = GetUserId(username);
-        return GetPeer(peerId);
+        client_id_t clientId = GetClientId(username);
+        return GetPeer(clientId);
     }
 
-    bool Server::PeerExists(uint32_t peerId)
+    bool Server::PeerExists(client_id_t clientId)
     {
-        return peers.contains(peerId);
+        return peers.contains(clientId);
     }
 
-    std::unordered_map<uint32_t, ENetPeer*> Server::GetPeers()
+    std::unordered_map<client_id_t, ENetPeer*> Server::GetPeers()
     {
-        std::unordered_map<uint32_t, ENetPeer*> result{};
+        std::unordered_map<client_id_t, ENetPeer*> result{};
         for (auto& peer: peers)
             result.emplace(peer.first, peer.second);
         return result;
+    }
+
+    bool Server::CheckPeer(client_id_t supposedClientId, ENetPeer* peer)
+    {
+        client_id_t realClientId = GetClientId(peer);
+        if (supposedClientId == realClientId)
+            return true;
+        return false;
     }
 }
