@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- Dependencies ---
+set(IGNEOUS_STEAM ON CACHE BOOL "Enable Steamworks" FORCE)
 add_subdirectory(../igneous ${CMAKE_BINARY_DIR}/igneous_build)
 
 # --- Project modules ---

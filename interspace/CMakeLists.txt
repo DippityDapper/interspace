@@ -26,4 +26,4 @@ add_custom_target(copy_game_files ALL
 
 add_dependencies(interspace copy_game_files)
 
-igneous_copy_runtime_dependencies(interspace)
+igneous_copy_runtime_dependencies(interspace "${CMAKE_SOURCE_DIR}")

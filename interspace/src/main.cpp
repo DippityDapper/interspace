@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "interspace/game/Game.hpp"
+#include "interspace/shared/game/Game.hpp"
 
 int main(int argc, char* argv[])
 {

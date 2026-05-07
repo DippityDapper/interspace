@@ -1,21 +1,19 @@
 #include "interspace/client/Client.hpp"
 
-#include "igneous/networking/NetworkManager.hpp"
-#include "interspace/game/Game.hpp"
-#include "interspace/network/NetworkPackets.hpp"
+#include "igneous/networking/LocalIdentity.hpp"
+#include "interspace/shared/game/Game.hpp"
+#include "interspace/shared/network/NetworkPackets.hpp"
 #include "igneous/networking/Serializer.hpp"
 
 namespace Interspace::Client
 {
-    Client::Client(Engine::NetworkInterface* _netInterface, const std::string& _username)
+    Client::Client(std::unique_ptr<Engine::NetworkInterface> _netInterface, std::unique_ptr<Engine::IdentityProvider> _identity)
     {
-        RegisterMessageHandlers();
+        netInterface = std::move(_netInterface);
+        identity = std::move(_identity);
 
-        netInterface = _netInterface;
-        Engine::NetworkManager::BindMessageHandler(netInterface, this, &Client::OnMessageReceived);
-
-        username = _username;
-        RequestConnection(username);
+        netInterface->onMessageReceived = [this](const Engine::NetworkMessage& message)
+        { OnMessageReceived(message); };
     }
 
     void Client::OnMessageReceived(const Engine::NetworkMessage& message)
@@ -23,55 +21,23 @@ namespace Interspace::Client
         switch (message.type)
         {
         case Engine::NetworkEventType::Message:
+        case Engine::NetworkEventType::ClientConnected:
+        case Engine::NetworkEventType::ClientDisconnected:
+        case Engine::NetworkEventType::ServerDisconnected:
         {
             HandleMessage(message.data);
             break;
         }
-        case Engine::NetworkEventType::ClientConnected:
-        {
-            EmitEvent(CONNECTION_REQUEST, message.data);
-            break;
-        }
-        case Engine::NetworkEventType::ClientDisconnected:
-        {
-            break;
-        }
-        case Engine::NetworkEventType::ServerDisconnected:
-        {
-            EmitEvent(DISCONNECTION_ACKNOWLEDGED, message.data);
-            break;
-        }
+        default:;
         }
     }
 
-    void Client::RegisterMessageHandlers()
+    void Client::ConnectToEvent(NetMessageType messageType, void (Client::*callback)(const std::vector<uint8_t>&))
     {
-        RegisterMessageHandler(CONNECTION_ACCEPTED, &Client::OnConnectionAccepted);
-        RegisterMessageHandler(CLIENT_DISCONNECTED, &Client::OnClientDisconnected);
-        RegisterMessageHandler(CLIENT_CONNECTED, &Client::OnClientConnected);
-    }
-
-    void Client::RegisterMessageHandler(uint8_t messageType, void (Client::*callback)(const std::vector<uint8_t>&))
-    {
-        if (messageHandler.contains(messageType))
-            return;
-        messageHandler.emplace(messageType, std::make_unique<ClientNetEvent>());
+        if (!messageHandler.contains(messageType))
+            messageHandler.emplace(messageType, std::make_unique<ClientNetEvent>());
         messageHandler[messageType].get()->Connect([this, callback](const std::vector<uint8_t>& data)
                                                    { (this->*callback)(data); });
-    }
-
-    void Client::CreateNetEvent(uint8_t messageType)
-    {
-        if (!netEvents.contains(messageType))
-            netEvents.emplace(messageType, std::make_unique<ClientNetEvent>());
-    }
-
-    bool Client::EmitEvent(uint8_t messageType, const std::vector<uint8_t>& data)
-    {
-        if (!netEvents.contains(messageType))
-            return false;
-        netEvents[messageType]->Emit(data);
-        return true;
     }
 
     void Client::HandleMessage(const std::vector<uint8_t>& data)
@@ -81,17 +47,9 @@ namespace Interspace::Client
         if (data.empty())
             return;
 
-        uint8_t type = data[0];
+        Engine::Deserializer deserializer{data, 0};
+        NetMessageType type = static_cast<NetMessageType>(deserializer.ReadUShort());
         if (messageHandler.contains(type))
             messageHandler[type].get()->Emit(data);
-
-        EmitEvent(type, data);
-    }
-
-    std::string Client::GetUsername(client_id_t clientId)
-    {
-        if (!peers.contains(clientId))
-            return "";
-        return peers[clientId];
     }
 }
