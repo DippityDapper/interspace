@@ -8,6 +8,8 @@
 
 #include "interspace/shared/game/Game.hpp"
 #include "interspace/client/sounds/SoundManager.hpp"
+#include "interspace/shared/network/NetworkManager.hpp"
+#include "interspace/shared/world/UniverseManager.hpp"
 
 namespace Interspace
 {
@@ -49,6 +51,7 @@ namespace Interspace
         if (ImGui::Button("Join", joinButtonSize))
         {
             SoundManager::PlaySound("button_1", 1.0f);
+
             JoinWorld();
         }
 
@@ -61,8 +64,9 @@ namespace Interspace
         if (ipStr.empty())
             return false;
 
-        if (!Game::JoinUniverse(ipStr))
-            return false;
+        NetworkManager::CreateClient(ipStr);
+        root->RemoveScenes("main_menus");
+        root->AddScene<UniverseManager>("universe_manager", "universe", true);
 
         return true;
     }

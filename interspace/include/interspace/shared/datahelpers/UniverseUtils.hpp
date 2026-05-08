@@ -1,7 +1,6 @@
 #pragma once
 #include "SQLiteCpp/Database.h"
 #include "interspace/shared/game/Typedefs.hpp"
-#include "interspace/shared/world/WorldData.hpp"
 
 #include <cstdint>
 #include <string>
@@ -9,7 +8,7 @@
 
 namespace Interspace
 {
-    class UniverseManager
+    class UniverseUtils
     {
       private:
         static inline std::unordered_map<std::string, universe_id_t> universeNameToId{};

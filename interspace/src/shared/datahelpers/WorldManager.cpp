@@ -1,7 +1,7 @@
 #include "interspace/shared/datahelpers/WorldManager.hpp"
 
 #include "interspace/shared/datahelpers/DatabaseManager.hpp"
-#include "interspace/shared/datahelpers/UniverseManager.hpp"
+#include "interspace/shared/datahelpers/UniverseUtils.hpp"
 #include "interspace/shared/world/generators/TestGenerator.hpp"
 
 #include <optional>
@@ -22,7 +22,7 @@ namespace Interspace
         if (!std::filesystem::exists("data/shared"))
             std::filesystem::create_directory("data/shared");
 
-        loadedUniverseId = UniverseManager::GetUniverseId(universeName);
+        loadedUniverseId = UniverseUtils::GetUniverseId(universeName);
 
         worldsData.clear();
 
@@ -107,7 +107,7 @@ namespace Interspace
         std::filesystem::create_directory("data/client/universes/" + universeName + "/worlds/" + worldIdString);
         std::filesystem::create_directory("data/client/universes/" + universeName + "/worlds/" + worldIdString + "/regions");
 
-        universe_id_t universeId = UniverseManager::GetUniverseId(universeName);
+        universe_id_t universeId = UniverseUtils::GetUniverseId(universeName);
 
         SQLite::Database* db = DatabaseManager::GetSharedDatabase();
         SQLite::Statement statement(*db, R"(
@@ -115,7 +115,7 @@ namespace Interspace
             VALUES(?, ?, ?, ?, ?, ?)
         )");
 
-        uint32_t universeSeed = UniverseManager::GetUniverseSeed(universeId);
+        uint32_t universeSeed = UniverseUtils::GetUniverseSeed(universeId);
         uint32_t worldSeed = universeSeed ^ (worldSizeX * 73856093) ^ (worldSizeY * 19349663) ^ (worldType * 14295323);
 
         statement.bind(1, worldId);
@@ -138,7 +138,7 @@ namespace Interspace
         if (std::filesystem::exists("data/client/universes/" + universeName + "/worlds/" + worldIdString))
             std::filesystem::remove_all("data/client/universes/" + universeName + "/worlds/" + worldIdString);
 
-        universe_id_t universeId = UniverseManager::GetUniverseId(universeName);
+        universe_id_t universeId = UniverseUtils::GetUniverseId(universeName);
 
         SQLite::Database* db = DatabaseManager::GetSharedDatabase();
         SQLite::Statement statement(*db, "DELETE FROM world WHERE worldId = ? AND universeId = ?");

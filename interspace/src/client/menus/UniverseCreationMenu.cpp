@@ -9,7 +9,7 @@
 
 #include "igneous/scenes/SceneManager.hpp"
 #include "igneous/rendering/Window.hpp"
-#include "interspace/shared/datahelpers/UniverseManager.hpp"
+#include "interspace/shared/datahelpers/UniverseUtils.hpp"
 #include "interspace/shared/datahelpers/WorldManager.hpp"
 #include "interspace/shared/game/Game.hpp"
 #include "interspace/client/sounds/SoundManager.hpp"
@@ -101,9 +101,9 @@ namespace Interspace
             }
         }
 
-        UniverseManager::InsertUniverse(name, seed);
-        universe_id_t universeId = UniverseManager::GetUniverseId(name);
-        UniverseManager::AddUniverse(name, universeId);
+        UniverseUtils::InsertUniverse(name, seed);
+        universe_id_t universeId = UniverseUtils::GetUniverseId(name);
+        UniverseUtils::AddUniverse(name, universeId);
         WorldManager::InsertWorld(name, Test, 512, 512);
 
         message = "";

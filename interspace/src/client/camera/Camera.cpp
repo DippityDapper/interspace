@@ -6,6 +6,8 @@
 #include "interspace/shared/game/Game.hpp"
 #include "interspace/shared/world/WorldData.hpp"
 
+#include <algorithm>
+
 namespace Interspace::Client
 {
     Camera::Camera()

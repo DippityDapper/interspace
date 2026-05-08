@@ -1,4 +1,4 @@
-#include "interspace/shared/datahelpers/UniverseManager.hpp"
+#include "interspace/shared/datahelpers/UniverseUtils.hpp"
 
 #include "interspace/shared/datahelpers/DatabaseManager.hpp"
 
@@ -9,7 +9,7 @@
 namespace Interspace
 {
 
-    void UniverseManager::Init()
+    void UniverseUtils::Init()
     {
         if (!std::filesystem::exists("data/server"))
             std::filesystem::create_directory("data/server");
@@ -37,7 +37,7 @@ namespace Interspace
         }
     }
 
-    void UniverseManager::CreateTables()
+    void UniverseUtils::CreateTables()
     {
         SQLite::Database* db = DatabaseManager::GetSharedDatabase();
 
@@ -53,7 +53,7 @@ namespace Interspace
         )");
     }
 
-    bool UniverseManager::InsertUniverse(const std::string& universeName, uint32_t seed)
+    bool UniverseUtils::InsertUniverse(const std::string& universeName, uint32_t seed)
     {
         std::string serverUniverseDirPath{"data/server/universes/" + universeName};
         std::filesystem::create_directory(serverUniverseDirPath);
@@ -87,7 +87,7 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    bool UniverseManager::DeleteUniverse(const std::string& universeName)
+    bool UniverseUtils::DeleteUniverse(const std::string& universeName)
     {
         std::string serverUniversePath{"data/server/universes/" + universeName};
         if (std::filesystem::exists(serverUniversePath))
@@ -105,13 +105,13 @@ namespace Interspace
         return statement.exec() > 0;
     }
 
-    void UniverseManager::AddUniverse(const std::string& universeName, universe_id_t universeId)
+    void UniverseUtils::AddUniverse(const std::string& universeName, universe_id_t universeId)
     {
         universeIdToName.emplace(universeId, universeName);
         universeNameToId.emplace(universeName, universeId);
     }
 
-    void UniverseManager::RemoveUniverse(universe_id_t universeId)
+    void UniverseUtils::RemoveUniverse(universe_id_t universeId)
     {
         std::string universeName{};
         if (universeIdToName.contains(universeId))
@@ -123,12 +123,12 @@ namespace Interspace
             universeNameToId.erase(universeName);
     }
 
-    std::unordered_map<universe_id_t, std::string>& UniverseManager::GetUniverses()
+    std::unordered_map<universe_id_t, std::string>& UniverseUtils::GetUniverses()
     {
         return universeIdToName;
     }
 
-    universe_id_t UniverseManager::GetUniverseId(const std::string& universeName)
+    universe_id_t UniverseUtils::GetUniverseId(const std::string& universeName)
     {
         if (universeNameToId.contains(universeName))
             return universeNameToId[universeName];
@@ -146,7 +146,7 @@ namespace Interspace
         return 0;
     }
 
-    std::string UniverseManager::GetUniverseName(universe_id_t universeId)
+    std::string UniverseUtils::GetUniverseName(universe_id_t universeId)
     {
         if (universeIdToName.contains(universeId))
             return universeIdToName[universeId];
@@ -163,7 +163,7 @@ namespace Interspace
 
         return "";
     }
-    uint32_t UniverseManager::GetUniverseSeed(universe_id_t universeId)
+    uint32_t UniverseUtils::GetUniverseSeed(universe_id_t universeId)
     {
         SQLite::Database* db = DatabaseManager::GetSharedDatabase();
 

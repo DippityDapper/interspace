@@ -14,7 +14,9 @@
 #include "interspace/client/sounds/SoundManager.hpp"
 
 #include "interspace/client/menus/UniverseCreationMenu.hpp"
-#include "interspace/shared/datahelpers/UniverseManager.hpp"
+#include "interspace/shared/datahelpers/UniverseUtils.hpp"
+#include "interspace/shared/network/NetworkManager.hpp"
+#include "interspace/shared/world/UniverseManager.hpp"
 
 namespace Interspace
 {
@@ -28,7 +30,7 @@ namespace Interspace
             return;
 
         universes.clear();
-        for (const auto& [id, name]: UniverseManager::GetUniverses())
+        for (const auto& [id, name]: UniverseUtils::GetUniverses())
         {
             universes.push_back({name});
         }
@@ -92,16 +94,26 @@ namespace Interspace
             float cursorPosX = ImGui::GetCursorPosX() + availableWidth - buttonWidth;
             ImGui::SetCursorPosX(cursorPosX);
 
-            if (ImGui::Button("Load", buttonSize))
+            if (isHostingMenu)
             {
-                SoundManager::PlaySound("button_1", 1.0f);
-
-                if (isHostingMenu)
-                    Game::HostUniverse(universeEntry.name, 32, true);
-                else
-                    Game::LoadUniverse(universeEntry.name);
+                if (ImGui::Button("Load", buttonSize))
+                {
+                    SoundManager::PlaySound("button_1", 1.0f);
+                    NetworkManager::CreateRemoteClientServer(32, false);
+                    root->RemoveScenes("main_menus");
+                    root->AddScene<UniverseManager>("universe_manager", "universe", true);
+                }
             }
-
+            else
+            {
+                if (ImGui::Button("Load", buttonSize))
+                {
+                    SoundManager::PlaySound("button_1", 1.0f);
+                    NetworkManager::CreateLocalClientServer();
+                    root->RemoveScenes("main_menus");
+                    root->AddScene<UniverseManager>("universe_manager", "universe", true);
+                }
+            }
             ImGui::SameLine();
             availableWidth = ImGui::GetContentRegionAvail().x;
             cursorPosX = ImGui::GetCursorPosX() + availableWidth - buttonWidth * deleteButtonOffsetMultiplier;
@@ -162,9 +174,9 @@ namespace Interspace
         {
             return false;
         }
-        uint32_t universeId = UniverseManager::GetUniverseId(universeName);
-        UniverseManager::DeleteUniverse(universeName);
-        UniverseManager::RemoveUniverse(universeId);
+        uint32_t universeId = UniverseUtils::GetUniverseId(universeName);
+        UniverseUtils::DeleteUniverse(universeName);
+        UniverseUtils::RemoveUniverse(universeId);
 
         int worldsCount = universes.size();
         for (int i = 0; i < worldsCount; i++)

@@ -7,15 +7,22 @@
 
 namespace Interspace
 {
-    void SteamManager::Init()
+    void SteamManager::OnCreated()
     {
         if (SteamAPI_RestartAppIfNecessary(480))
         {
             Engine::Engine::Quit();
+            return;
         }
+        TryConnect();
     }
 
-    void SteamManager::Shutdown()
+    void SteamManager::Update(double delta)
+    {
+        RunCallbacks();
+    }
+
+    void SteamManager::OnDestroyed()
     {
         Clean();
 

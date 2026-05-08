@@ -5,6 +5,7 @@
 #include "igneous/networking/RemoteNetwork.hpp"
 #include "igneous/networking/SteamIdentity.hpp"
 #include "igneous/networking/SteamNetwork.hpp"
+#include "interspace/shared/network/SteamManager.hpp"
 
 namespace Interspace
 {
@@ -21,16 +22,20 @@ namespace Interspace
         if (server)
         {
             server->netInterface->Clean();
+            server->identity->Clean();
             server = nullptr;
         }
 
         if (client)
         {
             client->netInterface->Clean();
+            client->identity->Clean();
             client = nullptr;
         }
+
+        SteamManager::Clean();
     }
- // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Local
     // -------------------------------------------------------------------------
 

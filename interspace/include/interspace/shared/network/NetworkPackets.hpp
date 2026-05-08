@@ -11,7 +11,12 @@ namespace Interspace
         CONNECTION_REQUEST,
         CONNECTION_REQUEST_, // Connection picked up but not sent by the client
         CONNECTION_ACCEPTED,
+        CONNECTION_REJECTED,
         CLIENT_CONNECTED,
+
+        SERVER_ID_REQUEST,
+        SERVER_ID_PACKET,
+        SERVER_DISCONNECTED,
 
         DISCONNECTION_REQUEST,
         DISCONNECTION_REQUEST_, // Disconnection picked up but not sent by the client

@@ -20,36 +20,48 @@ namespace Interspace::Client
     {
         switch (message.type)
         {
-        case Engine::NetworkEventType::Message:
-        case Engine::NetworkEventType::ClientConnected:
-        case Engine::NetworkEventType::ClientDisconnected:
         case Engine::NetworkEventType::ServerDisconnected:
         {
-            HandleMessage(message.data);
+            NetMessageType type = SERVER_DISCONNECTED;
+            if (messageHandler.contains(type))
+                messageHandler[type]->Emit(message.data);
+            break;
+        }
+        case Engine::NetworkEventType::Message:
+        {
+            Engine::Deserializer deserializer{message.data, 0};
+            NetMessageType type = static_cast<NetMessageType>(deserializer.ReadUShort());
+            if (messageHandler.contains(type))
+                messageHandler[type].get()->Emit(message.data);
             break;
         }
         default:;
         }
     }
 
-    void Client::ConnectToEvent(NetMessageType messageType, void (Client::*callback)(const std::vector<uint8_t>&))
+    uint64_t Client::GetMyId() const
     {
-        if (!messageHandler.contains(messageType))
-            messageHandler.emplace(messageType, std::make_unique<ClientNetEvent>());
-        messageHandler[messageType].get()->Connect([this, callback](const std::vector<uint8_t>& data)
-                                                   { (this->*callback)(data); });
+        if (!identity)
+            return 0;
+        if (identity->GetLocalId() <= 0)
+            identity->GenerateLocalId();
+        return identity->GetLocalId();
     }
 
-    void Client::HandleMessage(const std::vector<uint8_t>& data)
+    std::string Client::GetMyUsername() const
+    {
+        if (!identity)
+            return "";
+        if (identity->GetLocalUsername().empty())
+            identity->GenerateLocalUsername();
+        return identity->GetLocalUsername();
+    }
+
+    void Client::SendToServer(const std::vector<uint8_t>& data, uint32_t flags)
     {
         if (!netInterface)
             return;
-        if (data.empty())
-            return;
 
-        Engine::Deserializer deserializer{data, 0};
-        NetMessageType type = static_cast<NetMessageType>(deserializer.ReadUShort());
-        if (messageHandler.contains(type))
-            messageHandler[type].get()->Emit(data);
+        netInterface->SendToServer(data, flags);
     }
 }

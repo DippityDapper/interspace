@@ -25,7 +25,7 @@ namespace Interspace
         /**
          * @brief Tears down all active server and client connections.
          */
-        void Clean();
+        static void Clean();
 
         // --- Factory methods ---
 
@@ -60,7 +60,7 @@ namespace Interspace
          * Useful for singleplayer or local testing.
          */
         static void CreateLocalClientServer();
- /**
+        /**
          * @brief Creates a local loopback server and client pair backed by ENet.
          *
          * Both peers share a loopback connection — no real networking occurs.

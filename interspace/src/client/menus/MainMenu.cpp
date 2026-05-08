@@ -77,27 +77,27 @@ namespace Interspace
     {
         if (!singleplayerUniverseMenu)
         {
-            singleplayerUniverseMenu = root->AddScene<UniversesMenu>("universes_menu_singleplayer", false);
+            singleplayerUniverseMenu = root->AddScene<UniversesMenu>("universes_menu_singleplayer", "main_menus", false);
             singleplayerUniverseMenu->isHostingMenu = false;
             singleplayerUniverseMenu->prevMenu = "main_menu";
         }
         if (!multiplayerMenu)
         {
-            multiplayerMenu = root->AddScene<MultiplayerMenu>("multiplayer_menu", false);
+            multiplayerMenu = root->AddScene<MultiplayerMenu>("multiplayer_menu", "main_menus", false);
         }
         if (!universeCreationMenu)
         {
-            universeCreationMenu = root->AddScene<UniverseCreationMenu>("universe_creation_menu", false);
+            universeCreationMenu = root->AddScene<UniverseCreationMenu>("universe_creation_menu", "main_menus", false);
         }
         if (!multiplayerUniverseMenu)
         {
-            multiplayerUniverseMenu = root->AddScene<UniversesMenu>("universes_menu_multiplayer", false);
+            multiplayerUniverseMenu = root->AddScene<UniversesMenu>("universes_menu_multiplayer", "main_menus", false);
             multiplayerUniverseMenu->isHostingMenu = true;
             multiplayerUniverseMenu->prevMenu = "multiplayer_menu";
         }
         if (!joinMenu)
         {
-            joinMenu = root->AddScene<JoinMenu>("join_menu", false);
+            joinMenu = root->AddScene<JoinMenu>("join_menu", "main_menus", false);
         }
     }
 }
