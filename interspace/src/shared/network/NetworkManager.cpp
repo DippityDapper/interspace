@@ -1,8 +1,8 @@
 #include "interspace/shared/network/NetworkManager.hpp"
 
+#include "igneous/networking/ENetNetwork.hpp"
 #include "igneous/networking/LocalIdentity.hpp"
 #include "igneous/networking/LocalNetwork.hpp"
-#include "igneous/networking/RemoteNetwork.hpp"
 #include "igneous/networking/SteamIdentity.hpp"
 #include "igneous/networking/SteamNetwork.hpp"
 #include "interspace/shared/network/SteamManager.hpp"
@@ -35,20 +35,19 @@ namespace Interspace
 
         SteamManager::Clean();
     }
-    // -------------------------------------------------------------------------
-    // Local
-    // -------------------------------------------------------------------------
 
     void NetworkManager::CreateLocalClientServer()
     {
         if (server || client)
             return;
 
-        auto serverNet = std::make_unique<Engine::LocalNetwork>(true);
-        auto clientNet = std::make_unique<Engine::LocalNetwork>(false);
+        auto serverNet = std::make_unique<Engine::LocalNetwork>();
+        auto clientNet = std::make_unique<Engine::LocalNetwork>();
+        serverNet->Connect(true);
+        clientNet->Connect(false);
 
-        serverNet->SetLoopbackPeer(clientNet.get());
-        clientNet->SetLoopbackPeer(serverNet.get());
+        serverNet->GetLoopback().SetPeer(clientNet.get());
+        clientNet->GetLoopback().SetPeer(serverNet.get());
 
         server = std::make_unique<Server::Server>(
                 std::move(serverNet),
@@ -58,16 +57,13 @@ namespace Interspace
                 std::make_unique<Engine::LocalIdentity>("data/shared/local_user.txt"));
     }
 
-    // -------------------------------------------------------------------------
-    // ENet
-    // -------------------------------------------------------------------------
-
     void NetworkManager::CreateServer(int maxClients, bool localOnly)
     {
         if (server)
             return;
 
-        auto netInterface = std::make_unique<Engine::RemoteNetwork>(PORT, maxClients, localOnly);
+        auto netInterface = std::make_unique<Engine::ENetNetwork>();
+        netInterface->Connect(PORT, maxClients, localOnly);
         auto identity = std::make_unique<Engine::LocalIdentity>("data/shared/local_user.txt");
         server = std::make_unique<Server::Server>(std::move(netInterface), std::move(identity));
     }
@@ -77,18 +73,21 @@ namespace Interspace
         if (client)
             return;
 
-        auto netInterface = std::make_unique<Engine::RemoteNetwork>(PORT, ip);
+        auto netInterface = std::make_unique<Engine::ENetNetwork>();
+        netInterface->Connect(PORT, ip);
         auto identity = std::make_unique<Engine::LocalIdentity>("data/shared/local_user.txt");
         client = std::make_unique<Client::Client>(std::move(netInterface), std::move(identity));
     }
 
     void NetworkManager::CreateRemoteClientServer(int maxClients, bool localOnly)
     {
-        auto serverNet = std::make_unique<Engine::RemoteNetwork>(PORT, maxClients, localOnly);
-        auto clientNet = std::make_unique<Engine::RemoteNetwork>();
+        auto serverNet = std::make_unique<Engine::ENetNetwork>();
+        serverNet->Connect(PORT, maxClients, localOnly);
+        auto clientNet = std::make_unique<Engine::ENetNetwork>();
+        clientNet->Connect();
 
-        serverNet->SetLoopbackPeer(clientNet.get());
-        clientNet->SetLoopbackPeer(serverNet.get());
+        serverNet->GetLoopback().SetPeer(clientNet.get());
+        clientNet->GetLoopback().SetPeer(serverNet.get());
 
         server = std::make_unique<Server::Server>(
                 std::move(serverNet),
@@ -98,16 +97,13 @@ namespace Interspace
                 std::make_unique<Engine::LocalIdentity>("data/shared/local_user.txt"));
     }
 
-    // -------------------------------------------------------------------------
-    // Steam
-    // -------------------------------------------------------------------------
-
     void NetworkManager::CreateSteamServer()
     {
         if (server)
             return;
 
-        auto netInterface = std::make_unique<Engine::SteamNetwork>(PORT, false);
+        auto netInterface = std::make_unique<Engine::SteamNetwork>();
+        netInterface->Connect();
         auto identity = std::make_unique<Engine::SteamIdentity>();
         server = std::make_unique<Server::Server>(std::move(netInterface), std::move(identity));
     }
@@ -117,18 +113,21 @@ namespace Interspace
         if (client)
             return;
 
-        auto netInterface = std::make_unique<Engine::SteamNetwork>(PORT, ip);
+        auto netInterface = std::make_unique<Engine::SteamNetwork>();
+        netInterface->Connect(std::stoull(ip));
         auto identity = std::make_unique<Engine::SteamIdentity>();
         client = std::make_unique<Client::Client>(std::move(netInterface), std::move(identity));
     }
 
     void NetworkManager::CreateSteamClientServer()
     {
-        auto serverNet = std::make_unique<Engine::SteamNetwork>(PORT, false);
+        auto serverNet = std::make_unique<Engine::SteamNetwork>();
+        serverNet->Connect();
         auto clientNet = std::make_unique<Engine::SteamNetwork>();
+        clientNet->Connect(0);
 
-        serverNet->SetLoopbackPeer(clientNet.get());
-        clientNet->SetLoopbackPeer(serverNet.get());
+        serverNet->GetLoopback().SetPeer(clientNet.get());
+        clientNet->GetLoopback().SetPeer(serverNet.get());
 
         server = std::make_unique<Server::Server>(
                 std::move(serverNet),

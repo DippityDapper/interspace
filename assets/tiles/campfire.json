@@ -1,0 +1,35 @@
+{
+  "id": "campfire",
+  "name": "Campfire",
+  "handler": "campfire",
+  "sprite_sheet": "tiles/campfire.png",
+
+  "states": {
+    "default": "not_lit",
+    "values": [
+      { "id": "not_lit",  "frame": 0 },
+      { "id": "lit",      "frame": 1, "light_radius": 6, "light_color": [255, 180, 80] },
+      { "id": "cooking",  "frame": 2, "light_radius": 6, "light_color": [255, 180, 80] }
+    ]
+  },
+
+  "properties": {
+    "solid": false,
+    "flammable": false,
+    "passable": true,
+    "sways_in_wind": false,
+    "burns_entities": { "enabled": true, "damage_per_second": 5 },
+    "light_blockers": false,
+    "has_tile_entity": true
+  },
+
+  "placement": {
+    "requires_floor": true,
+    "stackable": false
+  },
+
+  "drops": [
+    { "item": "wood", "count": [2, 4] },
+    { "item": "stone", "count": [1, 2] }
+  ]
+}

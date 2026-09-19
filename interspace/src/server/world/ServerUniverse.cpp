@@ -1,8 +1,6 @@
 #include "interspace/server/world/ServerUniverse.hpp"
 
-#include "SDL3/SDL_log.h"
 #include "igneous/networking/Serializer.hpp"
-#include "interspace/shared/datahelpers/WorldManager.hpp"
 #include "interspace/shared/network/NetworkManager.hpp"
 
 namespace Interspace::Server
@@ -15,15 +13,6 @@ namespace Interspace::Server
 
         NetworkManager::server->identity->OnAuthResult = [this](uint64_t clientId, bool valid)
         { OnAuthResult(clientId, valid); };
-
-        for (const auto& world: WorldManager::GetWorlds())
-        {
-            worlds.emplace(world->id, std::make_unique<ServerWorld>(world->id));
-        }
-    }
-
-    void ServerUniverse::Update(double delta)
-    {
     }
 
     void ServerUniverse::OnServerRemoteIdRequest(const std::vector<uint8_t>& data, uint32_t peerId)
@@ -32,13 +21,13 @@ namespace Interspace::Server
         uint64_t serverId = NetworkManager::server->identity->GetLocalId();
         serializer.Write(static_cast<uint16_t>(SERVER_ID_PACKET));
         serializer.Write(serverId);
-        NetworkManager::server->SendToClient(peerId, serializer.GetBytes(), ENET_PACKET_FLAG_RELIABLE);
+        NetworkManager::server->SendToClient(peerId, serializer.GetBytes(), Engine::TransportType::Reliable);
     }
 
     void ServerUniverse::OnClientConnectionRequest(const std::vector<uint8_t>& data, uint32_t peerId)
     {
         Engine::Deserializer deserializer(data);
-        uint32_t clientId = deserializer.ReadULong();
+        uint64_t clientId = deserializer.ReadULong();
         std::string username = deserializer.ReadString();
         std::vector<uint8_t> token = deserializer.ReadBytes();
 
@@ -64,7 +53,7 @@ namespace Interspace::Server
 
         Engine::Serializer serializer{};
         serializer.Write(static_cast<uint16_t>(DISCONNECTION_ACKNOWLEDGED));
-        NetworkManager::server->SendToClient(peerId, serializer.GetBytes(), ENET_PACKET_FLAG_RELIABLE);
+        NetworkManager::server->SendToClient(peerId, serializer.GetBytes(), Engine::TransportType::Reliable);
 
         Engine::Serializer broadcastSerializer{};
         broadcastSerializer.Write(static_cast<uint16_t>(CLIENT_DISCONNECTED));
@@ -74,7 +63,7 @@ namespace Interspace::Server
         {
             if (otherPeerId == peerId)
                 continue;
-            NetworkManager::server->SendToClient(otherPeerId, broadcastSerializer.GetBytes(), ENET_PACKET_FLAG_RELIABLE);
+            NetworkManager::server->SendToClient(otherPeerId, broadcastSerializer.GetBytes(), Engine::TransportType::Reliable);
         }
     }
 
@@ -96,7 +85,7 @@ namespace Interspace::Server
 
         Engine::Serializer serializer{};
         serializer.Write(static_cast<uint16_t>(CONNECTION_ACCEPTED));
-        NetworkManager::server->SendToClient(authPeer.peerId, serializer.GetBytes(), ENET_PACKET_FLAG_RELIABLE);
+        NetworkManager::server->SendToClient(authPeer.peerId, serializer.GetBytes(), Engine::TransportType::Reliable);
 
         Engine::Serializer broadcastSerializer{};
         broadcastSerializer.Write(static_cast<uint16_t>(CLIENT_CONNECTED));
@@ -106,7 +95,7 @@ namespace Interspace::Server
         {
             if (peerId == authPeer.peerId)
                 continue;
-            NetworkManager::server->SendToClient(authPeer.peerId, serializer.GetBytes(), ENET_PACKET_FLAG_RELIABLE);
+            NetworkManager::server->SendToClient(authPeer.peerId, serializer.GetBytes(), Engine::TransportType::Reliable);
         }
     }
 
@@ -117,18 +106,6 @@ namespace Interspace::Server
 
         Engine::Serializer serializer{};
         serializer.Write(static_cast<uint16_t>(CONNECTION_REJECTED));
-        NetworkManager::server->SendToClient(peerId, serializer.GetBytes(), ENET_PACKET_FLAG_RELIABLE);
-    }
-
-    void ServerUniverse::CreateWorld(world_id_t worldId)
-    {
-        worlds.emplace(worldId, std::make_unique<ServerWorld>(worldId));
-    }
-
-    ServerWorld* ServerUniverse::GetWorld(world_id_t worldId)
-    {
-        if (!worlds.contains(worldId))
-            return nullptr;
-        return worlds[worldId].get();
+        NetworkManager::server->SendToClient(peerId, serializer.GetBytes(), Engine::TransportType::Reliable);
     }
 }

@@ -31,7 +31,7 @@ namespace Interspace::Server
       public:
         explicit Server(std::unique_ptr<Engine::NetworkInterface> _netInterface, std::unique_ptr<Engine::IdentityProvider> _identity);
 
-        void SendToClient(uint32_t peerId, const std::vector<uint8_t>& data, uint32_t flags);
+        void SendToClient(uint32_t peerId, const std::vector<uint8_t>& data, Engine::TransportType flags);
 
         void ConnectClient(uint64_t clientId, const std::string& username, uint32_t peerId);
         void DisconnectClient(uint64_t clientId);

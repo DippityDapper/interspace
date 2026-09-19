@@ -9,17 +9,11 @@
 
 #include "igneous/scenes/SceneManager.hpp"
 #include "igneous/rendering/Window.hpp"
-#include "interspace/shared/datahelpers/UniverseUtils.hpp"
-#include "interspace/shared/datahelpers/WorldManager.hpp"
 #include "interspace/shared/game/Game.hpp"
 #include "interspace/client/sounds/SoundManager.hpp"
 
 namespace Interspace
 {
-    void UniverseCreationMenu::OnCreated()
-    {
-    }
-
     void UniverseCreationMenu::HandleInputs(Engine::InputLayer& layer)
     {
         if (!layer.Is("ui"))
@@ -80,7 +74,7 @@ namespace Interspace
         if (seedStr.empty())
         {
             std::mt19937 gen(std::random_device{}());
-            std::uniform_int_distribution<client_id_t> seedDist(1, UINT32_MAX);
+            std::uniform_int_distribution<uint32_t> seedDist(1, UINT32_MAX);
             seed = seedDist(gen);
         }
         else
@@ -100,11 +94,6 @@ namespace Interspace
                 return false;
             }
         }
-
-        UniverseUtils::InsertUniverse(name, seed);
-        universe_id_t universeId = UniverseUtils::GetUniverseId(name);
-        UniverseUtils::AddUniverse(name, universeId);
-        WorldManager::InsertWorld(name, Test, 512, 512);
 
         message = "";
 

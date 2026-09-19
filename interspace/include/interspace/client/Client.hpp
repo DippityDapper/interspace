@@ -30,7 +30,7 @@ namespace Interspace::Client
         uint64_t GetMyId() const;
         std::string GetMyUsername() const;
 
-        void SendToServer(const std::vector<uint8_t>& data, uint32_t flags);
+        void SendToServer(const std::vector<uint8_t>& data, Engine::TransportType flags);
 
         template<typename T>
         void ConnectToEvent(NetMessageType messageType, T* instance, void (T::*callback)(const std::vector<uint8_t>& data))

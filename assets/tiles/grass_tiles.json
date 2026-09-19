@@ -1,0 +1,10 @@
+{
+  "tileId" : 1,
+  "tileName" : "Grass",
+  "tileStates": [
+
+  ],
+  "data": {
+    "spritePath": "assets/tilesets/grass_tileset.png"
+  }
+}

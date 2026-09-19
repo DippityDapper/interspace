@@ -1,0 +1,7 @@
+seed       42
+octaves    2
+scale      0.030100
+lacunarity 2.000000
+gain       0.340000
+width      512
+height     512

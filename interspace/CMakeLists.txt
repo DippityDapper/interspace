@@ -15,6 +15,10 @@ target_include_directories(interspace PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+target_link_libraries(interspace PRIVATE
+        nlohmann_json::nlohmann_json
+)
+
 add_custom_target(copy_game_files ALL
         COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:interspace>/assets"
         COMMAND ${CMAKE_COMMAND} -E copy_directory

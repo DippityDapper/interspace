@@ -14,7 +14,6 @@
 #include "interspace/client/sounds/SoundManager.hpp"
 
 #include "interspace/client/menus/UniverseCreationMenu.hpp"
-#include "interspace/shared/datahelpers/UniverseUtils.hpp"
 #include "interspace/shared/network/NetworkManager.hpp"
 #include "interspace/shared/world/UniverseManager.hpp"
 
@@ -30,10 +29,6 @@ namespace Interspace
             return;
 
         universes.clear();
-        for (const auto& [id, name]: UniverseUtils::GetUniverses())
-        {
-            universes.push_back({name});
-        }
     }
 
     void UniversesMenu::HandleInputs(Engine::InputLayer& layer)
@@ -174,9 +169,6 @@ namespace Interspace
         {
             return false;
         }
-        uint32_t universeId = UniverseUtils::GetUniverseId(universeName);
-        UniverseUtils::DeleteUniverse(universeName);
-        UniverseUtils::RemoveUniverse(universeId);
 
         int worldsCount = universes.size();
         for (int i = 0; i < worldsCount; i++)

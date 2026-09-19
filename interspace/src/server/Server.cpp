@@ -46,7 +46,7 @@ namespace Interspace::Server
         }
     }
 
-    void Server::SendToClient(uint32_t peerId, const std::vector<uint8_t>& data, uint32_t flags)
+    void Server::SendToClient(uint32_t peerId, const std::vector<uint8_t>& data, Engine::TransportType flags)
     {
         if (!netInterface)
             return;
@@ -60,7 +60,7 @@ namespace Interspace::Server
         clientIdToPeerId.emplace(clientId, peerId);
         peerIdToClientId.emplace(peerId, clientId);
         peerIdToUsername.emplace(peerId, username);
-        SDL_Log("[Server] %s (%u) Connected.", username.c_str(), clientId);
+        SDL_Log("[Server] %s (%lu) Connected.", username.c_str(), clientId);
     }
 
     void Server::DisconnectClient(uint64_t clientId)
@@ -72,7 +72,7 @@ namespace Interspace::Server
         clientIdToPeerId.erase(clientId);
         peerIdToClientId.erase(peerId);
         peerIdToUsername.erase(peerId);
-        SDL_Log("[Server] %s (%u) Disconnected.", username.c_str(), clientId);
+        SDL_Log("[Server] %s (%lu) Disconnected.", username.c_str(), clientId);
     }
     uint64_t Server::GetClientId(uint32_t peerId)
     {

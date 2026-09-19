@@ -57,7 +57,7 @@ namespace Interspace::Client
         return identity->GetLocalUsername();
     }
 
-    void Client::SendToServer(const std::vector<uint8_t>& data, uint32_t flags)
+    void Client::SendToServer(const std::vector<uint8_t>& data, Engine::TransportType flags)
     {
         if (!netInterface)
             return;

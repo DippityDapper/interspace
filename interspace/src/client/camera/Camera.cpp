@@ -3,8 +3,6 @@
 #include "SDL3/SDL_keycode.h"
 #include "igneous/input/Input.hpp"
 #include "igneous/rendering/Window.hpp"
-#include "interspace/shared/game/Game.hpp"
-#include "interspace/shared/world/WorldData.hpp"
 
 #include <algorithm>
 
@@ -30,8 +28,8 @@ namespace Interspace::Client
         float tZoom = std::min(static_cast<float>(delta) * zoomSpeed, 1.0f);
 
         Engine::Vec2<float> velocityNorm = velocity.Normalized();
-        targetPosition.y += velocityNorm.y * (moveSpeed * WorldData::TILE_SIZE / zoom) * moveSpeedMultiplier * delta;
-        targetPosition.x += velocityNorm.x * (moveSpeed * WorldData::TILE_SIZE / zoom) * moveSpeedMultiplier * delta;
+        targetPosition.y += velocityNorm.y * (moveSpeed * 32 / zoom) * moveSpeedMultiplier * delta;
+        targetPosition.x += velocityNorm.x * (moveSpeed * 32 / zoom) * moveSpeedMultiplier * delta;
 
         if (targetPosition != position)
         {

@@ -8,5 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(IGNEOUS_STEAM ON CACHE BOOL "Enable Steamworks" FORCE)
 add_subdirectory(../igneous ${CMAKE_BINARY_DIR}/igneous_build)
 
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_Install OFF CACHE INTERNAL "")
+
 # --- Project modules ---
 add_subdirectory(interspace)
+add_subdirectory(libs/json)

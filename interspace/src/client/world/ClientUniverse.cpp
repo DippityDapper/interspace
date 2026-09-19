@@ -3,6 +3,7 @@
 #include "igneous/networking/Serializer.hpp"
 #include "igneous/scenes/SceneRoot.hpp"
 #include "interspace/client/menus/MainMenu.hpp"
+#include "interspace/client/menus/PreambleMenu.hpp"
 #include "interspace/shared/network/NetworkManager.hpp"
 
 namespace Interspace::Client
@@ -19,14 +20,11 @@ namespace Interspace::Client
 
         if (myId == 0 || username.empty())
         {
+            root->AddScene<PreambleMenu>("preamble_menu");
             return;
         }
 
         SendConnectionRequest();
-    }
-
-    void ClientUniverse::Update(double delta)
-    {
     }
 
     void ClientUniverse::SendConnectionRequest()
@@ -34,13 +32,13 @@ namespace Interspace::Client
         Engine::Serializer serializer{};
         serializer.Write(static_cast<uint16_t>(SERVER_ID_REQUEST));
 
-        NetworkManager::client->SendToServer(serializer.GetBytes(), ENET_PACKET_FLAG_RELIABLE);
+        NetworkManager::client->SendToServer(serializer.GetBytes(), Engine::TransportType::Reliable);
     }
 
     void ClientUniverse::OnServerRemotePacket(const std::vector<uint8_t>& data)
     {
         Engine::Deserializer deserializer(data);
-        uint32_t serverId = deserializer.ReadLong();
+        uint64_t serverId = deserializer.ReadULong();
         std::vector<uint8_t> token = NetworkManager::client->identity->GetAuthToken(serverId);
 
         uint64_t myId = NetworkManager::client->GetMyId();
@@ -51,7 +49,7 @@ namespace Interspace::Client
         serializer.Write(myId);
         serializer.Write(username);
         serializer.Write(token);
-        NetworkManager::client->SendToServer(serializer.GetBytes(), ENET_PACKET_FLAG_RELIABLE);
+        NetworkManager::client->SendToServer(serializer.GetBytes(), Engine::TransportType::Reliable);
     }
 
     void ClientUniverse::OnConnectionAccepted(const std::vector<uint8_t>& data)

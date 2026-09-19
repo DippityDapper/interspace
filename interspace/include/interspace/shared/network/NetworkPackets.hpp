@@ -9,7 +9,7 @@ namespace Interspace
     enum NetMessageType : uint16_t
     {
         CONNECTION_REQUEST,
-        CONNECTION_REQUEST_, // Connection picked up but not sent by the client
+        CONNECTION_REQUEST_,
         CONNECTION_ACCEPTED,
         CONNECTION_REJECTED,
         CLIENT_CONNECTED,
@@ -19,7 +19,7 @@ namespace Interspace
         SERVER_DISCONNECTED,
 
         DISCONNECTION_REQUEST,
-        DISCONNECTION_REQUEST_, // Disconnection picked up but not sent by the client
+        DISCONNECTION_REQUEST_,
         DISCONNECTION_ACKNOWLEDGED,
         CLIENT_DISCONNECTED,
 
